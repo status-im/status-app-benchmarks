@@ -3,3 +3,7 @@ commit_hash,date,test_name,status,min_time,max_time,avg_time,run_count,all_runs
 26cda1d72,2025-12-22T16:46:32,test_swap_loading_time[wallet_load_alex_user],passed,0.934,1.874,1.174,5,"1.874,0.964,0.934,1.107,0.992"
 26cda1d72,2025-12-22T16:46:32,test_wallet_loading_time[wallet_load_user],passed,0.878,0.989,0.938,5,"0.989,0.878,0.978,0.932,0.91"
 26cda1d72,2025-12-22T16:46:32,test_swap_loading_time[wallet_load_user],passed,0.932,2.152,1.231,5,"2.152,1.041,0.932,0.938,1.095"
+7642d2335,2026-01-16T05:15:38,test_wallet_loading_time[wallet_load_alex_user],passed,0.737,0.878,0.799,5,"0.836,0.878,0.754,0.789,0.737"
+7642d2335,2026-01-16T05:15:38,test_swap_loading_time[wallet_load_user],passed,0.694,2.706,1.155,5,"2.706,0.787,0.814,0.694,0.773"
+7642d2335,2026-01-16T05:15:38,test_wallet_loading_time[wallet_load_user],passed,1.01,1.341,1.139,5,"1.01,1.116,1.077,1.341,1.15"
+7642d2335,2026-01-16T05:15:38,test_swap_loading_time[wallet_load_alex_user],passed,0.769,2.495,1.17,5,"2.495,0.871,0.821,0.892,0.769"
