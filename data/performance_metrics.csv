@@ -79,3 +79,7 @@ ff342a10b,2026-01-26T08:41:52,test_swap_loading_time[wallet_load_alex_user],pass
 239fc4e1b,2026-02-01T05:13:45,test_wallet_loading_time[wallet_load_user],passed,0.847,0.958,0.906,5,"0.9,0.943,0.847,0.884,0.958"
 239fc4e1b,2026-02-01T05:13:45,test_swap_loading_time[wallet_load_alex_user],passed,0.902,2.878,1.341,5,"2.878,1.014,0.944,0.966,0.902"
 239fc4e1b,2026-02-01T05:13:45,test_wallet_loading_time[wallet_load_alex_user],passed,0.925,1.112,1.012,5,"0.925,1.112,0.994,0.973,1.058"
+9381d0d06,2026-02-02T05:12:29,test_wallet_loading_time[wallet_load_user],passed,0.633,1.389,0.875,5,"1.389,1.046,0.665,0.633,0.641"
+9381d0d06,2026-02-02T05:12:29,test_swap_loading_time[wallet_load_alex_user],passed,1.171,3.856,1.827,5,"3.856,1.421,1.419,1.269,1.171"
+9381d0d06,2026-02-02T05:12:29,test_swap_loading_time[wallet_load_user],passed,0.902,2.859,1.36,5,"2.859,0.925,0.992,0.902,1.124"
+9381d0d06,2026-02-02T05:12:29,test_wallet_loading_time[wallet_load_alex_user],passed,0.886,1.345,1.115,5,"0.886,0.945,1.153,1.345,1.246"
