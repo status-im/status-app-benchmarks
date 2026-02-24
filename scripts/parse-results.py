@@ -99,7 +99,13 @@ def parse_test_case_json(json_file: Path, benchmark_dir: Path) -> tuple:
     test_name = test_result['test_name']
     performance_metrics = None
     
-    if 'test_swap_loading_time' in test_name or 'test_wallet_loading_time' in test_name:
+    loading_time_tests = (
+        'test_swap_loading_time',
+        'test_wallet_loading_time',
+        'test_community_loading_time',
+        'test_wallet_assets_loading_time',
+    )
+    if any(name in test_name for name in loading_time_tests):
         attachment_source = find_performance_attachment_source(data)
         
         if attachment_source:
