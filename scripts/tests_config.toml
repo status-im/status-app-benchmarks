@@ -1,0 +1,38 @@
+# Benchmark Configuration
+# Define all performance tests in this file
+
+[[tests]]
+test_id = "test_wallet_loading_time"
+display_name = "Wallet Screen Loading Time Performance"
+graph_filename = "wallet_loading_time.png"
+pattern = "test_wallet_loading_time"
+ylabel = "Load Time (ms)"
+
+[[tests]]
+test_id = "test_swap_loading_time"
+display_name = "Swap Screen Loading Time Performance"
+graph_filename = "swap_loading_time.png"
+pattern = "test_swap_loading_time"
+ylabel = "Load Time (ms)"
+
+[[tests]]
+test_id = "test_status_community_loading_time"
+display_name = "Community Screen Loading Time Performance"
+graph_filename = "community_loading_time.png"
+pattern = "test_status_community_loading_time"
+ylabel = "Load Time (ms)"
+
+[[tests]]
+test_id = "test_wallet_assets_loading_time"
+display_name = "Wallet Assets Screen Loading Time Performance"
+graph_filename = "wallet_assets_loading_time.png"
+pattern = "test_wallet_assets_loading_time"
+ylabel = "Load Time (ms)"
+
+# Add new tests below:
+# [[tests]]
+# test_id = "test_my_new_feature_loading_time"
+# display_name = "My New Feature Loading Time Performance"
+# graph_filename = "my_new_feature_loading_time.png"
+# pattern = "test_my_new_feature_loading_time"
+# ylabel = "Load Time (ms)"
