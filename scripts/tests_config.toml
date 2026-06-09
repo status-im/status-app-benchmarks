@@ -36,3 +36,62 @@ ylabel = "Load Time (ms)"
 # graph_filename = "my_new_feature_loading_time.png"
 # pattern = "test_my_new_feature_loading_time"
 # ylabel = "Load Time (ms)"
+[[tests]]
+test_id = "test_android_settings_response_time"
+display_name = "Android — Settings navigation response time"
+graph_filename = "android_settings_response_time.png"
+pattern = "test_android_settings_response_time"
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+target = 2.0
+description = "Time from tapping “Settings” in the nav bar until the Settings screen is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+
+[[tests]]
+test_id = "test_android_wallet_response_time"
+display_name = "Android — Wallet navigation response time"
+graph_filename = "android_wallet_response_time.png"
+pattern = "test_android_wallet_response_time"
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+target = 2.0
+description = "Time from tapping “Wallet” in the nav bar until the Wallet screen is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+
+[[tests]]
+test_id = "test_android_messages_response_time"
+display_name = "Android — Messages navigation response time"
+graph_filename = "android_messages_response_time.png"
+pattern = "test_android_messages_response_time"
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+metric = "min"
+description = "Time from tapping “Messages” in the nav bar until the Messages screen is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (screen arrives below the ~0.45 s measurement floor)"
+
+[[tests]]
+test_id = "test_android_market_response_time"
+display_name = "Android — Market navigation response time"
+graph_filename = "android_market_response_time.png"
+pattern = "test_android_market_response_time"
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+target = 2.0
+description = "Time from tapping “Market” in the nav bar until the Market screen is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+
+[[tests]]
+test_id = "test_android_communities_response_time"
+display_name = "Android — Communities navigation response time"
+graph_filename = "android_communities_response_time.png"
+pattern = "test_android_communities_response_time"
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+target = 2.0
+description = "Time from tapping “Communities” in the nav bar until the Communities screen is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"

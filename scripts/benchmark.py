@@ -23,6 +23,12 @@ class PerformanceTest:
     pattern: str
     ylabel: str = "Load Time (ms)"
     color: Optional[str] = None
+    unit: str = "ms"          # "ms" (desktop) or "s" (mobile seconds axis)
+    metric: str = "avg"       # "avg" or "min" (min for floor-limited screens)
+    x_axis: str = "date"      # "date" (desktop) or "build" (mobile)
+    description: str = ""      # subtitle under the title
+    footnote: str = ""
+    target: Optional[float] = None
 
 
 def load_config(config_file: Path) -> List[PerformanceTest]:
@@ -51,7 +57,13 @@ def load_config(config_file: Path) -> List[PerformanceTest]:
                 graph_filename=test_config['graph_filename'],
                 pattern=test_config['pattern'],
                 ylabel=test_config.get('ylabel', 'Load Time (ms)'),
-                color=test_config.get('color')
+                color=test_config.get('color'),
+                unit=test_config.get('unit', 'ms'),
+                metric=test_config.get('metric', 'avg'),
+                x_axis=test_config.get('x_axis', 'date'),
+                description=test_config.get('description', ''),
+                footnote=test_config.get('footnote', ''),
+                target=test_config.get('target')
             )
             tests.append(test)
         except KeyError as e:
@@ -431,6 +443,80 @@ def plot_performance(performance: pd.DataFrame, test_pattern: str,
     print(f"Generated {filename}")
 
 
+def _build_labels():
+    """Optional commit_hash -> display label map (data-trend/build_labels.csv),
+    so the mobile x-axis shows real build names. '|' in a label becomes a line
+    break. Falls back to date+hash when a build is not listed."""
+    import csv as _csv
+    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'build_labels.csv'
+    out = {}
+    if p.exists():
+        for row in _csv.DictReader(open(p, encoding='utf-8')):
+            out[row['commit_hash']] = row['label'].replace('|', '\n')
+    return out
+
+
+def _fmt(v, unit):
+    return f"{v:.2f}s" if unit == 's' else f"{v:.0f} ms"
+
+
+def plot_performance_mobile(performance, test, output_dir):
+    """Mobile response chart: seconds axis, build-name x-axis, explanatory
+    subtitle, methodology footnote. Separate from plot_performance so desktop
+    charts are unaffected."""
+    data = performance[performance['test_name'].str.contains(test.pattern, na=False)].copy()
+    if data.empty:
+        print(f"Warning: No data for {test.pattern}")
+        return
+    value_col = 'min_time' if test.metric == 'min' else 'avg_time'
+    scale = 1.0 if test.unit == 's' else 1000.0
+    labels = _build_labels()
+
+    MAX_BUILDS = 12  # rolling window so the x-axis labels stay readable
+    builds = data.drop_duplicates('commit_hash').sort_values('date')
+    if len(builds) > MAX_BUILDS:
+        data = data[data['commit_hash'].isin(set(builds['commit_hash'].tail(MAX_BUILDS)))]
+    n_builds = data['commit_hash'].nunique()
+    fig, ax = plt.subplots(figsize=(max(8.2, n_builds * 1.0), 5.0))
+    names = list(data['test_name'].unique())
+    for idx, test_name in enumerate(names):
+        vd = data[data['test_name'] == test_name].copy().sort_values('date')
+        color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
+        y = (vd[value_col] * scale).tolist()
+        x = list(range(len(y)))
+        lbl = test_name.split('[')[1].split(']')[0] if '[' in test_name else None
+        ax.plot(x, y, marker='o', linewidth=2, markersize=7, color=color, zorder=3, label=lbl)
+        if len(names) == 1:
+            for xi, yi in zip(x, y):
+                ax.annotate(_fmt(yi, test.unit), (xi, yi), textcoords='offset points',
+                            xytext=(0, 10), ha='center', fontsize=9, fontweight='bold')
+
+    order = data.drop_duplicates('commit_hash').sort_values('date')
+    xt = [labels.get(h, f"{d:%Y-%m-%d}\n{h}") for h, d in zip(order['commit_hash'], order['date'])]
+    ax.set_xticks(range(len(xt)))
+    ax.set_xticklabels(xt, fontsize=8)
+    ax.set_ylabel(test.ylabel, fontsize=11)
+    ymax = max((data[value_col] * scale).max(), test.target or 0)
+    ax.set_ylim(0, ymax * 1.3)
+    if test.target:
+        ax.axhline(test.target, ls='--', lw=1, color='#c0392b', alpha=0.6)
+        ax.text(len(xt) - 1, test.target, f' {_fmt(test.target, test.unit)} target',
+                va='bottom', ha='right', fontsize=8, color='#c0392b')
+    ax.grid(axis='y', alpha=0.3)
+    ax.set_axisbelow(True)
+    fig.suptitle(test.display_name, fontweight='bold', fontsize=13, y=0.98)
+    if test.description:
+        ax.set_title(test.description, fontsize=9.5, color='dimgray', pad=10)
+    if len(names) > 1:
+        ax.legend(loc='best', fontsize=8)
+    if test.footnote:
+        fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
+    fig.subplots_adjust(top=0.86, bottom=0.18)
+    fig.savefig(output_dir / test.graph_filename, dpi=160)
+    plt.close()
+    print(f"Generated {test.graph_filename} (mobile)")
+
+
 def generate_graphs(data_dir: Path, output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -453,13 +539,16 @@ def generate_graphs(data_dir: Path, output_dir: Path):
         
         for test_config in PERFORMANCE_TESTS:
             try:
-                plot_performance(
-                    performance,
-                    test_config.pattern,
-                    test_config.display_name,
-                    test_config.graph_filename,
-                    output_dir
-                )
+                if test_config.pattern.startswith('test_android'):
+                    plot_performance_mobile(performance, test_config, output_dir)
+                else:
+                    plot_performance(
+                        performance,
+                        test_config.pattern,
+                        test_config.display_name,
+                        test_config.graph_filename,
+                        output_dir
+                    )
             except Exception as e:
                 print(f"Error generating graph for {test_config.test_id}: {e}")
                 continue
