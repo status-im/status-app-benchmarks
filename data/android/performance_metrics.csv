@@ -20,3 +20,8 @@ b1aab2,2026-06-05T12:00:00,test_android_wallet_response_time,passed,0.98,1.032,1
 8e3dee,2026-06-08T12:00:00,test_android_market_response_time,passed,1.017,1.071,1.04,6,"1.071,1.031,1.017,1.046,1.048,1.024"
 8e3dee,2026-06-08T12:00:00,test_android_wallet_response_time,passed,1.011,1.03,1.017,6,"1.018,1.013,1.014,1.011,1.016,1.03"
 8e3dee,2026-06-08T12:00:00,test_android_messages_response_time,passed,0.071,0.539,0.448,6,"0.071,0.513,0.533,0.517,0.512,0.539"
+760417,2026-04-30T12:00:00,test_android_wallet_response_time,passed,0.954,1.061,1.019,6,"1.061,1.04,1.036,0.992,0.954,1.03"
+760417,2026-04-30T12:00:00,test_android_market_response_time,passed,0.496,0.553,0.53,6,"0.531,0.518,0.543,0.553,0.496,0.539"
+760417,2026-04-30T12:00:00,test_android_messages_response_time,passed,0.082,0.556,0.451,6,"0.556,0.525,0.523,0.082,0.491,0.531"
+760417,2026-04-30T12:00:00,test_android_settings_response_time,passed,0.944,1.011,0.97,6,"0.969,0.966,0.969,0.961,0.944,1.011"
+760417,2026-04-30T12:00:00,test_android_communities_response_time,passed,1.392,1.476,1.433,6,"1.418,1.392,1.428,1.466,1.419,1.476"
