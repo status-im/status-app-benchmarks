@@ -4,10 +4,14 @@ How quickly the Android app reacts when you tap to switch screens — for exampl
 tap **Wallet** and time until the Wallet screen is drawn. Tracked across builds so we
 can see whether performance improves or regresses.
 
-- **Lower is better.** Each point is the **mean of 6 runs** on a **fresh account**
-  (Samsung A36).
+- **Lower is better.** Most points are the **mean of 6 runs** on a **fresh account**
+  (Samsung A36); charts that work differently (single cold samples, screens faster
+  than the measurement floor) say so in their footnotes.
 - Measured with a screenshot/pixel timer that reads the screen directly — the Qt UI's
   accessibility tree is unreliable for timing, so we don't rely on it.
+- The screenshot round-trip bounds resolution to roughly **0.45 s**: anything faster
+  shows up as a small near-constant value and should be read as "within one frame",
+  not as a precise latency.
 - Charts show the most recent builds; the x-axis is labelled by build
   (date · version/rc · short hash). Full history lives in
   [`data/android/`](../../data/android/).
@@ -29,6 +33,45 @@ can see whether performance improves or regresses.
 
 ## Communities
 ![Communities navigation response time](./android_communities_response_time.png)
+
+## Settings sub-screens
+
+Time from tapping an entry inside Settings until that screen is drawn.
+
+![Settings Password response time](./android_settings_password_response_time.png)
+![Settings Profile response time](./android_settings_profile_response_time.png)
+![Settings Messaging response time](./android_settings_messaging_response_time.png)
+
+## First open
+
+The session's *first* open of a screen includes one-time content construction, so it
+is tracked separately from the warm navigation trend above. Each point is a
+**single cold sample** — a session only has one first open. (It is not always slower
+than warm navigation; Wallet's first open lands close to its warm time.)
+
+![Wallet first open](./android_wallet_first_open.png)
+![Messages first open](./android_messages_first_open.png)
+
+## Wallet actions
+
+Time from tapping an action in the account view until its sheet/flow is drawn. The
+action is opened once unmeasured first, so the samples reflect steady-state use.
+
+![Wallet Receive response time](./android_wallet_receive_response_time.png)
+![Wallet Send response time](./android_wallet_send_response_time.png)
+![Wallet Swap response time](./android_wallet_swap_response_time.png)
+![Wallet Buy response time](./android_wallet_buy_response_time.png)
+
+> Receive and Buy open faster than the ~0.45 s floor, so their charts show the
+> **fastest of 6** and should be read as "within one frame".
+
+## Wallet accounts
+
+Opening an account is measured as a **single cold sample** (repeat opens hit the
+cached view and drop below the floor); adding an account is a normal 6-run mean.
+
+![Wallet account open response time](./android_wallet_account_open_response_time.png)
+![Wallet Add account response time](./android_wallet_add_account_response_time.png)
 
 ---
 
