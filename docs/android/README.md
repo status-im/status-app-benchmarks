@@ -16,31 +16,17 @@ can see whether performance improves or regresses.
   (date · version/rc · short hash). Full history lives in
   [`data/android/`](../../data/android/).
 
-## Wallet
+## Navigation tabs
+
 ![Wallet navigation response time](./android_wallet_response_time.png)
-
-## Settings
 ![Settings navigation response time](./android_settings_response_time.png)
-
-## Messages
 ![Messages navigation response time](./android_messages_response_time.png)
 
 > Messages arrives faster than our ~0.45 s screenshot floor, so its chart shows the
 > **fastest of 6** rather than the mean (the mean would be misleading).
 
-## Market
 ![Market navigation response time](./android_market_response_time.png)
-
-## Communities
 ![Communities navigation response time](./android_communities_response_time.png)
-
-## Settings sub-screens
-
-Time from tapping an entry inside Settings until that screen is drawn.
-
-![Settings Password response time](./android_settings_password_response_time.png)
-![Settings Profile response time](./android_settings_profile_response_time.png)
-![Settings Messaging response time](./android_settings_messaging_response_time.png)
 
 ## First open
 
@@ -51,6 +37,37 @@ than warm navigation; Wallet's first open lands close to its warm time.)
 
 ![Wallet first open](./android_wallet_first_open.png)
 ![Messages first open](./android_messages_first_open.png)
+![Settings first open](./android_settings_first_open.png)
+![Market first open](./android_market_first_open.png)
+![Communities first open](./android_communities_first_open.png)
+
+## Settings sub-screens
+
+Time from tapping an entry inside Settings until that screen is drawn. Every entry
+on the Settings list is covered except **Wallet** (its measurement fails
+consistently and is being investigated separately), **Sign out & Quit**
+(destructive) and the backup banner (an action, not a screen).
+
+> From the 2.38.0-rc.8 build onward these measurements confirm the *identity* of the
+> arrived screen against a calibrated title region. Earlier points timed arrival
+> correctly but used a weaker check that could not distinguish one sub-screen from
+> another.
+
+![Settings Profile response time](./android_settings_profile_response_time.png)
+![Settings Password response time](./android_settings_password_response_time.png)
+![Settings Messaging response time](./android_settings_messaging_response_time.png)
+![Settings ENS usernames response time](./android_settings_ens_response_time.png)
+![Settings Appearance response time](./android_settings_appearance_response_time.png)
+![Settings Language & Currency response time](./android_settings_language_response_time.png)
+![Settings Notifications response time](./android_settings_notifications_response_time.png)
+![Settings Syncing response time](./android_settings_syncing_response_time.png)
+![Settings Browser response time](./android_settings_browser_response_time.png)
+![Settings Advanced response time](./android_settings_advanced_response_time.png)
+![Settings About response time](./android_settings_about_response_time.png)
+![Settings Communities response time](./android_settings_communities_response_time.png)
+![Settings Keycard response time](./android_settings_keycard_response_time.png)
+![Settings Privacy and security response time](./android_settings_privacy_response_time.png)
+![Settings On-device backup response time](./android_settings_backup_response_time.png)
 
 ## Wallet actions
 
