@@ -3,56 +3,64 @@ Automated test suite performance tracking for Windows platform.
 
 ## Adding new tests
 <details>
+<summary><b>How to add a new performance test</b></summary>
 
-1. Edit `./scripts/benchmark_config.toml` and add:
+1. Edit [`./scripts/tests_config.toml`](./scripts/tests_config.toml) and add:
 
 ```toml
 [[tests]]
 test_id = "test_my_feature"
-display_name = "My Feature Loading Time"
+display_name = "My Feature Loading Time Performance"
 graph_filename = "my_feature_loading_time.png"
 pattern = "test_my_feature"
 ylabel = "Load Time (ms)"
 ```
 
-2. Add your test in this README.md under section `Performance tests`:
-```markdown
-<summary><b>My Feature Loading Time</b></summary>
+2. Merge the change. Jenkins will pick up the new test on the next scheduled run — it generates PNG charts in `docs/` and updates the **Performance Tests** section in this README automatically.
 
-![My Feature Loading Timee](./docs/my_feature_loading_time.png)
 
-```
+
 </details>
-
 
 ## Summary Metrics
 
-<summary><b>Pass Rate Trend</b></summary>
+*All charts show data from the last 30 days.*
 
-![Pass Rate](./docs/pass_rate_trend.png)
-
+<details>
 <summary><b>Total Test Suite Duration</b></summary>
 
 ![Duration](./docs/total_duration.png)
+</details>
 
 ---
 
 ## Performance Tests
 
+<!-- performance-tests:start -->
+
+<details>
 <summary><b>Wallet Screen Loading Time Performance</b></summary>
 
-![Wallet Loading Time](./docs/wallet_loading_time.png)
+![Wallet Screen Loading Time Performance](./docs/wallet_loading_time.png)
+</details>
 
-<summary><b>Wallet Assets Loading Time Performance</b></summary>
-
-![Wallet Assets Loading Time](./docs/wallet_assets_loading_time.png)
-
+<details>
 <summary><b>Swap Screen Loading Time Performance</b></summary>
 
-![Swap Loading Time](./docs/swap_loading_time.png)
+![Swap Screen Loading Time Performance](./docs/swap_loading_time.png)
+</details>
 
+<details>
 <summary><b>Community Screen Loading Time Performance</b></summary>
 
-![Community Loading Time](./docs/community_loading_time.png)
+![Community Screen Loading Time Performance](./docs/community_loading_time.png)
+</details>
+
+<details>
+<summary><b>Wallet Assets Screen Loading Time Performance</b></summary>
+
+![Wallet Assets Screen Loading Time Performance](./docs/wallet_assets_loading_time.png)
+</details>
+<!-- performance-tests:end -->
 
 ---

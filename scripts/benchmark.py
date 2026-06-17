@@ -3,6 +3,7 @@
 import json
 import csv
 import argparse
+import re
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -10,9 +11,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import seaborn as sns
+import plotly.graph_objects as go
 import tomli as tomllib
 
 @dataclass
@@ -28,7 +27,7 @@ class PerformanceTest:
 def load_config(config_file: Path) -> List[PerformanceTest]:
     if not config_file.exists():
         print(f"Error: Config file not found: {config_file}")
-        print(f"Expected: benchmark_config.toml")
+        print(f"Expected: {DEFAULT_CONFIG}")
         sys.exit(1)
     
     try:
@@ -65,43 +64,31 @@ def load_config(config_file: Path) -> List[PerformanceTest]:
     return tests
 
 
+DEFAULT_CONFIG = Path('scripts/tests_config.toml')
+
 PERFORMANCE_TESTS: List[PerformanceTest] = []
 
-COLORS = {
-    'primary': '#2E86DE',
-    'success': '#10AC84',
-    'warning': '#F79F1F',
-    'danger': '#EE5A6F',
-    'info': '#54A0FF',
-    'dark': '#2C3E50'
-}
-
+DURATION_COLOR = '#54A0FF'
+DURATION_FILL = 'rgba(84, 160, 255, 0.08)'
 PERFORMANCE_COLORS = ['#10AC84', '#2E86DE', '#F79F1F', '#54A0FF']
 
-sns.set_theme(style="darkgrid", palette="muted")
-plt.rcParams['figure.dpi'] = 200
-plt.rcParams['savefig.bbox'] = 'tight'
-plt.rcParams['font.size'] = 11
-plt.rcParams['axes.titlesize'] = 14
-plt.rcParams['axes.labelsize'] = 12
-plt.rcParams['xtick.labelsize'] = 10
-plt.rcParams['ytick.labelsize'] = 10
-plt.rcParams['legend.fontsize'] = 10
+CHART_WINDOW_DAYS = 30
+CHART_WIDTH = 1200
+CHART_HEIGHT = 500
+CHART_SCALE = 1
+
+README_PERFORMANCE_START = '<!-- performance-tests:start -->'
+README_PERFORMANCE_END = '<!-- performance-tests:end -->'
+
 
 def get_performance_test_patterns() -> tuple:
-    return tuple(test.test_id for test in PERFORMANCE_TESTS)
-
-
-def get_performance_test_by_id(test_id: str) -> Optional[PerformanceTest]:
-    for test in PERFORMANCE_TESTS:
-        if test.test_id == test_id:
-            return test
-    return None
+    return tuple(test.pattern for test in PERFORMANCE_TESTS)
 
 
 def is_performance_test(test_name: str) -> bool:
     patterns = get_performance_test_patterns()
     return any(pattern in test_name for pattern in patterns)
+
 
 def parse_performance_attachment(attachment_file: Path) -> Dict:
     if not attachment_file.exists():
@@ -359,80 +346,164 @@ def load_data(data_dir: Path) -> tuple:
     return summary, performance
 
 
-def plot_metric(summary: pd.DataFrame, output_dir: Path, column: str, 
+def filter_recent(df: pd.DataFrame, days: int = CHART_WINDOW_DAYS,
+                  date_col: str = 'date') -> pd.DataFrame:
+    cutoff = pd.Timestamp.now().normalize() - pd.Timedelta(days=days)
+    return df[df[date_col] >= cutoff].copy()
+
+
+def aggregate_daily(df: pd.DataFrame, value_col: str,
+                    group_cols: Optional[List[str]] = None) -> pd.DataFrame:
+    grouped = df.copy()
+    grouped['_day'] = grouped['date'].dt.normalize()
+    keys = ['_day'] + (group_cols or [])
+    aggregated = grouped.groupby(keys, as_index=False)[value_col].mean()
+    return aggregated.rename(columns={'_day': 'date'}).sort_values('date')
+
+
+def format_date_range(dates: pd.Series, days: int = CHART_WINDOW_DAYS) -> str:
+    start = dates.min().strftime('%b %d')
+    end = dates.max().strftime('%b %d, %Y')
+    return f"{start} – {end} (last {days} days)"
+
+
+def apply_chart_layout(fig: go.Figure, title: str, ylabel: str, dates: pd.Series,
+                       days: int = CHART_WINDOW_DAYS, show_legend: bool = True):
+    layout = dict(
+        template='plotly_white',
+        title=dict(text=f"{title}<br><sup>{format_date_range(dates, days)}</sup>",
+                   x=0.05, xanchor='left'),
+        xaxis_title='Date',
+        yaxis_title=ylabel,
+        width=CHART_WIDTH,
+        height=CHART_HEIGHT,
+        margin=dict(l=60, r=40, t=80, b=60),
+        hovermode='x unified',
+        showlegend=show_legend,
+    )
+    if show_legend:
+        layout['legend'] = dict(orientation='h', yanchor='bottom', y=1.02,
+                                xanchor='right', x=1)
+    fig.update_layout(**layout)
+    fig.update_xaxes(type='date', tickformat='%b %d', showgrid=False)
+    fig.update_yaxes(showgrid=True, gridcolor='#E8ECF0', gridwidth=1)
+
+
+def match_test_pattern(series: pd.Series, pattern: str) -> pd.Series:
+    escaped = re.escape(pattern)
+    return series.str.contains(rf'{escaped}(?:\[|$)', regex=True, na=False)
+
+
+def save_chart(fig: go.Figure, output_dir: Path, filename: str):
+    fig.write_image(output_dir / filename, scale=CHART_SCALE)
+    print(f"Generated {filename}")
+
+
+def plot_metric(summary: pd.DataFrame, output_dir: Path, column: str,
                 ylabel: str, title: str, filename: str, color: str,
-                transform=None, target_line=None):
-    fig, ax = plt.subplots(figsize=(14, 7))
-    
-    data = summary[column] if transform is None else transform(summary[column])
-    
-    ax.plot(summary['date'], data, marker='o', linewidth=3, markersize=10, 
-            color=color, label=title.split()[0])
-    ax.fill_between(summary['date'], 0, data, alpha=0.2, color=color)
-    
-    if target_line is not None:
-        ax.axhline(y=target_line, color=COLORS['success'], linestyle='--', 
-                  linewidth=2, alpha=0.5, label='Target')
-    
-    ax.set_xlabel('Date')
-    ax.set_ylabel(ylabel)
-    ax.set_title(title, fontweight='bold', pad=20)
-    ax.legend(loc='best')
-    ax.grid(True, alpha=0.4, color='#2C3E50', linewidth=0.8)
-    
-    unique_dates = summary['date'].dt.normalize().unique()
-    ax.set_xticks(unique_dates)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
-    
-    plt.tight_layout()
-    plt.savefig(output_dir / filename, dpi=200, bbox_inches='tight')
-    plt.close()
-    print(f"Generated {filename}")
-
-
-def plot_performance(performance: pd.DataFrame, test_pattern: str, 
-                    title: str, filename: str, output_dir: Path):
-    test_data = performance[performance['test_name'].str.contains(test_pattern, na=False)].copy()
-    
-    if test_data.empty:
-        print(f"Warning: No data for {test_pattern}")
+                transform=None):
+    filtered = filter_recent(summary)
+    if filtered.empty:
+        print(f"Warning: No data for {filename} in the last {CHART_WINDOW_DAYS} days")
         return
-    
-    fig, ax = plt.subplots(figsize=(14, 7))
-    
-    for idx, test_name in enumerate(test_data['test_name'].unique()):
-        variant_data = test_data[test_data['test_name'] == test_name].copy()
-        color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
-        
+
+    daily = aggregate_daily(filtered, column)
+    data = daily[column] if transform is None else transform(daily[column])
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=daily['date'],
+        y=data,
+        mode='lines+markers',
+        line=dict(color=color, width=2.5),
+        marker=dict(size=6, color=color),
+        fill='tozeroy',
+        fillcolor=DURATION_FILL,
+        showlegend=False,
+    ))
+
+    apply_chart_layout(fig, title, ylabel, daily['date'], show_legend=False)
+    save_chart(fig, output_dir, filename)
+
+
+def plot_performance(performance: pd.DataFrame, test_config: PerformanceTest,
+                     output_dir: Path):
+    filtered = filter_recent(performance)
+    test_data = filtered[match_test_pattern(filtered['test_name'], test_config.pattern)].copy()
+
+    if test_data.empty:
+        print(f"Warning: No data for {test_config.pattern} in the last {CHART_WINDOW_DAYS} days")
+        return
+
+    fig = go.Figure()
+    test_names = test_data['test_name'].unique()
+    for idx, test_name in enumerate(test_names):
+        variant_data = aggregate_daily(
+            test_data[test_data['test_name'] == test_name], 'avg_time', ['test_name']
+        )
+        if test_config.color and len(test_names) == 1:
+            color = test_config.color
+        else:
+            color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
         param_name = test_name.split('[')[1].split(']')[0] if '[' in test_name else 'default'
-        
-        variant_data.loc[:, 'avg_ms'] = variant_data['avg_time'] * 1000
-        
-        ax.plot(variant_data['date'], variant_data['avg_ms'], marker='o', 
-               linewidth=3, markersize=10, label=param_name,
-               color=color, alpha=0.9)
-    
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Load Time (ms)')
-    ax.set_title(title, fontweight='bold', pad=20)
-    ax.legend(loc='best')
-    ax.grid(True, alpha=0.4, color='#2C3E50', linewidth=0.8)
-    
-    all_dates = test_data['date'].unique()
-    unique_dates = pd.Series(all_dates).dt.normalize().unique()
-    ax.set_xticks(sorted(unique_dates))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
-    
-    plt.tight_layout()
-    plt.savefig(output_dir / filename, dpi=200, bbox_inches='tight')
-    plt.close()
-    print(f"Generated {filename}")
+        avg_ms = variant_data['avg_time'] * 1000
+
+        fig.add_trace(go.Scatter(
+            x=variant_data['date'],
+            y=avg_ms,
+            mode='lines+markers',
+            name=param_name,
+            line=dict(color=color, width=2.5),
+            marker=dict(size=6, color=color),
+        ))
+
+    apply_chart_layout(fig, test_config.display_name, test_config.ylabel, test_data['date'])
+    save_chart(fig, output_dir, test_config.graph_filename)
 
 
-def generate_graphs(data_dir: Path, output_dir: Path):
+def cleanup_stale_charts(output_dir: Path):
+    expected = {'total_duration.png'} | {t.graph_filename for t in PERFORMANCE_TESTS}
+    for png in output_dir.glob('*.png'):
+        if png.name not in expected:
+            png.unlink()
+            print(f"Removed stale chart: {png.name}")
+
+
+def generate_performance_readme_section(tests: List[PerformanceTest]) -> str:
+    blocks = []
+    for test in tests:
+        blocks.append(
+            f'<details>\n'
+            f'<summary><b>{test.display_name}</b></summary>\n\n'
+            f'![{test.display_name}](./docs/{test.graph_filename})\n'
+            f'</details>'
+        )
+    return '\n\n'.join(blocks) + '\n'
+
+
+def update_readme_performance_section(readme_path: Path, tests: List[PerformanceTest]):
+    if not readme_path.exists():
+        print(f"Warning: README not found at {readme_path}, skipping update")
+        return
+
+    content = readme_path.read_text(encoding='utf-8')
+    if README_PERFORMANCE_START not in content or README_PERFORMANCE_END not in content:
+        print(f"Warning: README markers not found, skipping update")
+        return
+
+    start = content.index(README_PERFORMANCE_START) + len(README_PERFORMANCE_START)
+    end = content.index(README_PERFORMANCE_END)
+    new_section = generate_performance_readme_section(tests)
+    readme_path.write_text(
+        content[:start] + '\n\n' + new_section + content[end:],
+        encoding='utf-8',
+    )
+    print(f"Updated performance tests section in {readme_path}")
+
+
+def generate_graphs(data_dir: Path, output_dir: Path, readme_path: Optional[Path] = None):
     output_dir.mkdir(parents=True, exist_ok=True)
+    cleanup_stale_charts(output_dir)
     
     print(f"\nLoading data from {data_dir}...")
     summary, performance = load_data(data_dir)
@@ -442,10 +513,8 @@ def generate_graphs(data_dir: Path, output_dir: Path):
     
     print(f"\nGenerating graphs in {output_dir}...")
     
-    plot_metric(summary, output_dir, 'pass_rate', 'Pass Rate (%)', 
-                'Pass Rate Trend', 'pass_rate_trend.png', COLORS['primary'], target_line=100)
     plot_metric(summary, output_dir, 'total_duration_ms', 'Duration (minutes)',
-                'Total Test Suite Duration', 'total_duration.png', COLORS['info'],
+                'Total Test Suite Duration', 'total_duration.png', DURATION_COLOR,
                 transform=lambda x: x / 1000 / 60)
     
     if performance is not None and not performance.empty:
@@ -453,16 +522,13 @@ def generate_graphs(data_dir: Path, output_dir: Path):
         
         for test_config in PERFORMANCE_TESTS:
             try:
-                plot_performance(
-                    performance,
-                    test_config.pattern,
-                    test_config.display_name,
-                    test_config.graph_filename,
-                    output_dir
-                )
+                plot_performance(performance, test_config, output_dir)
             except Exception as e:
                 print(f"Error generating graph for {test_config.test_id}: {e}")
                 continue
+
+    if readme_path is not None:
+        update_readme_performance_section(readme_path, PERFORMANCE_TESTS)
     
     print(f"\nAll graphs generated in {output_dir.absolute()}")
 
@@ -480,7 +546,8 @@ def cmd_parse(args):
 
 
 def cmd_graphs(args):
-    generate_graphs(args.data_dir, args.output_dir)
+    readme_path = None if args.no_update_readme else args.readme
+    generate_graphs(args.data_dir, args.output_dir, readme_path)
 
 
 def cmd_list_tests(args):
@@ -498,7 +565,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Parse Allure results (uses default config: benchmark_config.toml)
+  # Parse Allure results (uses default config: scripts/tests_config.toml)
   python benchmark.py parse /path/to/allure-results \\
       --commit-hash abc123 \\
       --date 2026-03-18T10:30:00
@@ -508,7 +575,7 @@ Examples:
       --commit-hash abc123 \\
       --date 2026-03-18T10:30:00
 
-  # Generate graphs
+  # Generate graphs and update README (as run by Jenkins on schedule)
   python benchmark.py graphs --data-dir data/ --output-dir docs/
 
   # List configured tests
@@ -519,8 +586,8 @@ Examples:
     main_parser.add_argument(
         '--config',
         type=Path,
-        default=Path('benchmark_config.toml'),
-        help='Path to benchmark config file (default: benchmark_config.toml)'
+        default=DEFAULT_CONFIG,
+        help=f'Path to benchmark config file (default: {DEFAULT_CONFIG})'
     )
     
     subparsers = main_parser.add_subparsers(dest='command', help='Available commands')
@@ -561,6 +628,17 @@ Examples:
         type=Path,
         default=Path('docs'),
         help='Path to output directory for graphs (default: docs/)'
+    )
+    graphs_parser.add_argument(
+        '--readme',
+        type=Path,
+        default=Path('README.md'),
+        help='Path to README to update with performance test sections (default: README.md)'
+    )
+    graphs_parser.add_argument(
+        '--no-update-readme',
+        action='store_true',
+        help='Skip auto-updating the Performance Tests section in README'
     )
     graphs_parser.set_defaults(func=cmd_graphs)
     

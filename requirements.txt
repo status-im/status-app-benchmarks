@@ -1,4 +1,4 @@
 pandas>=2.0.0,<2.3
-matplotlib>=3.8.0,<3.10
-seaborn>=0.13.0
+plotly>=5.18.0
+kaleido>=0.2.1
 tomli>=2.0.0
