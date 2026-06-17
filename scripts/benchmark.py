@@ -468,7 +468,7 @@ def plot_performance_mobile(performance, test, output_dir):
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
-    value_col = 'min_time' if test.metric == 'min' else 'avg_time'
+    value_col = "min_time" if test.metric == "min" else "median_time"
     scale = 1.0 if test.unit == 's' else 1000.0
     labels = _build_labels()
 

@@ -46,7 +46,7 @@ unit = "s"
 x_axis = "build"
 target = 2.0
 description = "Time from tapping “Settings” in the nav bar until the Settings screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_wallet_response_time"
@@ -58,7 +58,7 @@ unit = "s"
 x_axis = "build"
 target = 2.0
 description = "Time from tapping “Wallet” in the nav bar until the Wallet screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_messages_response_time"
@@ -82,7 +82,7 @@ unit = "s"
 x_axis = "build"
 target = 2.0
 description = "Time from tapping “Market” in the nav bar until the Market screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_communities_response_time"
@@ -94,7 +94,7 @@ unit = "s"
 x_axis = "build"
 target = 2.0
 description = "Time from tapping “Communities” in the nav bar until the Communities screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_password_response_time"
@@ -105,7 +105,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Password” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_profile_response_time"
@@ -116,7 +116,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Profile” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_messaging_response_time"
@@ -127,7 +127,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Messaging” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_wallet_first_open"
@@ -172,7 +172,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Send” in the account view until the sheet is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_wallet_swap_response_time"
@@ -183,7 +183,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Swap” in the account view until the sheet is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_wallet_buy_response_time"
@@ -217,7 +217,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Add account” in Wallet until the flow is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_ens_response_time"
@@ -228,7 +228,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “ENS usernames” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_appearance_response_time"
@@ -239,7 +239,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Appearance” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_language_response_time"
@@ -250,7 +250,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Language & Currency” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_notifications_response_time"
@@ -261,7 +261,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Notifications” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_syncing_response_time"
@@ -272,7 +272,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Syncing” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_browser_response_time"
@@ -283,7 +283,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Browser” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_advanced_response_time"
@@ -294,7 +294,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Advanced” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_about_response_time"
@@ -305,7 +305,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “About” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_communities_response_time"
@@ -316,7 +316,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Communities” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_keycard_response_time"
@@ -327,7 +327,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Keycard” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_privacy_response_time"
@@ -338,7 +338,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “Privacy and security” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_backup_response_time"
@@ -349,7 +349,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping “On-device backup” in Settings until the screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = mean of 6 runs on that build"
+footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
 [[tests]]
 test_id = "test_android_settings_first_open"
