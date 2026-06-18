@@ -464,7 +464,15 @@ def plot_performance_mobile(performance, test, output_dir):
     """Mobile response chart: seconds axis, build-name x-axis, explanatory
     subtitle, methodology footnote. Separate from plot_performance so desktop
     charts are unaffected."""
-    data = performance[performance['test_name'].str.contains(test.pattern, na=False)].copy()
+    # Exact name (or a parametrized `pattern[param]`), not substring: otherwise a
+    # future longer surface name (e.g. ..._send_max_response_time) would silently
+    # bleed into the ..._send_response_time chart. And only response_time rows, so
+    # a memory/cpu metric sharing the store never lands on a seconds axis.
+    name_match = (performance['test_name'] == test.pattern) | \
+        performance['test_name'].str.startswith(test.pattern + '[', na=False)
+    data = performance[name_match].copy()
+    if 'metric' in data.columns:
+        data = data[data['metric'] == 'response_time']
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
@@ -479,6 +487,7 @@ def plot_performance_mobile(performance, test, output_dir):
     n_builds = data['commit_hash'].nunique()
     fig, ax = plt.subplots(figsize=(max(8.2, n_builds * 1.0), 5.0))
     names = list(data['test_name'].unique())
+    any_low = False
     for idx, test_name in enumerate(names):
         vd = data[data['test_name'] == test_name].copy().sort_values('date')
         color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
@@ -486,6 +495,15 @@ def plot_performance_mobile(performance, test, output_dir):
         x = list(range(len(y)))
         lbl = test_name.split('[')[1].split(']')[0] if '[' in test_name else None
         ax.plot(x, y, marker='o', linewidth=2, markersize=7, color=color, zorder=3, label=lbl)
+        # Ring points summarised from fewer than 3 samples (cold/first-opens are
+        # single-shot) so a reader doesn't read a 1-sample point as a 6-run median.
+        rc = vd['run_count'].tolist() if 'run_count' in vd.columns else []
+        low = [(xi, yi) for xi, yi, c in zip(x, y, rc) if str(c).isdigit() and int(c) < 3]
+        if low:
+            any_low = True
+            lx, ly = zip(*low)
+            ax.scatter(lx, ly, s=150, facecolors='none', edgecolors='#c0392b',
+                       linewidths=1.8, zorder=4)
         if len(names) == 1:
             for xi, yi in zip(x, y):
                 ax.annotate(_fmt(yi, test.unit), (xi, yi), textcoords='offset points',
@@ -509,6 +527,9 @@ def plot_performance_mobile(performance, test, output_dir):
         ax.set_title(test.description, fontsize=9.5, color='dimgray', pad=10)
     if len(names) > 1:
         ax.legend(loc='best', fontsize=8)
+    if any_low:
+        ax.text(0.99, 0.97, 'ringed = <3 samples', transform=ax.transAxes,
+                ha='right', va='top', fontsize=7.5, color='#c0392b')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
     fig.subplots_adjust(top=0.86, bottom=0.18)
