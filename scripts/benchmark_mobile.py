@@ -125,13 +125,19 @@ def plot_performance_mobile(performance, test, output_dir):
         data = data[data['commit_hash'].isin(set(builds['commit_hash'].tail(MAX_BUILDS)))]
     n_builds = data['commit_hash'].nunique()
     fig, ax = plt.subplots(figsize=(max(8.2, n_builds * 1.0), 5.0))
+    # Shared build order: place every line's points at the GLOBAL build index (not a
+    # per-line 0..n), so a line missing some builds still lands under the right x-axis
+    # label instead of shifting left. (All current charts are single-line; this guards
+    # a future multi-line/parametrized surface with uneven per-build coverage.)
+    order = data.drop_duplicates('commit_hash').sort_values('date')
+    build_index = {h: i for i, h in enumerate(order['commit_hash'])}
     names = list(data['test_name'].unique())
     any_low = False
     for idx, test_name in enumerate(names):
         vd = data[data['test_name'] == test_name].copy().sort_values('date')
         color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
         y = (vd[value_col] * scale).tolist()
-        x = list(range(len(y)))
+        x = [build_index[h] for h in vd['commit_hash']]
         lbl = test_name.split('[')[1].split(']')[0] if '[' in test_name else None
         ax.plot(x, y, marker='o', linewidth=2, markersize=7, color=color, zorder=3, label=lbl)
         # Normal-range band: ±15% around the latest build's value (the current
@@ -155,7 +161,6 @@ def plot_performance_mobile(performance, test, output_dir):
                 ax.annotate(_fmt(yi, test.unit), (xi, yi), textcoords='offset points',
                             xytext=(0, 10), ha='center', fontsize=9, fontweight='bold')
 
-    order = data.drop_duplicates('commit_hash').sort_values('date')
     xt = [labels.get(h, f"{d:%Y-%m-%d}\n{h}") for h, d in zip(order['commit_hash'], order['date'])]
     ax.set_xticks(range(len(xt)))
     ax.set_xticklabels(xt, fontsize=8)
