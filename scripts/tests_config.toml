@@ -71,7 +71,7 @@ unit = "s"
 x_axis = "build"
 metric = "min"
 description = "Time from tapping “Messages” in the nav bar until the Messages screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (screen arrives below the ~0.45 s measurement floor)"
+footnote = "Fresh account · Samsung A36 · fastest of 6 runs · bimodal timing (~0.07 s vs ~0.5 s), measurement under revision — read as indicative, not a trend"
 
 [[tests]]
 test_id = "test_android_market_response_time"
@@ -163,7 +163,7 @@ unit = "s"
 x_axis = "build"
 metric = "min"
 description = "Time from tapping “Receive” in the account view until the sheet is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet arrives below the ~0.45 s measurement floor — read as ‘within one frame’, not a precise latency)"
+footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet arrives within a single screenshot, the ~0.06–0.1 s floor — read as ‘within one frame’, not a precise latency)"
 
 [[tests]]
 test_id = "test_android_wallet_send_response_time"
@@ -199,7 +199,7 @@ unit = "s"
 x_axis = "build"
 metric = "min"
 description = "Time from tapping “Buy” in the account view until the sheet is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet arrives below the ~0.45 s measurement floor — read as ‘within one frame’, not a precise latency)"
+footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet arrives within a single screenshot, the ~0.06–0.1 s floor — read as ‘within one frame’, not a precise latency)"
 
 [[tests]]
 test_id = "test_android_wallet_account_open_response_time"

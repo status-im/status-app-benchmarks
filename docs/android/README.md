@@ -9,9 +9,9 @@ can see whether performance improves or regresses.
   than the measurement floor) say so in their footnotes.
 - Measured with a screenshot/pixel timer that reads the screen directly — the Qt UI's
   accessibility tree is unreliable for timing, so we don't rely on it.
-- The screenshot round-trip bounds resolution to roughly **0.45 s**: anything faster
-  shows up as a small near-constant value and should be read as "within one frame",
-  not as a precise latency.
+- Resolution is bounded by the screenshot round-trip. On this device the smallest
+  values are about **0.06–0.1 s** (the tap plus the first screenshot), so anything
+  down at that level should be read as "within one frame", not as a precise latency.
 - Charts show the most recent builds; the x-axis is labelled by build
   (date · version/rc · short hash). Full history lives in
   [`data/android/`](../../data/android/).
@@ -22,8 +22,13 @@ can see whether performance improves or regresses.
 ![Settings navigation response time](./android_settings_response_time.png)
 ![Messages navigation response time](./android_messages_response_time.png)
 
-> Messages arrives faster than our ~0.45 s screenshot floor, so its chart shows the
-> **fastest of 6** rather than the mean (the mean would be misleading).
+> **Messages and Settings navigation are not a reliable trend yet.** Their timing is
+> bimodal — most runs land near ~0.5 s, but some register the change on the very first
+> screenshot (~0.07 s), so a single build's summary can swing between the two (the
+> Messages chart, plotted as the fastest of 6, jumps when a build happens to produce no
+> sub-frame sample). The measurement is being made deterministic; until then read these
+> two as indicative, not as a regression signal. The banded Wallet/Market charts are the
+> trustworthy headline.
 
 ![Market navigation response time](./android_market_response_time.png)
 ![Communities navigation response time](./android_communities_response_time.png)
@@ -79,8 +84,8 @@ action is opened once unmeasured first, so the samples reflect steady-state use.
 ![Wallet Swap response time](./android_wallet_swap_response_time.png)
 ![Wallet Buy response time](./android_wallet_buy_response_time.png)
 
-> Receive and Buy open faster than the ~0.45 s floor, so their charts show the
-> **fastest of 6** and should be read as "within one frame".
+> Receive and Buy open within a single screenshot (the ~0.06–0.1 s floor), so their
+> charts show the **fastest of 6** and should be read as "within one frame".
 
 ## Wallet accounts
 
