@@ -98,12 +98,13 @@ Macrobenchmark uses). Same fully-drawn criterion as the warm charts above, so
 cold and warm are directly comparable: a gap between them is cache benefit, a
 match means the screen is transition-dominated.
 
-![Wallet cold open](./android_wallet_cold_open.png)
-![Messages cold open](./android_messages_cold_open.png)
 ![Settings cold open](./android_settings_cold_open.png)
-![Market cold open](./android_market_cold_open.png)
-![Communities cold open](./android_communities_cold_open.png)
 ![Settings Appearance cold open](./android_settings_appearance_cold_open.png)
+
+> Only the Settings cold opens are shown here. The nav-tab cold opens (Wallet,
+> Messages, Market, Communities) were captured only on a pre-final build that has
+> since been dropped from the dashboard, so they are pending re-measure on a
+> current build.
 
 ## Communities directory (networked)
 

@@ -29,6 +29,7 @@ class PerformanceTest:
     description: str = ""      # subtitle under the title
     footnote: str = ""
     target: Optional[float] = None
+    band: bool = False        # shade a ±15% "normal range" behind the line (steady, above-floor surfaces only)
 
 
 def load_config(config_file: Path) -> List[PerformanceTest]:
@@ -63,7 +64,8 @@ def load_config(config_file: Path) -> List[PerformanceTest]:
                 x_axis=test_config.get('x_axis', 'date'),
                 description=test_config.get('description', ''),
                 footnote=test_config.get('footnote', ''),
-                target=test_config.get('target')
+                target=test_config.get('target'),
+                band=test_config.get('band', False)
             )
             tests.append(test)
         except KeyError as e:
@@ -456,6 +458,21 @@ def _build_labels():
     return out
 
 
+def _excluded_builds():
+    """Build hashes hidden from the published charts (an optional `exclude` column
+    in build_labels.csv). The raw rows stay in performance_metrics.csv — this only
+    keeps a build off the trend, e.g. a pre-final build that muddies the release
+    story. Missing column => nothing excluded (back-compatible)."""
+    import csv as _csv
+    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'build_labels.csv'
+    out = set()
+    if p.exists():
+        for row in _csv.DictReader(open(p, encoding='utf-8')):
+            if str(row.get('exclude') or '').strip().lower() in ('1', 'true', 'yes', 'y'):
+                out.add(row['commit_hash'])
+    return out
+
+
 def _fmt(v, unit):
     return f"{v:.2f}s" if unit == 's' else f"{v:.0f} ms"
 
@@ -473,6 +490,9 @@ def plot_performance_mobile(performance, test, output_dir):
     data = performance[name_match].copy()
     if 'metric' in data.columns:
         data = data[data['metric'] == 'response_time']
+    excluded = _excluded_builds()
+    if excluded:
+        data = data[~data['commit_hash'].isin(excluded)]
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
@@ -495,6 +515,13 @@ def plot_performance_mobile(performance, test, output_dir):
         x = list(range(len(y)))
         lbl = test_name.split('[')[1].split(']')[0] if '[' in test_name else None
         ax.plot(x, y, marker='o', linewidth=2, markersize=7, color=color, zorder=3, label=lbl)
+        # Normal-range band: ±15% around the latest build's value (the current
+        # regime). A point outside it is a step-change, not nightly noise. Anchored
+        # on the latest, not the series, so a genuine regression (e.g. Market's
+        # 2x) sits clearly outside the band rather than recentring it.
+        if test.band and y:
+            mid = y[-1]
+            ax.axhspan(mid * 0.85, mid * 1.15, color=color, alpha=0.10, lw=0, zorder=0)
         # Ring points summarised from fewer than 3 samples (cold/first-opens are
         # single-shot) so a reader doesn't read a 1-sample point as a 6-run median.
         rc = vd['run_count'].tolist() if 'run_count' in vd.columns else []
@@ -530,6 +557,9 @@ def plot_performance_mobile(performance, test, output_dir):
     if any_low:
         ax.text(0.99, 0.97, 'ringed = <3 samples', transform=ax.transAxes,
                 ha='right', va='top', fontsize=7.5, color='#c0392b')
+    if test.band:
+        ax.text(0.01, 0.97, 'shaded = ±15% of latest (normal range)', transform=ax.transAxes,
+                ha='left', va='top', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
     fig.subplots_adjust(top=0.86, bottom=0.18)
