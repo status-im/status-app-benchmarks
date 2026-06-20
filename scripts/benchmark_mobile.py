@@ -92,6 +92,28 @@ def _excluded_builds():
     return out
 
 
+def _run_environments():
+    """commit_hash -> device OS fingerprint (data/android/run_environment.csv).
+    Used to draw a divider where the device software changed, so a baseline step
+    that is really an OS/One UI update isn't misread as an app change. Builds with
+    no recorded environment are treated as one earlier 'legacy' regime."""
+    import csv as _csv
+    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'run_environment.csv'
+    out = {}
+    if p.exists():
+        for row in _csv.DictReader(open(p, encoding='utf-8')):
+            out[row['commit_hash']] = row.get('fingerprint') or row.get('oneui') or 'recorded'
+    return out
+
+
+def _os_boundary_indices(order):
+    """Indices i (in the date-ordered build list) where the device OS regime changes
+    from build i-1 to build i — i.e. where to draw a 'device OS update' divider."""
+    env = _run_environments()
+    regimes = [env.get(h, 'legacy') for h in order['commit_hash']]
+    return [i for i in range(1, len(regimes)) if regimes[i] != regimes[i - 1]]
+
+
 def _fmt(v, unit):
     return f"{v:.2f}s" if unit == 's' else f"{v:.0f} ms"
 
@@ -164,6 +186,12 @@ def plot_performance_mobile(performance, test, output_dir):
     xt = [labels.get(h, f"{d:%Y-%m-%d}\n{h}") for h, d in zip(order['commit_hash'], order['date'])]
     ax.set_xticks(range(len(xt)))
     ax.set_xticklabels(xt, fontsize=8)
+    # Device OS-change divider: a step across this line can be the device software,
+    # not the app, so points on opposite sides aren't directly comparable.
+    for bi in _os_boundary_indices(order):
+        ax.axvline(bi - 0.5, ls=':', lw=1.3, color='#8e44ad', alpha=0.8, zorder=1)
+        ax.text(bi - 0.5, 1.005, 'device OS update', transform=ax.get_xaxis_transform(),
+                ha='center', va='bottom', fontsize=7, color='#8e44ad', rotation=0)
     ax.set_ylabel(test.ylabel, fontsize=11)
     ymax = max((data[value_col] * scale).max(), test.target or 0)
     ax.set_ylim(0, ymax * 1.3)
