@@ -442,3 +442,39 @@ unit = "s"
 x_axis = "build"
 description = "Time from tapping the featured community card until the community view is drawn  ·  lower is better"
 footnote = "Fresh account · Samsung A36 · networked · each point = one cold sample; the featured slot is editorially stable but the community it holds is recorded per run"
+
+[[tests]]
+test_id = "test_android_wallet_assets_response_time"
+display_name = "Android — Wallet ▸ Assets tab response time"
+graph_filename = "android_wallet_assets_response_time.png"
+pattern = "test_android_wallet_assets_response_time"
+band = false
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+description = "Time from tapping the Assets tab in the account view until the token list is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · each point = median of the build's runs"
+
+[[tests]]
+test_id = "test_android_wallet_collectibles_response_time"
+display_name = "Android — Wallet ▸ Collectibles tab response time"
+graph_filename = "android_wallet_collectibles_response_time.png"
+pattern = "test_android_wallet_collectibles_response_time"
+band = false
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+description = "Time from tapping the Collectibles tab in the account view until the tab is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · empty on a fresh account — typically within one frame (~0.1 s floor)"
+
+[[tests]]
+test_id = "test_android_wallet_history_response_time"
+display_name = "Android — Wallet ▸ History tab response time"
+graph_filename = "android_wallet_history_response_time.png"
+pattern = "test_android_wallet_history_response_time"
+band = false
+ylabel = "seconds"
+unit = "s"
+x_axis = "build"
+description = "Time from tapping the History tab in the account view until the tab is drawn  ·  lower is better"
+footnote = "Fresh account · Samsung A36 · empty on a fresh account — typically within one frame (~0.1 s floor)"
