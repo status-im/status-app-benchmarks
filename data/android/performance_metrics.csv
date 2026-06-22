@@ -177,3 +177,13 @@ ff50da,2026-06-19T12:00:00,SM-A366B,test_android_settings_response_time,passed,r
 5b1794,2026-06-22T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.079,0.091,0.086,0.087,4,4,"0.088,0.091,0.087,0.079"
 5b1794,2026-06-22T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,1.726,2.042,1.831,1.778,4,4,"1.735,2.042,1.82,1.726"
 5b1794,2026-06-22T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.561,0.654,0.615,0.623,4,4,"0.632,0.614,0.561,0.654"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_settings_advanced_response_time,passed,response_time,s,0.607,0.715,0.655,0.649,4,4,"0.715,0.675,0.623,0.607"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_messages_first_open,passed,response_time,s,2.296,2.296,2.296,2.296,1,1,2.296
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_settings_cold_open,passed,response_time,s,1.116,1.163,1.145,1.157,3,3,"1.157,1.163,1.116"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_settings_appearance_cold_open,passed,response_time,s,0.607,0.608,0.608,0.608,3,3,"0.608,0.607,0.608"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.622,0.654,0.642,0.645,4,4,"0.642,0.654,0.649,0.622"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,1.19,1.224,1.205,1.204,4,4,"1.19,1.202,1.205,1.224"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_settings_first_open,passed,response_time,s,1.704,1.704,1.704,1.704,1,1,1.704
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_settings_browser_response_time,passed,response_time,s,0.612,0.646,0.622,0.615,4,4,"0.618,0.613,0.646,0.612"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.086,0.601,0.338,0.332,4,4,"0.577,0.087,0.601,0.086"
+962c77,2026-06-22T12:00:00,SM-A366B,test_android_wallet_first_open,passed,response_time,s,0.646,0.646,0.646,0.646,1,1,0.646
