@@ -179,7 +179,9 @@ def plot_performance_mobile(performance, test, output_dir):
     fo = performance[performance['test_name'] == test.pattern.replace('_response_time', '_first_open')].copy()
     if 'metric' in fo.columns:
         fo = fo[fo['metric'] == 'response_time']
-    fo = fo[fo['commit_hash'].isin(order_hashes)].sort_values('date')
+    fo = fo[fo['commit_hash'].isin(order_hashes)].copy()
+    fo['_pos'] = fo['commit_hash'].map(build_index)
+    fo = fo.sort_values('_pos')
     # Wallet is the post-login landing screen, so its 'first open' is already warm — an
     # artifact (first < repeat), not a cold open; omit the overlay like the first-vs-returning chart.
     FO_SKIP = {"test_android_wallet_response_time"}
@@ -189,7 +191,9 @@ def plot_performance_mobile(performance, test, output_dir):
     any_low = False
     warm_by_build = {}
     for idx, test_name in enumerate(names):
-        vd = data[data['test_name'] == test_name].copy().sort_values('date')
+        vd = data[data['test_name'] == test_name].copy()
+        vd['_pos'] = vd['commit_hash'].map(build_index)
+        vd = vd.sort_values('_pos')
         color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
         y = (vd[value_col] * scale).tolist()
         x = [build_index[h] for h in vd['commit_hash']]
@@ -257,11 +261,24 @@ def plot_performance_mobile(performance, test, output_dir):
         ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#888888')
 
     ax.set_ylabel(test.ylabel, fontsize=11)
-    ymax = max((data[value_col] * scale).max(), test.target or 0)
+    is_nav = 'navigation' in (test.display_name or '')
+    ymax = (data[value_col] * scale).max()
     if has_fo:
         ymax = max(ymax, (fo[value_col] * scale).max())
+    if is_nav:
+        ymax = max(ymax, 1.0 * scale)            # keep the 1.0s "slow" line in frame
+    elif test.target:
+        ymax = max(ymax, test.target)
     ax.set_ylim(0, ymax * 1.35)
-    if test.target:
+    if is_nav:
+        # Navigation UX bands: a nav tap reads as fast below 0.5s, slow above 1.0s.
+        ax.axhline(0.5 * scale, ls='--', lw=1, color='#1e8449', alpha=0.6)
+        ax.text(len(xt) - 1, 0.5 * scale, ' 0.5s · fast below',
+                va='bottom', ha='right', fontsize=8, color='#1e8449')
+        ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.6)
+        ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow above',
+                va='bottom', ha='right', fontsize=8, color='#c0392b')
+    elif test.target:
         ax.axhline(test.target, ls='--', lw=1, color='#c0392b', alpha=0.6)
         ax.text(len(xt) - 1, test.target, f' {_fmt(test.target, test.unit)} target',
                 va='bottom', ha='right', fontsize=8, color='#c0392b')

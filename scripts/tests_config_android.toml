@@ -10,7 +10,6 @@ pattern = "test_android_settings_response_time"
 ylabel = "seconds"
 unit = "s"
 x_axis = "build"
-target = 2.0
 description = "Time from tapping “Settings” in the nav bar until the Settings screen is drawn  ·  lower is better"
 footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
@@ -23,7 +22,6 @@ band = true
 ylabel = "seconds"
 unit = "s"
 x_axis = "build"
-target = 2.0
 description = "Time from tapping “Wallet” in the nav bar until the Wallet screen is drawn  ·  lower is better"
 footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
@@ -48,7 +46,6 @@ band = true
 ylabel = "seconds"
 unit = "s"
 x_axis = "build"
-target = 2.0
 description = "Time from tapping “Market” in the nav bar until the Market screen is drawn  ·  lower is better"
 footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
@@ -60,7 +57,6 @@ pattern = "test_android_communities_response_time"
 ylabel = "seconds"
 unit = "s"
 x_axis = "build"
-target = 2.0
 description = "Time from tapping “Communities” in the nav bar until the Communities screen is drawn  ·  lower is better"
 footnote = "Fresh account · Samsung A36 · each point = median of 6 runs on that build"
 
