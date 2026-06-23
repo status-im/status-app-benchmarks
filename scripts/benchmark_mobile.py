@@ -276,26 +276,28 @@ def plot_performance_mobile(performance, test, output_dir):
     top = ymax * 1.35
     ax.set_ylim(0, top)
 
-    if is_nav:
-        # speed zones behind the trend: fast (green) <0.5s, ok (amber) 0.5-1.0s, slow (red) >1.0s.
-        ax.axhspan(0, 0.5 * scale, color='#27ae60', alpha=0.06, lw=0, zorder=0)
-        ax.axhspan(0.5 * scale, 1.0 * scale, color='#e67e22', alpha=0.06, lw=0, zorder=0)
-        ax.axhspan(1.0 * scale, top, color='#c0392b', alpha=0.06, lw=0, zorder=0)
-        ax.axhline(0.5 * scale, ls='--', lw=1, color='#1e8449', alpha=0.6)
+    # speed zones on every chart, clipped to what the y-axis actually shows
+    ax.axhspan(0, min(0.5 * scale, top), color='#27ae60', alpha=0.06, lw=0, zorder=0)
+    if top > 0.5 * scale:
+        ax.axhspan(0.5 * scale, min(1.0 * scale, top), color='#e67e22', alpha=0.06, lw=0, zorder=0)
+        ax.axhline(0.5 * scale, ls='--', lw=1, color='#1e8449', alpha=0.5)
         ax.text(len(xt) - 1, 0.5 * scale, ' 0.5s · fast', va='bottom', ha='right', fontsize=8, color='#1e8449')
-        ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.6)
+    if top > 1.0 * scale:
+        ax.axhspan(1.0 * scale, top, color='#c0392b', alpha=0.06, lw=0, zorder=0)
+        ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.5)
         ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow', va='bottom', ha='right', fontsize=8, color='#c0392b')
-    elif test.band and lvl is not None:
-        # normal range = 2.38.0 +/- run-to-run noise; the line creeping out of it over builds = drift.
-        ax.axhspan(lvl * (1 - BAND), lvl * (1 + BAND), color='#999999', alpha=0.12, lw=0, zorder=0)
+
+    if (not is_nav) and lvl is not None:         # normal-range channel = 2.38.0 +/- noise (sub-actions only)
+        ax.axhline(lvl * (1 - BAND), ls=':', lw=0.9, color='#555555', alpha=0.55, zorder=1)
+        ax.axhline(lvl * (1 + BAND), ls=':', lw=0.9, color='#555555', alpha=0.55, zorder=1)
     elif test.target:
         ax.axhline(test.target, ls='--', lw=1, color='#c0392b', alpha=0.6)
         ax.text(len(xt) - 1, test.target, f' {_fmt(test.target, test.unit)} target',
                 va='bottom', ha='right', fontsize=8, color='#c0392b')
 
-    if lvl is not None:                          # last-release reference level, drawn over the zones / band
-        ax.axhline(lvl, ls='--', lw=1, color='#555555', alpha=0.75, zorder=1)
-        ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#555555')
+    if lvl is not None:                          # last-release reference level, over the zones / channel
+        ax.axhline(lvl, ls='--', lw=1, color='#333333', alpha=0.8, zorder=1)
+        ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#333333')
     ax.grid(axis='y', alpha=0.3)
     ax.set_axisbelow(True)
     fig.suptitle(test.display_name, fontweight='bold', fontsize=13, y=0.98)
@@ -306,12 +308,10 @@ def plot_performance_mobile(performance, test, output_dir):
     if any_low:
         ax.text(0.99, 0.97, 'ringed = <3 samples', transform=ax.transAxes,
                 ha='right', va='top', fontsize=7.5, color='#c0392b')
-    if is_nav:
-        ax.text(0.01, 0.03, 'shaded zones = fast / ok / slow', transform=ax.transAxes,
-                ha='left', va='bottom', fontsize=7.5, color='gray')
-    elif test.band and lvl is not None:
-        ax.text(0.01, 0.03, 'shaded = 2.38.0 ±8% (normal range)', transform=ax.transAxes,
-                ha='left', va='bottom', fontsize=7.5, color='gray')
+    note = 'zones = fast / ok / slow'
+    if (not is_nav) and lvl is not None:
+        note += '   ·   dotted = 2.38.0 ±8% (normal range)'
+    ax.text(0.01, 0.03, note, transform=ax.transAxes, ha='left', va='bottom', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
     fig.subplots_adjust(top=0.86, bottom=0.30)
