@@ -276,13 +276,16 @@ def plot_performance_mobile(performance, test, output_dir):
     top = ymax * 1.35
     ax.set_ylim(0, top)
 
-    # speed zones on every chart, clipped to what the y-axis actually shows
-    ax.axhspan(0, min(0.5 * scale, top), color='#27ae60', alpha=0.06, lw=0, zorder=0)
-    if top > 0.5 * scale:
+    # speed zones, clipped to the y-axis — only where they're meaningful (a nav-scale response,
+    # not a tens-of-seconds network load, where the 0.5/1.0s bands would be a vestigial sliver).
+    show_zones = top <= 5.0 * scale
+    if show_zones:
+        ax.axhspan(0, min(0.5 * scale, top), color='#27ae60', alpha=0.06, lw=0, zorder=0)
+    if show_zones and top > 0.5 * scale:
         ax.axhspan(0.5 * scale, min(1.0 * scale, top), color='#e67e22', alpha=0.06, lw=0, zorder=0)
         ax.axhline(0.5 * scale, ls='--', lw=1, color='#1e8449', alpha=0.5)
         ax.text(len(xt) - 1, 0.5 * scale, ' 0.5s · fast', va='bottom', ha='right', fontsize=8, color='#1e8449')
-    if top > 1.0 * scale:
+    if show_zones and top > 1.0 * scale:
         ax.axhspan(1.0 * scale, top, color='#c0392b', alpha=0.06, lw=0, zorder=0)
         ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.5)
         ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow', va='bottom', ha='right', fontsize=8, color='#c0392b')
@@ -308,10 +311,13 @@ def plot_performance_mobile(performance, test, output_dir):
     if any_low:
         ax.text(0.99, 0.97, 'ringed = <3 samples', transform=ax.transAxes,
                 ha='right', va='top', fontsize=7.5, color='#c0392b')
-    note = 'zones = fast / ok / slow'
+    parts = []
+    if show_zones:
+        parts.append('zones = fast / ok / slow')
     if (not is_nav) and lvl is not None:
-        note += '   ·   dotted = 2.38.0 ±8% (normal range)'
-    ax.text(0.01, 0.03, note, transform=ax.transAxes, ha='left', va='bottom', fontsize=7.5, color='gray')
+        parts.append('dotted = 2.38.0 ±8% (normal range)')
+    if parts:
+        ax.text(0.01, 0.03, '   ·   '.join(parts), transform=ax.transAxes, ha='left', va='bottom', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
     fig.subplots_adjust(top=0.86, bottom=0.30)
