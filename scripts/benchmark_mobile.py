@@ -106,6 +106,21 @@ def _run_environments():
     return out
 
 
+def _android16_builds():
+    """Build hashes measured on the gate OS regime — Android 16 (One UI 8). Volo asked to
+    'stick with Android 16 One UI 8', so the trend charts show only this regime: it drops the
+    pre-update legacy points and the OS-divider clutter, and keeps one comparable timeline. A
+    build with no recorded environment is treated as pre-regime and left off."""
+    import csv as _csv
+    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'run_environment.csv'
+    out = set()
+    if p.exists():
+        for row in _csv.DictReader(open(p, encoding='utf-8')):
+            if str(row.get('android', '')).strip() == '16':
+                out.add(row['commit_hash'])
+    return out
+
+
 def _os_boundary_indices(order):
     """Indices i (in the date-ordered build list) where the device OS regime changes
     from build i-1 to build i — i.e. where to draw a 'device OS update' divider."""
@@ -134,6 +149,9 @@ def plot_performance_mobile(performance, test, output_dir):
     excluded = _excluded_builds()
     if excluded:
         data = data[~data['commit_hash'].isin(excluded)]
+    a16 = _android16_builds()          # Volo: Android 16 / One UI 8 only — drop legacy-OS points
+    if a16:
+        data = data[data['commit_hash'].isin(a16)]
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
@@ -141,12 +159,12 @@ def plot_performance_mobile(performance, test, output_dir):
     scale = 1.0 if test.unit == 's' else 1000.0
     labels = _build_labels()
 
-    MAX_BUILDS = 12  # rolling window so the x-axis labels stay readable
+    MAX_BUILDS = 30  # Volo: keep up to ~30 data points (newer replace older)
     builds = data.drop_duplicates('commit_hash').sort_values('date')
     if len(builds) > MAX_BUILDS:
         data = data[data['commit_hash'].isin(set(builds['commit_hash'].tail(MAX_BUILDS)))]
     n_builds = data['commit_hash'].nunique()
-    fig, ax = plt.subplots(figsize=(max(8.2, n_builds * 1.0), 5.0))
+    fig, ax = plt.subplots(figsize=(min(18.0, max(8.2, n_builds * 0.7)), 5.2))
     # Shared build order: place every line's points at the GLOBAL build index (not a
     # per-line 0..n), so a line missing some builds still lands under the right x-axis
     # label instead of shifting left. (All current charts are single-line; this guards
@@ -183,9 +201,20 @@ def plot_performance_mobile(performance, test, output_dir):
                 ax.annotate(_fmt(yi, test.unit), (xi, yi), textcoords='offset points',
                             xytext=(0, 10), ha='center', fontsize=9, fontweight='bold')
 
-    xt = [labels.get(h, f"{d:%Y-%m-%d}\n{h}") for h, d in zip(order['commit_hash'], order['date'])]
+    # Concise, angled labels so build names stay legible (Volo: build data wasn't readable).
+    # Drop the commit hash from the axis (noise to a reader; still in the data), keep date +
+    # build name, and rotate so neighbours never collide even at 30 points.
+    def _short(h, d):
+        raw = labels.get(h)
+        if not raw:
+            return f"{d:%Y-%m-%d}\n{h[:6]}"
+        parts = raw.split('\n')
+        date = parts[0] if parts else f"{d:%Y-%m-%d}"
+        name = parts[1].split(' · ')[0] if len(parts) > 1 else h[:6]
+        return f"{date}\n{name}"
+    xt = [_short(h, d) for h, d in zip(order['commit_hash'], order['date'])]
     ax.set_xticks(range(len(xt)))
-    ax.set_xticklabels(xt, fontsize=8)
+    ax.set_xticklabels(xt, fontsize=8, rotation=35, ha='right', rotation_mode='anchor')
     # Device OS-change divider: a step across this line can be the device software,
     # not the app, so points on opposite sides aren't directly comparable.
     for bi in _os_boundary_indices(order):
@@ -214,7 +243,7 @@ def plot_performance_mobile(performance, test, output_dir):
                 ha='left', va='top', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
-    fig.subplots_adjust(top=0.86, bottom=0.18)
+    fig.subplots_adjust(top=0.86, bottom=0.26)
     fig.savefig(output_dir / test.graph_filename, dpi=160)
     plt.close()
     print(f"Generated {test.graph_filename} (mobile)")
