@@ -134,13 +134,12 @@ def _fmt(v, unit):
 
 
 def plot_performance_mobile(performance, test, output_dir):
-    """Mobile response chart: seconds axis, build-name x-axis, explanatory
-    subtitle, methodology footnote. Separate from plot_performance so desktop
-    charts are unaffected."""
-    # Exact name (or a parametrized `pattern[param]`), not substring: otherwise a
-    # future longer surface name (e.g. ..._send_max_response_time) would silently
-    # bleed into the ..._send_response_time chart. And only response_time rows, so
-    # a memory/cpu metric sharing the store never lands on a seconds axis.
+    """Mobile response chart: seconds axis, build-name x-axis. Android 16 / One UI 8 only.
+    The two release baselines (2.37.1, 2.38.0) are pinned as fixed LEFT columns so every chart
+    'starts' with them, and a faint dashed line marks the last-release level. For a nav-tab
+    surface the FIRST-open series is overlaid as a second (dashed) line, each first-open point
+    annotated with how much slower it is than its repeat-open counterpart, e.g. 1.40s (+50%).
+    Separate from plot_performance so desktop charts are unaffected."""
     name_match = (performance['test_name'] == test.pattern) | \
         performance['test_name'].str.startswith(test.pattern + '[', na=False)
     data = performance[name_match].copy()
@@ -159,71 +158,109 @@ def plot_performance_mobile(performance, test, output_dir):
     scale = 1.0 if test.unit == 's' else 1000.0
     labels = _build_labels()
 
-    MAX_BUILDS = 30  # Volo: keep up to ~30 data points (newer replace older)
-    builds = data.drop_duplicates('commit_hash').sort_values('date')
-    if len(builds) > MAX_BUILDS:
-        data = data[data['commit_hash'].isin(set(builds['commit_hash'].tail(MAX_BUILDS)))]
-    n_builds = data['commit_hash'].nunique()
-    fig, ax = plt.subplots(figsize=(min(18.0, max(8.2, n_builds * 0.7)), 5.2))
-    # Shared build order: place every line's points at the GLOBAL build index (not a
-    # per-line 0..n), so a line missing some builds still lands under the right x-axis
-    # label instead of shifting left. (All current charts are single-line; this guards
-    # a future multi-line/parametrized surface with uneven per-build coverage.)
-    order = data.drop_duplicates('commit_hash').sort_values('date')
-    build_index = {h: i for i, h in enumerate(order['commit_hash'])}
+    # Pin the two release baselines as fixed LEFT columns, then up to MAX_RECENT recent builds by
+    # date (Volo: 'two baselines should start every chart' + 'keep up to ~30 data points').
+    BASELINES = ["760417N", "5f66deN"]   # 2.37.1 / 2.38.0 re-measured on Android 16 (One UI 8)
+    GA_BUILD = "5f66deN"                  # last release -> the dashed reference level
+    MAX_RECENT = 28
+    allb = data.drop_duplicates('commit_hash').sort_values('date')
+    present = list(allb['commit_hash'])
+    base_order = [h for h in BASELINES if h in present]
+    recent = [h for h in present if h not in BASELINES][-MAX_RECENT:]
+    order_hashes = base_order + recent
+    data = data[data['commit_hash'].isin(order_hashes)]
+    build_index = {h: i for i, h in enumerate(order_hashes)}
+    n_builds, n_base = len(order_hashes), len(base_order)
+    dmap = dict(zip(allb['commit_hash'], allb['date']))
+
+    fig, ax = plt.subplots(figsize=(min(18.0, max(8.2, n_builds * 0.8)), 5.4))
+
+    # First-open companion (nav tabs have a *_first_open series) -> overlay as a 2nd line.
+    fo = performance[performance['test_name'] == test.pattern.replace('_response_time', '_first_open')].copy()
+    if 'metric' in fo.columns:
+        fo = fo[fo['metric'] == 'response_time']
+    fo = fo[fo['commit_hash'].isin(order_hashes)].sort_values('date')
+    # Wallet is the post-login landing screen, so its 'first open' is already warm — an
+    # artifact (first < repeat), not a cold open; omit the overlay like the first-vs-returning chart.
+    FO_SKIP = {"test_android_wallet_response_time"}
+    has_fo = test.pattern.endswith('_response_time') and len(fo) > 0 and test.pattern not in FO_SKIP
+
     names = list(data['test_name'].unique())
     any_low = False
+    warm_by_build = {}
     for idx, test_name in enumerate(names):
         vd = data[data['test_name'] == test_name].copy().sort_values('date')
         color = PERFORMANCE_COLORS[idx % len(PERFORMANCE_COLORS)]
         y = (vd[value_col] * scale).tolist()
         x = [build_index[h] for h in vd['commit_hash']]
-        lbl = test_name.split('[')[1].split(']')[0] if '[' in test_name else None
+        warm_by_build = {h: v * scale for h, v in zip(vd['commit_hash'], vd[value_col])}
+        lbl = (test_name.split('[')[1].split(']')[0] if '[' in test_name
+               else ('repeat open' if has_fo else None))
         ax.plot(x, y, marker='o', linewidth=2, markersize=7, color=color, zorder=3, label=lbl)
-        # Normal-range band: ±15% around the latest build's value (the current
-        # regime). A point outside it is a step-change, not nightly noise. Anchored
-        # on the latest, not the series, so a genuine regression (e.g. Market's
-        # 2x) sits clearly outside the band rather than recentring it.
         if test.band and y:
             mid = y[-1]
             ax.axhspan(mid * 0.85, mid * 1.15, color=color, alpha=0.10, lw=0, zorder=0)
-        # Ring points summarised from fewer than 3 samples (cold/first-opens are
-        # single-shot) so a reader doesn't read a 1-sample point as a 6-run median.
         rc = vd['run_count'].tolist() if 'run_count' in vd.columns else []
         low = [(xi, yi) for xi, yi, c in zip(x, y, rc) if str(c).isdigit() and int(c) < 3]
         if low:
             any_low = True
             lx, ly = zip(*low)
-            ax.scatter(lx, ly, s=150, facecolors='none', edgecolors='#c0392b',
-                       linewidths=1.8, zorder=4)
+            ax.scatter(lx, ly, s=150, facecolors='none', edgecolors='#c0392b', linewidths=1.8, zorder=4)
         if len(names) == 1:
+            dy = -15 if has_fo else 10        # warm below the point when first-open sits above it
             for xi, yi in zip(x, y):
                 ax.annotate(_fmt(yi, test.unit), (xi, yi), textcoords='offset points',
-                            xytext=(0, 10), ha='center', fontsize=9, fontweight='bold')
+                            xytext=(0, dy), ha='center', fontsize=8.5, fontweight='bold')
 
-    # Concise, angled labels so build names stay legible (Volo: build data wasn't readable).
-    # Drop the commit hash from the axis (noise to a reader; still in the data), keep date +
-    # build name, and rotate so neighbours never collide even at 30 points.
-    def _short(h, d):
+    if has_fo:
+        fyl = (fo[value_col] * scale).tolist()
+        fxl = [build_index[h] for h in fo['commit_hash']]
+        ax.plot(fxl, fyl, marker='s', linewidth=1.6, markersize=6, linestyle='--',
+                color='#e67e22', zorder=3, label='first open')
+        for h, xi, yi in zip(fo['commit_hash'], fxl, fyl):
+            w = warm_by_build.get(h)
+            # only show the % vs repeat when the repeat baseline is above the ~0.2s floor —
+            # against a sub-floor (near-instant) repeat the ratio explodes into a meaningless
+            # number (e.g. 2.2s vs 0.08s = +2600%).
+            if w and w > 0.20 * scale:
+                d = round((yi / w - 1) * 100)
+                pct = f" ({'+' if d > 0 else ''}{d}%)"
+            else:
+                pct = ""
+            ax.annotate(f"{_fmt(yi, test.unit)}{pct}", (xi, yi), textcoords='offset points',
+                        xytext=(0, 9), ha='center', fontsize=8, color='#d35400', fontweight='bold')
+        any_low = True   # first-open is single-shot
+
+    def _short(h, is_base):
         raw = labels.get(h)
+        if is_base:
+            nm = raw.split('\n')[1].split('·')[0].strip() if raw and '\n' in raw else (raw or h[:6])
+            return f"{nm}\nbaseline"
         if not raw:
-            return f"{d:%Y-%m-%d}\n{h[:6]}"
+            d = dmap.get(h)
+            return f"{d:%Y-%m-%d}\n{h[:6]}" if d is not None else h[:6]
         parts = raw.split('\n')
-        date = parts[0] if parts else f"{d:%Y-%m-%d}"
-        name = parts[1].split(' · ')[0] if len(parts) > 1 else h[:6]
-        return f"{date}\n{name}"
-    xt = [_short(h, d) for h, d in zip(order['commit_hash'], order['date'])]
+        return f"{parts[0]}\n{parts[1].split(' · ')[0] if len(parts) > 1 else h[:6]}"
+    xt = [_short(h, i < n_base) for i, h in enumerate(order_hashes)]
     ax.set_xticks(range(len(xt)))
     ax.set_xticklabels(xt, fontsize=8, rotation=35, ha='right', rotation_mode='anchor')
-    # Device OS-change divider: a step across this line can be the device software,
-    # not the app, so points on opposite sides aren't directly comparable.
-    for bi in _os_boundary_indices(order):
-        ax.axvline(bi - 0.5, ls=':', lw=1.3, color='#8e44ad', alpha=0.8, zorder=1)
-        ax.text(bi - 0.5, 1.005, 'device OS update', transform=ax.get_xaxis_transform(),
-                ha='center', va='bottom', fontsize=7, color='#8e44ad', rotation=0)
+
+    if 0 < n_base < n_builds:            # separator between pinned baselines and the live trend
+        ax.axvline(n_base - 0.5, ls='-', lw=1, color='#bbbbbb', alpha=0.9, zorder=1)
+        ax.text(n_base - 0.5, 1.005, 'baselines | trend', transform=ax.get_xaxis_transform(),
+                ha='center', va='bottom', fontsize=7, color='#999999')
+
+    gv = data[(data['commit_hash'] == GA_BUILD) & (data['test_name'] == test.pattern)]
+    if len(gv):                          # dashed last-release reference level
+        lvl = float(gv[value_col].iloc[0]) * scale
+        ax.axhline(lvl, ls='--', lw=1, color='#888888', alpha=0.6, zorder=1)
+        ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#888888')
+
     ax.set_ylabel(test.ylabel, fontsize=11)
     ymax = max((data[value_col] * scale).max(), test.target or 0)
-    ax.set_ylim(0, ymax * 1.3)
+    if has_fo:
+        ymax = max(ymax, (fo[value_col] * scale).max())
+    ax.set_ylim(0, ymax * 1.35)
     if test.target:
         ax.axhline(test.target, ls='--', lw=1, color='#c0392b', alpha=0.6)
         ax.text(len(xt) - 1, test.target, f' {_fmt(test.target, test.unit)} target',
@@ -233,17 +270,17 @@ def plot_performance_mobile(performance, test, output_dir):
     fig.suptitle(test.display_name, fontweight='bold', fontsize=13, y=0.98)
     if test.description:
         ax.set_title(test.description, fontsize=9.5, color='dimgray', pad=10)
-    if len(names) > 1:
+    if has_fo or len(names) > 1:
         ax.legend(loc='best', fontsize=8)
     if any_low:
         ax.text(0.99, 0.97, 'ringed = <3 samples', transform=ax.transAxes,
                 ha='right', va='top', fontsize=7.5, color='#c0392b')
     if test.band:
-        ax.text(0.01, 0.97, 'shaded = ±15% of latest (normal range)', transform=ax.transAxes,
-                ha='left', va='top', fontsize=7.5, color='gray')
+        ax.text(0.01, 0.03, 'shaded = ±15% of latest (normal range)', transform=ax.transAxes,
+                ha='left', va='bottom', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
-    fig.subplots_adjust(top=0.86, bottom=0.26)
+    fig.subplots_adjust(top=0.86, bottom=0.30)
     fig.savefig(output_dir / test.graph_filename, dpi=160)
     plt.close()
     print(f"Generated {test.graph_filename} (mobile)")
