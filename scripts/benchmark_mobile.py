@@ -189,6 +189,7 @@ def plot_performance_mobile(performance, test, output_dir):
 
     names = list(data['test_name'].unique())
     any_low = False
+    drew_ma = False
     warm_by_build = {}
     for idx, test_name in enumerate(names):
         vd = data[data['test_name'] == test_name].copy()
@@ -198,12 +199,17 @@ def plot_performance_mobile(performance, test, output_dir):
         y = (vd[value_col] * scale).tolist()
         x = [build_index[h] for h in vd['commit_hash']]
         warm_by_build = {h: v * scale for h, v in zip(vd['commit_hash'], vd[value_col])}
+        trend_xy = [(xi, yi) for xi, yi in zip(x, y) if xi >= n_base]   # live builds, not pinned baselines
+        will_ma = len(names) == 1 and len(trend_xy) >= 4
         lbl = (test_name.split('[')[1].split(']')[0] if '[' in test_name
-               else ('repeat open' if has_fo else None))
+               else ('repeat open' if has_fo else ('per build' if will_ma else None)))
         ax.plot(x, y, marker='o', linewidth=2, markersize=7, color=color, zorder=3, label=lbl)
-        if test.band and y:
-            mid = y[-1]
-            ax.axhspan(mid * 0.85, mid * 1.15, color=color, alpha=0.10, lw=0, zorder=0)
+        if will_ma:                              # rolling average to read drift through build-to-build noise
+            tx, ty = [c[0] for c in trend_xy], [c[1] for c in trend_xy]
+            W = 5
+            ma = [sum(ty[max(0, k - W + 1):k + 1]) / len(ty[max(0, k - W + 1):k + 1]) for k in range(len(ty))]
+            ax.plot(tx, ma, color='#34495e', lw=1.8, alpha=0.65, zorder=2, label='5-build average')
+            drew_ma = True
         rc = vd['run_count'].tolist() if 'run_count' in vd.columns else []
         low = [(xi, yi) for xi, yi, c in zip(x, y, rc) if str(c).isdigit() and int(c) < 3]
         if low:
@@ -254,14 +260,12 @@ def plot_performance_mobile(performance, test, output_dir):
         ax.text(n_base - 0.5, 1.005, 'baselines | trend', transform=ax.get_xaxis_transform(),
                 ha='center', va='bottom', fontsize=7, color='#999999')
 
+    is_nav = 'navigation' in (test.display_name or '')
+    BAND = 0.08                          # "indistinguishable from 2.38.0" half-width (run-to-run noise)
     gv = data[(data['commit_hash'] == GA_BUILD) & (data['test_name'] == test.pattern)]
-    if len(gv):                          # dashed last-release reference level
-        lvl = float(gv[value_col].iloc[0]) * scale
-        ax.axhline(lvl, ls='--', lw=1, color='#888888', alpha=0.6, zorder=1)
-        ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#888888')
+    lvl = float(gv[value_col].iloc[0]) * scale if len(gv) else None
 
     ax.set_ylabel(test.ylabel, fontsize=11)
-    is_nav = 'navigation' in (test.display_name or '')
     ymax = (data[value_col] * scale).max()
     if has_fo:
         ymax = max(ymax, (fo[value_col] * scale).max())
@@ -269,31 +273,44 @@ def plot_performance_mobile(performance, test, output_dir):
         ymax = max(ymax, 1.0 * scale)            # keep the 1.0s "slow" line in frame
     elif test.target:
         ymax = max(ymax, test.target)
-    ax.set_ylim(0, ymax * 1.35)
+    top = ymax * 1.35
+    ax.set_ylim(0, top)
+
     if is_nav:
-        # Navigation UX bands: a nav tap reads as fast below 0.5s, slow above 1.0s.
+        # speed zones behind the trend: fast (green) <0.5s, ok (amber) 0.5-1.0s, slow (red) >1.0s.
+        ax.axhspan(0, 0.5 * scale, color='#27ae60', alpha=0.06, lw=0, zorder=0)
+        ax.axhspan(0.5 * scale, 1.0 * scale, color='#e67e22', alpha=0.06, lw=0, zorder=0)
+        ax.axhspan(1.0 * scale, top, color='#c0392b', alpha=0.06, lw=0, zorder=0)
         ax.axhline(0.5 * scale, ls='--', lw=1, color='#1e8449', alpha=0.6)
-        ax.text(len(xt) - 1, 0.5 * scale, ' 0.5s · fast below',
-                va='bottom', ha='right', fontsize=8, color='#1e8449')
+        ax.text(len(xt) - 1, 0.5 * scale, ' 0.5s · fast', va='bottom', ha='right', fontsize=8, color='#1e8449')
         ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.6)
-        ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow above',
-                va='bottom', ha='right', fontsize=8, color='#c0392b')
+        ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow', va='bottom', ha='right', fontsize=8, color='#c0392b')
+    elif test.band and lvl is not None:
+        # normal range = 2.38.0 +/- run-to-run noise; the line creeping out of it over builds = drift.
+        ax.axhspan(lvl * (1 - BAND), lvl * (1 + BAND), color='#999999', alpha=0.12, lw=0, zorder=0)
     elif test.target:
         ax.axhline(test.target, ls='--', lw=1, color='#c0392b', alpha=0.6)
         ax.text(len(xt) - 1, test.target, f' {_fmt(test.target, test.unit)} target',
                 va='bottom', ha='right', fontsize=8, color='#c0392b')
+
+    if lvl is not None:                          # last-release reference level, drawn over the zones / band
+        ax.axhline(lvl, ls='--', lw=1, color='#555555', alpha=0.75, zorder=1)
+        ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#555555')
     ax.grid(axis='y', alpha=0.3)
     ax.set_axisbelow(True)
     fig.suptitle(test.display_name, fontweight='bold', fontsize=13, y=0.98)
     if test.description:
         ax.set_title(test.description, fontsize=9.5, color='dimgray', pad=10)
-    if has_fo or len(names) > 1:
+    if has_fo or len(names) > 1 or drew_ma:
         ax.legend(loc='best', fontsize=8)
     if any_low:
         ax.text(0.99, 0.97, 'ringed = <3 samples', transform=ax.transAxes,
                 ha='right', va='top', fontsize=7.5, color='#c0392b')
-    if test.band:
-        ax.text(0.01, 0.03, 'shaded = ±15% of latest (normal range)', transform=ax.transAxes,
+    if is_nav:
+        ax.text(0.01, 0.03, 'shaded zones = fast / ok / slow', transform=ax.transAxes,
+                ha='left', va='bottom', fontsize=7.5, color='gray')
+    elif test.band and lvl is not None:
+        ax.text(0.01, 0.03, 'shaded = 2.38.0 ±8% (normal range)', transform=ax.transAxes,
                 ha='left', va='bottom', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
