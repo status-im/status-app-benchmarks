@@ -369,6 +369,9 @@ def format_date_range(dates: pd.Series, days: int = CHART_WINDOW_DAYS) -> str:
 
 def apply_chart_layout(fig: go.Figure, title: str, ylabel: str, dates: pd.Series,
                        days: int = CHART_WINDOW_DAYS, show_legend: bool = True):
+    unique_dates = pd.to_datetime(dates).dt.normalize().drop_duplicates().sort_values()
+    bottom_margin = max(80, min(140, 50 + len(unique_dates) * 2))
+
     layout = dict(
         template='plotly_white',
         title=dict(text=f"{title}<br><sup>{format_date_range(dates, days)}</sup>",
@@ -377,7 +380,7 @@ def apply_chart_layout(fig: go.Figure, title: str, ylabel: str, dates: pd.Series
         yaxis_title=ylabel,
         width=CHART_WIDTH,
         height=CHART_HEIGHT,
-        margin=dict(l=60, r=40, t=80, b=60),
+        margin=dict(l=60, r=40, t=80, b=bottom_margin),
         hovermode='x unified',
         showlegend=show_legend,
     )
@@ -385,7 +388,17 @@ def apply_chart_layout(fig: go.Figure, title: str, ylabel: str, dates: pd.Series
         layout['legend'] = dict(orientation='h', yanchor='bottom', y=1.02,
                                 xanchor='right', x=1)
     fig.update_layout(**layout)
-    fig.update_xaxes(type='date', tickformat='%b %d', showgrid=False)
+    if len(unique_dates) > 0:
+        fig.update_xaxes(
+            type='date',
+            tickmode='array',
+            tickvals=unique_dates,
+            ticktext=[d.strftime('%b %d') for d in unique_dates],
+            tickangle=-45,
+            showgrid=False,
+        )
+    else:
+        fig.update_xaxes(type='date', tickformat='%b %d', showgrid=False)
     fig.update_yaxes(showgrid=True, gridcolor='#E8ECF0', gridwidth=1)
 
 
@@ -437,10 +450,12 @@ def plot_performance(performance: pd.DataFrame, test_config: PerformanceTest,
 
     fig = go.Figure()
     test_names = test_data['test_name'].unique()
+    plotted_dates = []
     for idx, test_name in enumerate(test_names):
         variant_data = aggregate_daily(
             test_data[test_data['test_name'] == test_name], 'avg_time', ['test_name']
         )
+        plotted_dates.append(variant_data['date'])
         if test_config.color and len(test_names) == 1:
             color = test_config.color
         else:
@@ -457,7 +472,8 @@ def plot_performance(performance: pd.DataFrame, test_config: PerformanceTest,
             marker=dict(size=6, color=color),
         ))
 
-    apply_chart_layout(fig, test_config.display_name, test_config.ylabel, test_data['date'])
+    chart_dates = pd.concat(plotted_dates, ignore_index=True) if plotted_dates else test_data['date']
+    apply_chart_layout(fig, test_config.display_name, test_config.ylabel, chart_dates)
     save_chart(fig, output_dir, test_config.graph_filename)
 
 
