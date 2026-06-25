@@ -16,10 +16,17 @@ pattern = "test_swap_loading_time"
 ylabel = "Load Time (ms)"
 
 [[tests]]
-test_id = "test_status_community_loading_time"
-display_name = "Community Screen Loading Time Performance"
-graph_filename = "community_loading_time.png"
-pattern = "test_status_community_loading_time"
+test_id = "test_status_community_first_open_loading_time"
+display_name = "Community Screen First Open Loading Time"
+graph_filename = "community_first_open_loading_time.png"
+pattern = "test_status_community_first_open_loading_time"
+ylabel = "Load Time (ms)"
+
+[[tests]]
+test_id = "test_status_community_second_open_loading_time"
+display_name = "Community Screen Second Open Loading Time"
+graph_filename = "community_second_open_loading_time.png"
+pattern = "test_status_community_second_open_loading_time"
 ylabel = "Load Time (ms)"
 
 [[tests]]

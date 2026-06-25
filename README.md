@@ -51,9 +51,15 @@ ylabel = "Load Time (ms)"
 </details>
 
 <details>
-<summary><b>Community Screen Loading Time Performance</b></summary>
+<summary><b>Community Screen First Open Loading Time</b></summary>
 
-![Community Screen Loading Time Performance](./docs/community_loading_time.png)
+![Community Screen First Open Loading Time](./docs/community_first_open_loading_time.png)
+</details>
+
+<details>
+<summary><b>Community Screen Second Open Loading Time</b></summary>
+
+![Community Screen Second Open Loading Time](./docs/community_second_open_loading_time.png)
 </details>
 
 <details>
