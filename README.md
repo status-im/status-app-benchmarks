@@ -1,11 +1,17 @@
 # Benchmark Results
+
 Automated test suite performance tracking for Windows platform.
 
+**[Live dashboard →](https://status-im.github.io/status-app-benchmarks/)**
+
+Interactive charts grouped by scenario (community, wallet, swap). Updated nightly by Jenkins.
+
 ## Adding new tests
+
 <details>
 <summary><b>How to add a new performance test</b></summary>
 
-1. Edit [`./scripts/tests_config.toml`](./scripts/tests_config.toml) and add:
+1. Edit [`./scripts/tests_config.toml`](./scripts/tests_config.toml):
 
 ```toml
 [[tests]]
@@ -13,60 +19,29 @@ test_id = "test_my_feature"
 display_name = "My Feature Loading Time Performance"
 graph_filename = "my_feature_loading_time.png"
 pattern = "test_my_feature"
-ylabel = "Load Time (ms)"
+ylabel = "Load Time (s)"
 ```
 
-2. Merge the change. Jenkins will pick up the new test on the next scheduled run — it generates PNG charts in `docs/` and updates the **Performance Tests** section in this README automatically.
+2. Add the test to a scenario page (or create a new one):
 
+```toml
+[[pages]]
+slug = "my-feature"
+title = "My Feature"
+description = "Short description shown on the dashboard."
+test_ids = ["test_my_feature"]
+```
 
+3. Merge the change. Jenkins runs `python scripts/benchmark.py graphs` on the next scheduled run — it writes PNG + interactive HTML charts to `docs/` and regenerates the GitHub Pages site.
+
+4. **One-time setup:** enable GitHub Pages in repo settings → **Build and deployment** → Source: **Deploy from a branch** → Branch: `master` / folder: **`/docs`**.
 
 </details>
 
-## Summary Metrics
+## Android benchmarks
 
-*All charts show data from the last 30 days.*
-
-<details>
-<summary><b>Total Test Suite Duration</b></summary>
-
-![Duration](./docs/total_duration.png)
-</details>
+See [`docs/android/README.md`](./docs/android/README.md) for mobile navigation response time charts.
 
 ---
 
-## Performance Tests
-
-<!-- performance-tests:start -->
-
-<details>
-<summary><b>Wallet Screen Loading Time Performance</b></summary>
-
-![Wallet Screen Loading Time Performance](./docs/wallet_loading_time.png)
-</details>
-
-<details>
-<summary><b>Swap Screen Loading Time Performance</b></summary>
-
-![Swap Screen Loading Time Performance](./docs/swap_loading_time.png)
-</details>
-
-<details>
-<summary><b>Community Screen First Open Loading Time</b></summary>
-
-![Community Screen First Open Loading Time](./docs/community_first_open_loading_time.png)
-</details>
-
-<details>
-<summary><b>Community Screen Second Open Loading Time</b></summary>
-
-![Community Screen Second Open Loading Time](./docs/community_second_open_loading_time.png)
-</details>
-
-<details>
-<summary><b>Wallet Assets Screen Loading Time Performance</b></summary>
-
-![Wallet Assets Screen Loading Time Performance](./docs/wallet_assets_loading_time.png)
-</details>
-<!-- performance-tests:end -->
-
----
+Raw CSV history: [`data/`](./data/)

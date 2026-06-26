@@ -1,45 +1,115 @@
 # Benchmark Configuration
 # Define all performance tests in this file
 
+# Scenario pages for the GitHub Pages dashboard (docs/index.html).
+# Each page groups related charts; test_ids must match test_id in [[tests]] / [[cpu_tests]] / [[ram_tests]].
+
+[[pages]]
+slug = "community-first-open"
+title = "Community — First Open"
+description = "Load time, CPU, and RAM when opening the Status community for the first time after login."
+test_ids = [
+    "test_status_community_first_open_loading_time",
+    "test_status_community_first_open_cpu",
+    "test_status_community_first_open_ram",
+]
+
+[[pages]]
+slug = "community-second-open"
+title = "Community — Second Open"
+description = "Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open."
+test_ids = [
+    "test_status_community_second_open_loading_time",
+    "test_status_community_second_open_cpu",
+    "test_status_community_second_open_ram",
+]
+
+[[pages]]
+slug = "wallet"
+title = "Wallet"
+description = "Wallet screen load time and per-account assets list load time."
+test_ids = [
+    "test_wallet_loading_time",
+    "test_wallet_assets_loading_time",
+]
+
+[[pages]]
+slug = "swap"
+title = "Swap"
+description = "Swap modal load time."
+test_ids = ["test_swap_loading_time"]
+
 [[tests]]
 test_id = "test_wallet_loading_time"
 display_name = "Wallet Screen Loading Time Performance"
 graph_filename = "wallet_loading_time.png"
 pattern = "test_wallet_loading_time"
-ylabel = "Load Time (ms)"
+ylabel = "Load Time (s)"
 
 [[tests]]
 test_id = "test_swap_loading_time"
 display_name = "Swap Screen Loading Time Performance"
 graph_filename = "swap_loading_time.png"
 pattern = "test_swap_loading_time"
-ylabel = "Load Time (ms)"
+ylabel = "Load Time (s)"
 
 [[tests]]
 test_id = "test_status_community_first_open_loading_time"
 display_name = "Community Screen First Open Loading Time"
 graph_filename = "community_first_open_loading_time.png"
 pattern = "test_status_community_first_open_loading_time"
-ylabel = "Load Time (ms)"
+ylabel = "Load Time (s)"
 
 [[tests]]
 test_id = "test_status_community_second_open_loading_time"
 display_name = "Community Screen Second Open Loading Time"
 graph_filename = "community_second_open_loading_time.png"
 pattern = "test_status_community_second_open_loading_time"
-ylabel = "Load Time (ms)"
+ylabel = "Load Time (s)"
 
 [[tests]]
 test_id = "test_wallet_assets_loading_time"
 display_name = "Wallet Assets Screen Loading Time Performance"
 graph_filename = "wallet_assets_loading_time.png"
 pattern = "test_wallet_assets_loading_time"
-ylabel = "Load Time (ms)"
+ylabel = "Load Time (s)"
 
-# Add new tests below:
+[[cpu_tests]]
+test_id = "test_status_community_first_open_cpu"
+display_name = "Community First Open CPU Usage"
+graph_filename = "community_first_open_cpu.png"
+pattern = "test_status_community_first_open_loading_time"
+attachment_keyword = "cpu usage"
+ylabel = "CPU Usage (%)"
+
+[[cpu_tests]]
+test_id = "test_status_community_second_open_cpu"
+display_name = "Community Second Open CPU Usage"
+graph_filename = "community_second_open_cpu.png"
+pattern = "test_status_community_second_open_loading_time"
+attachment_keyword = "cpu usage"
+ylabel = "CPU Usage (%)"
+
+[[ram_tests]]
+test_id = "test_status_community_first_open_ram"
+display_name = "Community First Open RAM Usage"
+graph_filename = "community_first_open_ram.png"
+pattern = "test_status_community_first_open_loading_time"
+attachment_keyword = "ram usage"
+ylabel = "RAM Usage (MB)"
+
+[[ram_tests]]
+test_id = "test_status_community_second_open_ram"
+display_name = "Community Second Open RAM Usage"
+graph_filename = "community_second_open_ram.png"
+pattern = "test_status_community_second_open_loading_time"
+attachment_keyword = "ram usage"
+ylabel = "RAM Usage (MB)"
+
+# Add new tests below, then add the test_id to a [[pages]] group (or create a new page):
 # [[tests]]
 # test_id = "test_my_new_feature_loading_time"
 # display_name = "My New Feature Loading Time Performance"
 # graph_filename = "my_new_feature_loading_time.png"
 # pattern = "test_my_new_feature_loading_time"
-# ylabel = "Load Time (ms)"
+# ylabel = "Load Time (s)"
