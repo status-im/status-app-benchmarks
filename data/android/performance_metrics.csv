@@ -350,3 +350,5 @@ e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_wallet_history_response_time,pa
 5f66deN,2026-06-20T12:00:00,SM-A366B,test_android_home_response_time,passed,response_time,s,0.072,0.099,0.084,0.083,6,6,"0.072,0.082,0.094,0.083,0.076,0.099"
 e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_communities_first_open,passed,response_time,s,1.174,1.174,1.174,1.174,1,1,1.174
 e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_market_first_open,passed,response_time,s,1.165,1.165,1.165,1.165,1,1,1.165
+e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_featured_community_open,passed,response_time,s,1.529,1.529,1.529,1.529,1,1,1.529
+e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_communities_directory_load,passed,response_time,s,17.1,17.1,17.1,17.1,1,1,17.1
