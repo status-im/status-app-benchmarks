@@ -345,3 +345,6 @@ e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_communities_response_time,passe
 e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.651,0.703,0.677,0.677,4,4,"0.703,0.651,0.703,0.651"
 e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.094,0.119,0.105,0.103,4,4,"0.094,0.11,0.095,0.119"
 e3c5d0,2026-06-29T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.083,0.097,0.089,0.088,4,4,"0.097,0.093,0.083,0.084"
+5f66deN,2026-06-20T12:00:00,SM-A366B,test_android_activity_center_response_time,passed,response_time,s,0.655,0.745,0.683,0.672,6,6,"0.656,0.745,0.655,0.664,0.68,0.7"
+760417N,2026-06-20T12:00:00,SM-A366B,test_android_home_response_time,passed,response_time,s,0.568,0.633,0.594,0.592,6,6,"0.633,0.603,0.576,0.593,0.591,0.568"
+5f66deN,2026-06-20T12:00:00,SM-A366B,test_android_home_response_time,passed,response_time,s,0.072,0.099,0.084,0.083,6,6,"0.072,0.082,0.094,0.083,0.076,0.099"
