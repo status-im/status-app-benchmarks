@@ -234,11 +234,14 @@ def plot_performance_mobile(performance, test, output_dir):
             # number (e.g. 2.2s vs 0.08s = +2600%).
             if w and w > 0.20 * scale:
                 d = round((yi / w - 1) * 100)
-                pct = f" ({'+' if d > 0 else ''}{d}%)"
+                pct = f"({'+' if d > 0 else ''}{d}%)"
             else:
                 pct = ""
-            ax.annotate(f"{_fmt(yi, test.unit)}{pct}", (xi, yi), textcoords='offset points',
+            ax.annotate(_fmt(yi, test.unit), (xi, yi), textcoords='offset points',
                         xytext=(0, 9), ha='center', fontsize=8, color='#d35400', fontweight='bold')
+            if pct:
+                ax.annotate(pct, (xi, yi), textcoords='offset points',
+                            xytext=(0, -12), ha='center', fontsize=7.5, color='#d35400')
         any_low = True   # first-open is single-shot
 
     def _short(h, is_base):
@@ -261,7 +264,7 @@ def plot_performance_mobile(performance, test, output_dir):
                 ha='center', va='bottom', fontsize=7, color='#999999')
 
     is_nav = 'navigation' in (test.display_name or '')
-    BAND = 0.08                          # "indistinguishable from 2.38.0" half-width (run-to-run noise)
+    BAND = 0.15                          # 2.38.0 normal-range half-width (matches the ±15% drift threshold)
     gv = data[(data['commit_hash'] == GA_BUILD) & (data['test_name'] == test.pattern)]
     lvl = float(gv[value_col].iloc[0]) * scale if len(gv) else None
 
@@ -269,9 +272,7 @@ def plot_performance_mobile(performance, test, output_dir):
     ymax = (data[value_col] * scale).max()
     if has_fo:
         ymax = max(ymax, (fo[value_col] * scale).max())
-    if is_nav:
-        ymax = max(ymax, 1.0 * scale)            # keep the 1.0s "slow" line in frame
-    elif test.target:
+    if test.target:                              # let fast surfaces breathe — scale to data; zones clip to top
         ymax = max(ymax, test.target)
     top = ymax * 1.35
     ax.set_ylim(0, top)
@@ -280,13 +281,13 @@ def plot_performance_mobile(performance, test, output_dir):
     # not a tens-of-seconds network load, where the 0.5/1.0s bands would be a vestigial sliver).
     show_zones = top <= 5.0 * scale
     if show_zones:
-        ax.axhspan(0, min(0.5 * scale, top), color='#27ae60', alpha=0.06, lw=0, zorder=0)
+        ax.axhspan(0, min(0.5 * scale, top), color='#27ae60', alpha=0.14, lw=0, zorder=0)
     if show_zones and top > 0.5 * scale:
-        ax.axhspan(0.5 * scale, min(1.0 * scale, top), color='#e67e22', alpha=0.06, lw=0, zorder=0)
+        ax.axhspan(0.5 * scale, min(1.0 * scale, top), color='#f1c40f', alpha=0.18, lw=0, zorder=0)
         ax.axhline(0.5 * scale, ls='--', lw=1, color='#1e8449', alpha=0.5)
         ax.text(len(xt) - 1, 0.5 * scale, ' 0.5s · fast', va='bottom', ha='right', fontsize=8, color='#1e8449')
     if show_zones and top > 1.0 * scale:
-        ax.axhspan(1.0 * scale, top, color='#c0392b', alpha=0.06, lw=0, zorder=0)
+        ax.axhspan(1.0 * scale, top, color='#c0392b', alpha=0.14, lw=0, zorder=0)
         ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.5)
         ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow', va='bottom', ha='right', fontsize=8, color='#c0392b')
 
@@ -299,7 +300,7 @@ def plot_performance_mobile(performance, test, output_dir):
                 va='bottom', ha='right', fontsize=8, color='#c0392b')
 
     if lvl is not None:                          # last-release reference level, over the zones / channel
-        ax.axhline(lvl, ls='--', lw=1, color='#333333', alpha=0.8, zorder=1)
+        ax.axhline(lvl, ls='-', lw=1.1, color='#333333', alpha=0.85, zorder=1)
         ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#333333')
     ax.grid(axis='y', alpha=0.3)
     ax.set_axisbelow(True)
@@ -313,11 +314,11 @@ def plot_performance_mobile(performance, test, output_dir):
                 ha='right', va='top', fontsize=7.5, color='#c0392b')
     parts = []
     if show_zones:
-        parts.append('zones = fast / ok / slow')
+        parts.append('zones: <0.5s fast · 0.5–1.0s ok · >1.0s slow')
     if (not is_nav) and lvl is not None:
-        parts.append('dotted = 2.38.0 ±8% (normal range)')
+        parts.append('dotted = 2.38.0 ±15% (normal range)')
     if parts:
-        ax.text(0.01, 0.03, '   ·   '.join(parts), transform=ax.transAxes, ha='left', va='bottom', fontsize=7.5, color='gray')
+        fig.text(0.5, 0.05, '   ·   '.join(parts), ha='center', va='bottom', fontsize=7.5, color='gray')
     if test.footnote:
         fig.text(0.5, 0.015, test.footnote, ha='center', fontsize=8, color='gray')
     fig.subplots_adjust(top=0.86, bottom=0.30)
