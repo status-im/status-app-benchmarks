@@ -2,7 +2,9 @@
 
 Automated test suite performance tracking for Windows platform.
 
-**[Live dashboard →](https://status-im.github.io/status-app-benchmarks/)**
+**Desktop charts (no GitHub Pages needed):** [docs/desktop/README.md](./docs/desktop/README.md)
+
+**[Interactive dashboard →](https://status-im.github.io/status-app-benchmarks/desktop/)** (requires GitHub Pages — enable in repo Settings → Pages → `master` / `/docs`)
 
 Interactive charts grouped by scenario (community, wallet, swap). Updated nightly by Jenkins.
 
@@ -32,7 +34,7 @@ description = "Short description shown on the dashboard."
 test_ids = ["test_my_feature"]
 ```
 
-3. Merge the change. Jenkins runs `python scripts/benchmark.py graphs` on the next scheduled run — it writes PNG + interactive HTML charts to `docs/` and regenerates the GitHub Pages site.
+3. Merge the change. Jenkins runs `python scripts/benchmark.py graphs` on the next scheduled run — it writes PNG + interactive HTML charts to `docs/desktop/` and regenerates the GitHub Pages site.
 
 4. **One-time setup:** enable GitHub Pages in repo settings → **Build and deployment** → Source: **Deploy from a branch** → Branch: `master` / folder: **`/docs`**.
 

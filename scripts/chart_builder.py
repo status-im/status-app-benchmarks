@@ -32,10 +32,7 @@ def aggregate_by_build(
 ) -> pd.DataFrame:
     keys = ['commit_hash', 'date', *(group_cols or [])]
     aggregated = df.groupby(keys, as_index=False)[value_col].mean().sort_values('date')
-    aggregated['commit_short'] = aggregated['commit_hash'].astype(str).str[:7]
-    aggregated['tick_label'] = (
-        aggregated['date'].dt.strftime('%b %d') + '<br>' + aggregated['commit_short']
-    )
+    aggregated['tick_label'] = aggregated['date'].dt.strftime('%b %d')
     return aggregated
 
 
@@ -48,10 +45,17 @@ def _hover_template(trace_name: str, ylabel: str, *, value_format: str = '.3f') 
     return (
         f'<b>{trace_name}</b><br>'
         'Date: %{x|%b %d, %Y %H:%M}<br>'
-        'Commit: %{customdata[0]}<br>'
+        'Commit: %{customdata}<br>'
         f'{ylabel}: %{{y:{value_format}}}'
         '<extra></extra>'
     )
+
+
+def _axis_ticks(axis_points: pd.DataFrame) -> pd.DataFrame:
+    """One x-axis tick per calendar day (dates only — commit hash is on hover)."""
+    ticks = axis_points.sort_values('date').copy()
+    ticks['day'] = ticks['date'].dt.normalize()
+    return ticks.drop_duplicates('day', keep='last')
 
 
 def _format_date_range(dates: pd.Series) -> str:
@@ -60,15 +64,15 @@ def _format_date_range(dates: pd.Series) -> str:
 
 def _apply_layout(fig: go.Figure, title: str, ylabel: str, axis_points: pd.DataFrame, *, show_legend: bool):
     dates = axis_points['date']
-    ticks = axis_points.sort_values('date').drop_duplicates(subset=['date', 'commit_hash'])
+    ticks = _axis_ticks(axis_points)
     layout = dict(
         template='plotly_white',
         title=dict(text=f'{title}<br><sup>{_format_date_range(dates)}</sup>', x=0.05, xanchor='left'),
-        xaxis_title='Build (date · commit)',
+        xaxis_title='Build date',
         yaxis_title=ylabel,
         width=CHART_WIDTH,
         height=CHART_HEIGHT,
-        margin=dict(l=60, r=40, t=80, b=max(90, min(180, 55 + len(ticks) * 4))),
+        margin=dict(l=60, r=40, t=80, b=max(70, min(120, 50 + len(ticks) * 3))),
         hovermode='closest',
         showlegend=show_legend,
     )
@@ -107,7 +111,7 @@ def _add_build_trace(
         name=name,
         line=dict(color=color, width=2.5),
         marker=dict(size=6, color=color),
-        customdata=points['commit_hash'],
+        customdata=points['commit_hash'].astype(str),
         hovertemplate=_hover_template(name, ylabel, value_format=value_format),
     )
     if fill:
