@@ -16,7 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
 from chart_builder import build_duration_figure, cleanup_stale_charts, render_chart, save_chart_assets
-from site_generator import write_site
+from site_generator import write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
 
@@ -206,6 +206,7 @@ def generate_graphs(data_dir: Path, output_dir: Path):
 
     print('\nGenerating GitHub Pages site...')
     write_site(output_dir, CONFIG.pages, charts_by_test_id, summary_chart_path=summary_chart_path)
+    write_docs_root_index(output_dir.parent)
     print(f'\nDone: {output_dir.absolute()}')
 
 
@@ -247,7 +248,7 @@ def main():
 
     graphs_parser = subparsers.add_parser('graphs', help='Generate charts and GitHub Pages site')
     graphs_parser.add_argument('--data-dir', type=Path, default=Path('data'))
-    graphs_parser.add_argument('--output-dir', type=Path, default=Path('docs'))
+    graphs_parser.add_argument('--output-dir', type=Path, default=Path('docs/desktop'))
     graphs_parser.set_defaults(func=cmd_graphs)
 
     subparsers.add_parser('list-tests', help='List configured charts and pages').set_defaults(func=cmd_list_tests)

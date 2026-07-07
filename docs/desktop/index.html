@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Status App Benchmarks</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #1f2328;
+      --muted: #656d76;
+      --border: #d0d7de;
+      --link: #0969da;
+      --header-bg: #24292f;
+      --header-text: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --border: #30363d;
+        --link: #58a6ff;
+        --header-bg: #010409;
+        --header-text: #e6edf3;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1.25rem 1.5rem;
+    }
+    header a { color: var(--header-text); text-decoration: none; }
+    header a:hover { text-decoration: underline; }
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: var(--link); }
+    .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    section.chart {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    section.chart h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    section.chart iframe {
+      width: 100%;
+      height: 540px;
+      border: 0;
+      border-radius: 4px;
+      background: #fff;
+    }
+    .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
+    nav.back { margin-bottom: 1rem; }
+    nav.back a { color: var(--link); text-decoration: none; }
+    nav.back a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+  <header><a href="index.html">Status App Benchmarks</a></header>
+  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Performance metrics from the last 30 days. Each point is one nightly run — x-axis shows build date; hover a point for commit hash.</p><section class="chart"><h2>Total Test Suite Duration</h2><iframe src="charts/total_duration.html" title="Interactive chart" loading="lazy"></iframe></section><h2 style="margin-top:2rem">Scenarios</h2><div class="grid"><a class="card" href="community-first-open.html"><h2>Community — First Open</h2><p>Load time, CPU, and RAM when opening the Status community for the first time after login.</p></a><a class="card" href="community-second-open.html"><h2>Community — Second Open</h2><p>Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open.</p></a><a class="card" href="wallet.html"><h2>Wallet</h2><p>Wallet screen load time and per-account assets list load time.</p></a><a class="card" href="swap.html"><h2>Swap</h2><p>Swap modal load time.</p></a></div><p class="note">Raw CSV history lives in the repository <code>data/</code> folder. PNG charts on GitHub: <a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/README.md">docs/desktop/README.md</a>.</p></main>
+</body>
+</html>

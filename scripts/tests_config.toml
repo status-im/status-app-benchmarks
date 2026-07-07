@@ -1,7 +1,7 @@
 # Benchmark Configuration
 # Define all performance tests in this file
 
-# Scenario pages for the GitHub Pages dashboard (docs/index.html).
+# Scenario pages for the GitHub Pages dashboard (docs/desktop/index.html).
 # Each page groups related charts; test_ids must match test_id in [[tests]] / [[cpu_tests]] / [[ram_tests]].
 
 [[pages]]
