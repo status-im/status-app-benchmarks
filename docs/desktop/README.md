@@ -19,12 +19,16 @@ Full CSV history: [`data/`](../../data/).
 Load time, CPU, and RAM when opening the Status community for the first time after login.
 
 ![Community Screen First Open Loading Time](./community_first_open_loading_time.png)
+![Community First Open CPU Usage](./community_first_open_cpu.png)
+![Community First Open RAM Usage](./community_first_open_ram.png)
 
 ## Community — Second Open
 
 Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open.
 
 ![Community Screen Second Open Loading Time](./community_second_open_loading_time.png)
+![Community Second Open CPU Usage](./community_second_open_cpu.png)
+![Community Second Open RAM Usage](./community_second_open_ram.png)
 
 ## Wallet
 

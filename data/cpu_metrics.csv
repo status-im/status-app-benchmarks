@@ -1,0 +1,3 @@
+commit_hash,date,test_name,metric_id,status,min_cpu,max_cpu,avg_cpu,run_count,all_runs
+54ab4baeb,2026-07-07T06:14:52,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu,passed,0.0,0.0,0.0,1,0.0
+54ab4baeb,2026-07-07T06:14:52,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_cpu,passed,0.0,0.0,0.0,5,"0.0,0.0,0.0,0.0,0.0"

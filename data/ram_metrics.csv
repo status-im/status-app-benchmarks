@@ -1,0 +1,3 @@
+commit_hash,date,test_name,metric_id,status,min_ram_mb,max_ram_mb,avg_ram_mb,run_count,all_runs
+54ab4baeb,2026-07-07T06:14:52,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,815.457,815.457,815.457,1,815.457
+54ab4baeb,2026-07-07T06:14:52,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,836.684,912.477,878.885,5,"836.684,859.706,912.477,878.067,907.491"
