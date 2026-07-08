@@ -3,3 +3,5 @@ commit_hash,date,test_name,metric_id,status,min_ram_mb,max_ram_mb,avg_ram_mb,run
 54ab4baeb,2026-07-07T06:14:52,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,836.684,912.477,878.885,5,"836.684,859.706,912.477,878.067,907.491"
 8871642d2,2026-07-07T08:45:37,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,769.492,769.492,769.492,1,769.492
 8871642d2,2026-07-07T08:45:37,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,840.165,1052.739,997.881,5,"840.165,1004.453,1045.462,1052.739,1046.584"
+d39309cca,2026-07-08T05:20:26,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,907.928,907.928,907.928,1,907.928
+d39309cca,2026-07-08T05:20:26,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,900.779,1112.64,1027.092,5,"900.779,1081.653,1112.64,1035.819,1004.569"
