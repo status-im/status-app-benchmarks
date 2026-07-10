@@ -126,7 +126,7 @@ def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> 
     charts_dir.mkdir(parents=True, exist_ok=True)
     html_filename = Path(graph_filename).with_suffix('.html').name
     fig.write_image(output_dir / graph_filename, scale=CHART_SCALE)
-    fig.write_html(charts_dir / html_filename, include_plotlyjs='cdn', full_html=True)
+    fig.write_html(charts_dir / html_filename, include_plotlyjs='directory', full_html=True)
     print(f'Generated {graph_filename} and charts/{html_filename}')
     return html_filename
 
