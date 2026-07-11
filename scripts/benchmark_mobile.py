@@ -46,6 +46,8 @@ class PerformanceTest:
     footnote: str = ""
     target: Optional[float] = None
     band: bool = False        # shade a +/-15% normal range behind the line
+    series: str = "response_time"
+    device: str = ""
 
 
 def load_config(config_file: Path) -> List[PerformanceTest]:
@@ -60,7 +62,8 @@ def load_config(config_file: Path) -> List[PerformanceTest]:
             unit=tc.get('unit', 'ms'), metric=tc.get('metric', 'avg'),
             x_axis=tc.get('x_axis', 'date'), description=tc.get('description', ''),
             footnote=tc.get('footnote', ''), target=tc.get('target'),
-            band=tc.get('band', False)))
+            band=tc.get('band', False), series=tc.get('series', 'response_time'),
+            device=tc.get('device', '')))
     return tests
 
 
@@ -130,7 +133,11 @@ def _os_boundary_indices(order):
 
 
 def _fmt(v, unit):
-    return f"{v:.2f}s" if unit == 's' else f"{v:.0f} ms"
+    if unit == 's':
+        return f"{v:.2f}s"
+    if unit == 'ms':
+        return f"{v:.0f} ms"
+    return f"{v:.1f} {unit}" if v < 10 else f"{v:.0f} {unit}"
 
 
 def plot_performance_mobile(performance, test, output_dir):
@@ -144,7 +151,9 @@ def plot_performance_mobile(performance, test, output_dir):
         performance['test_name'].str.startswith(test.pattern + '[', na=False)
     data = performance[name_match].copy()
     if 'metric' in data.columns:
-        data = data[data['metric'] == 'response_time']
+        data = data[data['metric'] == test.series]
+    if test.device and 'device' in data.columns:
+        data = data[data['device'] == test.device]
     excluded = _excluded_builds()
     if excluded:
         data = data[~data['commit_hash'].isin(excluded)]
@@ -154,8 +163,8 @@ def plot_performance_mobile(performance, test, output_dir):
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
-    value_col = "min_time" if test.metric == "min" else "median_time"
-    scale = 1.0 if test.unit == 's' else 1000.0
+    value_col = {"min": "min_time", "mean": "avg_time"}.get(test.metric, "median_time")
+    scale = 1000.0 if test.unit == 'ms' else 1.0
     labels = _build_labels()
 
     # Pin the two release baselines as fixed LEFT columns, then up to MAX_RECENT recent builds by
@@ -279,7 +288,7 @@ def plot_performance_mobile(performance, test, output_dir):
 
     # speed zones, clipped to the y-axis — only where they're meaningful (a nav-scale response,
     # not a tens-of-seconds network load, where the 0.5/1.0s bands would be a vestigial sliver).
-    show_zones = top <= 5.0 * scale
+    show_zones = test.series == "response_time" and top <= 5.0 * scale
     if show_zones:
         ax.axhspan(0, min(0.5 * scale, top), color='#27ae60', alpha=0.14, lw=0, zorder=0)
     if show_zones and top > 0.5 * scale:

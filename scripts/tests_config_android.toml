@@ -497,3 +497,33 @@ unit = "s"
 x_axis = "build"
 description = "Time from tapping Home until the home screen is drawn  ·  lower is better"
 footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (opens within a single screenshot, the ~0.06–0.1 s floor — read as within one frame, not a precise latency)"
+# --- #21248 resource lane (CPU/RAM at rest, pinned settled account, Moto G55) ---
+# These series come from resource-nightly.sh (Moto), NOT the A36 response-time run.
+# Regime: at rest on the post-login landing screen (foreground, screen on).
+
+[[tests]]
+test_id = "android_resource_ram"
+display_name = "Android — RAM at rest, by process (PSS)"
+graph_filename = "android_resource_ram.png"
+pattern = "test_android_resource_pss"
+series = "pss_mb"
+device = "moto_g55_5G"
+ylabel = "MB"
+unit = "MB"
+x_axis = "build"
+description = "Moto G55 · pinned settled account · committed memory per process (incl. swapped pages) · lower is better"
+footnote = "At rest on the post-login landing screen · account ages slowly; re-anchored on OS update or account reset · committed PSS via dumpsys meminfo, median of 3 reads · per-build line cannot detect per-navigation UI leaks · provisional until a night-to-night spread exists"
+
+[[tests]]
+test_id = "android_resource_cpu"
+display_name = "Android — CPU at rest, by process"
+graph_filename = "android_resource_cpu.png"
+pattern = "test_android_resource_cpu"
+series = "cpu_pct"
+device = "moto_g55_5G"
+metric = "mean"
+ylabel = "CPU %"
+unit = "%"
+x_axis = "build"
+description = "Moto G55 · pinned settled account · mean CPU over a 5-min idle foreground window · lower is better"
+footnote = "At rest on the post-login landing screen · /proc tick deltas, nominal 3 s interval (true cadence = interval + adb RTT; CPU deltas use measured dt) · device CLK_TCK · window mean (at-rest median quantizes to 0) · provisional until a night-to-night spread exists"
