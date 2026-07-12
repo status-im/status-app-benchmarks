@@ -527,3 +527,31 @@ unit = "%"
 x_axis = "build"
 description = "Moto G55 · pinned settled account · mean CPU over a 5-min idle foreground window · lower is better"
 footnote = "At rest on the post-login landing screen · /proc tick deltas, nominal 3 s interval (true cadence = interval + adb RTT; CPU deltas use measured dt) · device CLK_TCK · window mean (at-rest median quantizes to 0) · provisional until a night-to-night spread exists"
+
+# --- #21248 power/network window (adjacent 10-min counted-fields window after the CPU/RAM measure, Moto G55) ---
+
+[[tests]]
+test_id = "android_resource_net"
+display_name = "Android — network at rest (app, per 10-min window)"
+graph_filename = "android_resource_net.png"
+pattern = "test_android_resource_net"
+series = "net_mb"
+device = "moto_g55_5G"
+ylabel = "MB per window"
+unit = "MB"
+x_axis = "build"
+description = "Moto G55 · pinned settled account · per-app Wi-Fi bytes over a 10-min at-rest window · lower is better"
+footnote = "Measured in a separate window right after the CPU/RAM measure (device reports itself on battery so per-app counters accrue) · Waku Light mode, pinned account · background sync traffic dominates — treat single-night moves as noise · provisional until a night-to-night spread exists"
+
+[[tests]]
+test_id = "android_resource_power"
+display_name = "Android — modeled battery use at rest (app, per 10-min window)"
+graph_filename = "android_resource_power.png"
+pattern = "test_android_resource_power"
+series = "power_mah"
+device = "moto_g55_5G"
+ylabel = "mAh per window"
+unit = "mAh"
+x_axis = "build"
+description = "Moto G55 · pinned settled account · Android-modeled per-app battery use over a 10-min at-rest window · lower is better"
+footnote = "MODELED estimate from Android batterystats — a rough attribution, not measured energy; read as a per-build trend only · screen share dominates and is constant for this regime · provisional until a night-to-night spread exists"
