@@ -15,3 +15,5 @@ a23910395,2026-07-10T12:17:51,test_status_community_second_open_loading_time[use
 80e7c0203,2026-07-11T05:20:46,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,804.334,918.216,859.402,5,"804.334,827.077,837.217,910.167,918.216"
 80e7c0203,2026-07-12T05:16:08,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,1050.022,1163.99,1129.917,5,"1050.022,1163.541,1150.657,1163.99,1121.376"
 80e7c0203,2026-07-12T05:16:08,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,802.938,802.938,802.938,1,802.938
+80e7c0203,2026-07-13T05:15:22,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,803.724,981.673,889.462,5,"803.724,848.978,889.393,923.544,981.673"
+80e7c0203,2026-07-13T05:15:22,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,746.705,746.705,746.705,1,746.705
