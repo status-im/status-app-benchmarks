@@ -19,3 +19,5 @@ a23910395,2026-07-10T12:17:51,test_status_community_second_open_loading_time[use
 80e7c0203,2026-07-13T05:15:22,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,746.705,746.705,746.705,1,746.705
 9fc679ad3,2026-07-13T10:14:59,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,747.602,747.602,747.602,1,747.602
 9fc679ad3,2026-07-13T10:14:59,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,818.569,890.542,853.137,5,"823.796,818.569,859.615,873.163,890.542"
+3ae7c370c,2026-07-13T12:35:40,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram,passed,789.06,789.06,789.06,1,789.06
+3ae7c370c,2026-07-13T12:35:40,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram,passed,914.649,1147.437,1039.785,5,"914.649,985.97,1035.648,1115.221,1147.437"
