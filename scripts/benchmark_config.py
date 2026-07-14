@@ -10,6 +10,7 @@ import tomli as tomllib
 
 CHART_WINDOW_DAYS = 30
 DEFAULT_CONFIG = Path('scripts/tests_config.toml')
+LOAD_TIME_FOOTNOTE = 'Each point = average of runs on that build.'
 
 MetricsKind = Literal['performance', 'cpu', 'ram']
 
@@ -25,6 +26,7 @@ class ChartTest:
     metrics_kind: MetricsKind
     attachment_keyword: str
     color: Optional[str] = None
+    footnote: str = ''
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,7 @@ class BenchmarkPage:
 class ChartEntry:
     display_name: str
     html_filename: str
+    footnote: str = ''
 
 
 @dataclass(frozen=True)
@@ -60,6 +63,7 @@ def _load_chart_tests(
     value_column: str,
     default_ylabel: str,
     default_attachment_keyword: str,
+    default_footnote: str = '',
 ) -> list[ChartTest]:
     charts = []
     for entry in entries:
@@ -74,10 +78,11 @@ def _load_chart_tests(
             graph_filename=entry['graph_filename'],
             pattern=entry['pattern'],
             ylabel=entry.get('ylabel', default_ylabel),
-            value_column=value_column,
+            value_column=entry.get('value_column', value_column),
             metrics_kind=metrics_kind,
             attachment_keyword=entry.get('attachment_keyword', default_attachment_keyword),
             color=entry.get('color'),
+            footnote=entry.get('footnote', default_footnote),
         ))
     return charts
 
@@ -108,6 +113,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
         value_column='avg_time',
         default_ylabel='Load Time (s)',
         default_attachment_keyword='load time',
+        default_footnote=LOAD_TIME_FOOTNOTE,
     )
     if not load_time_tests:
         raise ValueError(f'No [[tests]] sections found in {config_file}')

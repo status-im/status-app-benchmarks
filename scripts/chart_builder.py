@@ -117,7 +117,6 @@ def _add_build_trace(
     if fill:
         trace_kwargs['fill'] = 'tozeroy'
         trace_kwargs['fillcolor'] = DURATION_FILL
-        trace_kwargs['showlegend'] = False
     fig.add_trace(go.Scatter(**trace_kwargs))
 
 
@@ -151,13 +150,16 @@ def build_duration_figure(summary: pd.DataFrame) -> Optional[go.Figure]:
 def build_chart_figure(chart: ChartTest, metrics: pd.DataFrame) -> Optional[go.Figure]:
     filtered = filter_recent(metrics)
     test_data = filtered[match_test_pattern(filtered['test_name'], chart.pattern)].copy()
+
     if test_data.empty:
         print(f'Warning: No data for {chart.test_id} in the last {CHART_WINDOW_DAYS} days')
         return None
 
     fig = go.Figure()
-    test_names = test_data['test_name'].unique()
     axis_points = []
+    test_names = test_data['test_name'].unique()
+    value_format = '.2f' if chart.metrics_kind == 'performance' else '.3f'
+
     for index, test_name in enumerate(test_names):
         variant = aggregate_by_build(
             test_data[test_data['test_name'] == test_name],
@@ -170,9 +172,15 @@ def build_chart_figure(chart: ChartTest, metrics: pd.DataFrame) -> Optional[go.F
             chart.color if chart.color and len(test_names) == 1
             else PERFORMANCE_COLORS[index % len(PERFORMANCE_COLORS)]
         )
-        _add_build_trace(fig, variant, chart.value_column, name=param_name, ylabel=chart.ylabel, color=color)
+        _add_build_trace(
+            fig, variant, chart.value_column, name=param_name, ylabel=chart.ylabel,
+            color=color, value_format=value_format,
+        )
 
-    _apply_layout(fig, chart.display_name, chart.ylabel, pd.concat(axis_points, ignore_index=True), show_legend=True)
+    _apply_layout(
+        fig, chart.display_name, chart.ylabel, pd.concat(axis_points, ignore_index=True),
+        show_legend=len(test_names) > 1,
+    )
     return fig
 
 
@@ -181,7 +189,11 @@ def render_chart(chart: ChartTest, metrics: pd.DataFrame, output_dir: Path) -> O
     if fig is None:
         return None
     html_filename = save_chart_assets(fig, output_dir, chart.graph_filename)
-    return ChartEntry(display_name=chart.display_name, html_filename=html_filename)
+    return ChartEntry(
+        display_name=chart.display_name,
+        html_filename=html_filename,
+        footnote=chart.footnote,
+    )
 
 
 def cleanup_stale_charts(output_dir: Path, graph_filenames: Iterable[str]):
