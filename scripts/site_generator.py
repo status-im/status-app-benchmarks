@@ -95,6 +95,7 @@ def _page_styles() -> str:
       border: 0;
       border-radius: 4px;
       background: #fff;
+      display: block;
     }
     .chart-footnote {
       color: var(--muted);
