@@ -16,7 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
 from chart_builder import build_duration_figure, cleanup_stale_charts, render_chart, save_chart_assets
-from environment_parser import RUN_ENVIRONMENT_CSV, RUN_ENVIRONMENT_FIELDS, load_run_environment, parse_machine_info
+from environment_parser import load_run_environment, record_run_environment
 from site_generator import write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
@@ -172,16 +172,9 @@ def process_benchmark_run(
             'all_runs': row['all_runs'],
         } for row in results])
 
-    machine_info = parse_machine_info(machine_info_file)
-    if machine_info:
-        _append_csv_rows(data_dir, RUN_ENVIRONMENT_CSV, [
-            'commit_hash', 'date', *RUN_ENVIRONMENT_FIELDS,
-        ], [{
-            'commit_hash': commit_hash,
-            'date': date,
-            **{field: machine_info.get(field, '') for field in RUN_ENVIRONMENT_FIELDS},
-        }])
-        print('Recorded machine info for this run')
+    record_run_environment(
+        data_dir, commit_hash, date, machine_info_file=machine_info_file,
+    )
 
     print(f"Processed {aggregate['total_tests']} tests")
     if performance_results:
