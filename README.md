@@ -10,14 +10,14 @@ Interactive charts grouped by scenario (community, wallet, swap). Updated nightl
 
 ## System info (desktop)
 
-Nightly runs can record the Windows host (hostname, OS, CPU, RAM) for the dashboard **System info** block. On the benchmark machine:
+Nightly Jenkins runs collect Windows host metadata and pass it to `benchmark.py parse` via `--machine-info`. The dashboard **System info** block reads from `data/run_environment.csv`.
 
 ```powershell
 powershell -File scripts/collect_machine_info.ps1 -OutputPath machine_info.json
 python scripts/benchmark.py parse --benchmark-dir <dir> --commit-hash <hash> --date <iso-date> --machine-info machine_info.json
 ```
 
-See [`scripts/machine_info.example.json`](./scripts/machine_info.example.json) for the JSON shape. Data is appended to `data/run_environment.csv`.
+See [`scripts/machine_info.example.json`](./scripts/machine_info.example.json) for the JSON shape. Wired in `status-app/scripts/push_benchmark.sh`.
 
 ## Adding new tests
 
