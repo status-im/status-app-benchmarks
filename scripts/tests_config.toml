@@ -66,6 +66,7 @@ display_name = "Community Screen Second Open Loading Time"
 graph_filename = "community_second_open_loading_time.png"
 pattern = "test_status_community_second_open_loading_time"
 ylabel = "Load Time (s)"
+show_run_spread = true
 
 [[tests]]
 test_id = "test_wallet_assets_loading_time"
@@ -89,6 +90,7 @@ graph_filename = "community_second_open_cpu.png"
 pattern = "test_status_community_second_open_loading_time"
 attachment_keyword = "cpu usage"
 ylabel = "CPU Usage (%)"
+show_run_spread = true
 
 [[ram_tests]]
 test_id = "test_status_community_first_open_ram"
@@ -105,6 +107,7 @@ graph_filename = "community_second_open_ram.png"
 pattern = "test_status_community_second_open_loading_time"
 attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
+show_run_spread = true
 
 # Add new tests below, then add the test_id to a [[pages]] group (or create a new page):
 # [[tests]]

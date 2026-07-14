@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -14,6 +14,12 @@ from benchmark_config import CHART_WINDOW_DAYS, ChartEntry, ChartTest
 DURATION_COLOR = '#54A0FF'
 DURATION_FILL = 'rgba(84, 160, 255, 0.08)'
 PERFORMANCE_COLORS = ['#10AC84', '#2E86DE', '#F79F1F', '#54A0FF']
+
+SPREAD_COLUMNS = {
+    'performance': ('avg_time', 'min_time', 'max_time'),
+    'cpu': ('avg_cpu', 'min_cpu', 'max_cpu'),
+    'ram': ('avg_ram_mb', 'min_ram_mb', 'max_ram_mb'),
+}
 
 CHART_WIDTH = 1200
 CHART_HEIGHT = 500
@@ -25,15 +31,45 @@ def filter_recent(df: pd.DataFrame, days: int = CHART_WINDOW_DAYS) -> pd.DataFra
     return df[df['date'] >= cutoff].copy()
 
 
+def _join_runs(series: pd.Series) -> str:
+    values = []
+    for item in series.dropna():
+        values.extend(str(item).split(','))
+    return ', '.join(values)
+
+
 def aggregate_by_build(
     df: pd.DataFrame,
     value_col: str,
     group_cols: Optional[List[str]] = None,
+    *,
+    spread_cols: Optional[Tuple[str, str]] = None,
 ) -> pd.DataFrame:
     keys = ['commit_hash', 'date', *(group_cols or [])]
-    aggregated = df.groupby(keys, as_index=False)[value_col].mean().sort_values('date')
+    if spread_cols:
+        min_col, max_col = spread_cols
+        aggregated = df.groupby(keys, as_index=False).agg(
+            **{
+                value_col: (value_col, 'mean'),
+                min_col: (min_col, 'min'),
+                max_col: (max_col, 'max'),
+                'all_runs': ('all_runs', _join_runs),
+                'run_count': ('run_count', 'max'),
+            }
+        )
+    else:
+        aggregated = df.groupby(keys, as_index=False)[value_col].mean()
+    aggregated = aggregated.sort_values('date')
     aggregated['tick_label'] = aggregated['date'].dt.strftime('%b %d')
     return aggregated
+
+
+def _hex_to_rgba(hex_color: str, alpha: float) -> str:
+    color = hex_color.lstrip('#')
+    if len(color) != 6:
+        return f'rgba(46, 134, 222, {alpha})'
+    red, green, blue = (int(color[index:index + 2], 16) for index in (0, 2, 4))
+    return f'rgba({red}, {green}, {blue}, {alpha})'
 
 
 def match_test_pattern(series: pd.Series, pattern: str) -> pd.Series:
@@ -47,6 +83,19 @@ def _hover_template(trace_name: str, ylabel: str, *, value_format: str = '.3f') 
         'Date: %{x|%b %d, %Y %H:%M}<br>'
         'Commit: %{customdata}<br>'
         f'{ylabel}: %{{y:{value_format}}}'
+        '<extra></extra>'
+    )
+
+
+def _spread_hover_template(ylabel: str, value_format: str) -> str:
+    return (
+        f'<b>%{{fullData.name}}</b><br>'
+        'Date: %{x|%b %d, %Y %H:%M}<br>'
+        'Commit: %{customdata[0]}<br>'
+        f'Average {ylabel}: %{{y:{value_format}}}<br>'
+        f'Min {ylabel}: %{{customdata[1]:{value_format}}}<br>'
+        f'Max {ylabel}: %{{customdata[2]:{value_format}}}<br>'
+        'Runs (%{customdata[3]}): %{customdata[4]}'
         '<extra></extra>'
     )
 
@@ -103,7 +152,31 @@ def _add_build_trace(
     color: str,
     value_format: str = '.3f',
     fill: bool = False,
+    spread_cols: Optional[Tuple[str, str]] = None,
 ):
+    if spread_cols:
+        min_col, max_col = spread_cols
+        fill_color = _hex_to_rgba(color, 0.18)
+        fig.add_trace(go.Scatter(
+            x=points['date'], y=points[max_col], mode='lines', line=dict(width=0),
+            showlegend=False, hoverinfo='skip',
+        ))
+        fig.add_trace(go.Scatter(
+            x=points['date'], y=points[min_col], mode='lines', line=dict(width=0),
+            fill='tonexty', fillcolor=fill_color, showlegend=False, hoverinfo='skip',
+        ))
+        customdata = list(zip(
+            points['commit_hash'].astype(str),
+            points[min_col],
+            points[max_col],
+            points['run_count'].fillna(0).astype(int),
+            points['all_runs'].fillna('').astype(str),
+        ))
+        hovertemplate = _spread_hover_template(ylabel, value_format)
+    else:
+        customdata = points['commit_hash'].astype(str)
+        hovertemplate = _hover_template(name, ylabel, value_format=value_format)
+
     trace_kwargs = dict(
         x=points['date'],
         y=points[value_col],
@@ -111,8 +184,8 @@ def _add_build_trace(
         name=name,
         line=dict(color=color, width=2.5),
         marker=dict(size=6, color=color),
-        customdata=points['commit_hash'].astype(str),
-        hovertemplate=_hover_template(name, ylabel, value_format=value_format),
+        customdata=customdata,
+        hovertemplate=hovertemplate,
     )
     if fill:
         trace_kwargs['fill'] = 'tozeroy'
@@ -125,7 +198,17 @@ def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> 
     charts_dir.mkdir(parents=True, exist_ok=True)
     html_filename = Path(graph_filename).with_suffix('.html').name
     fig.write_image(output_dir / graph_filename, scale=CHART_SCALE)
-    fig.write_html(charts_dir / html_filename, include_plotlyjs='directory', full_html=True)
+
+    html_fig = go.Figure(fig)
+    html_fig.update_layout(autosize=True, width=None, height=CHART_HEIGHT)
+    html_fig.write_html(
+        charts_dir / html_filename,
+        include_plotlyjs='directory',
+        full_html=True,
+        config={'responsive': True},
+        default_width='100%',
+        default_height='100%',
+    )
     print(f'Generated {graph_filename} and charts/{html_filename}')
     return html_filename
 
@@ -155,26 +238,31 @@ def build_chart_figure(chart: ChartTest, metrics: pd.DataFrame) -> Optional[go.F
         print(f'Warning: No data for {chart.test_id} in the last {CHART_WINDOW_DAYS} days')
         return None
 
+    spread_cols = None
+    value_col = chart.value_column
+    if chart.show_run_spread:
+        columns = SPREAD_COLUMNS.get(chart.metrics_kind)
+        if columns:
+            value_col, min_col, max_col = columns
+            spread_cols = (min_col, max_col)
+
     fig = go.Figure()
     axis_points = []
     test_names = test_data['test_name'].unique()
     value_format = '.2f' if chart.metrics_kind == 'performance' else '.3f'
 
     for index, test_name in enumerate(test_names):
-        variant = aggregate_by_build(
-            test_data[test_data['test_name'] == test_name],
-            chart.value_column,
-            ['test_name'],
-        )
-        axis_points.append(variant)
+        variant_data = test_data[test_data['test_name'] == test_name]
         param_name = test_name.split('[')[1].split(']')[0] if '[' in test_name else 'default'
         color = (
             chart.color if chart.color and len(test_names) == 1
             else PERFORMANCE_COLORS[index % len(PERFORMANCE_COLORS)]
         )
+        variant = aggregate_by_build(variant_data, value_col, ['test_name'], spread_cols=spread_cols)
+        axis_points.append(variant)
         _add_build_trace(
-            fig, variant, chart.value_column, name=param_name, ylabel=chart.ylabel,
-            color=color, value_format=value_format,
+            fig, variant, value_col, name=param_name, ylabel=chart.ylabel,
+            color=color, value_format=value_format, spread_cols=spread_cols,
         )
 
     _apply_layout(

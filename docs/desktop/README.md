@@ -33,10 +33,14 @@ Load time, CPU, and RAM when opening the Status community for the first time aft
 Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open.
 
 ![Community Screen Second Open Loading Time](./community_second_open_loading_time.png)
-> Each point = average of runs on that build.
+> Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.
 
 ![Community Second Open CPU Usage](./community_second_open_cpu.png)
+> Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.
+
 ![Community Second Open RAM Usage](./community_second_open_ram.png)
+> Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.
+
 
 ## Wallet
 
