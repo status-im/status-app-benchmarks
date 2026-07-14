@@ -4,13 +4,22 @@ from __future__ import annotations
 
 from html import escape
 from pathlib import Path
+from typing import Optional
+
+import pandas as pd
 
 from benchmark_config import CHART_WINDOW_DAYS, BenchmarkPage, ChartEntry
+from environment_parser import RUN_ENVIRONMENT_FIELDS
 
 CHARTS_DIR = 'charts'
 SITE_TITLE = 'Status App Benchmarks'
-
-
+MACHINE_FIELD_LABELS = {
+    'hostname': 'Host',
+    'windows_version': 'Windows',
+    'os_build': 'OS build',
+    'cpu': 'CPU',
+    'ram_gb': 'RAM',
+}
 def _page_styles() -> str:
     return """
     :root {
@@ -87,10 +96,42 @@ def _page_styles() -> str:
       border-radius: 4px;
       background: #fff;
     }
+    .chart-footnote {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 0;
+    }
     .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
     nav.back { margin-bottom: 1rem; }
     nav.back a { color: var(--link); text-decoration: none; }
     nav.back a:hover { text-decoration: underline; }
+    section.machine-info {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    section.machine-info h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+    section.machine-info dl {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem 1.5rem;
+      margin: 0;
+    }
+    section.machine-info dt {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    section.machine-info dd {
+      margin: 0.1rem 0 0;
+      font-weight: 500;
+    }
     """
 
 
@@ -118,14 +159,112 @@ def _chart_iframe(chart_path: str) -> str:
     )
 
 
+def _field_text(value: object) -> str:
+    if value is None:
+        return ''
+    try:
+        if pd.isna(value):
+            return ''
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    return '' if text.lower() == 'nan' else text
+
+
+def _display_field_value(field: str, value: str) -> str:
+    if field == 'ram_gb' and not value.lower().endswith('gb'):
+        return f'{value} GB'
+    return value
+
+
+def _machine_info_rows(latest: dict) -> list[tuple[str, str]]:
+    rows = []
+    for field, label in MACHINE_FIELD_LABELS.items():
+        value = _field_text(latest.get(field))
+        if not value:
+            continue
+        rows.append((label, _display_field_value(field, value)))
+    return rows
+
+
+def _latest_run_environment(run_environment: pd.DataFrame) -> Optional[dict]:
+    if run_environment.empty:
+        return None
+    latest = run_environment.iloc[-1]
+    if not any(_field_text(latest.get(field)) for field in RUN_ENVIRONMENT_FIELDS):
+        return None
+    return latest.to_dict()
+
+
+def _machine_info_panel(run_environment: pd.DataFrame) -> str:
+    latest = _latest_run_environment(run_environment)
+    if latest is None:
+        return ''
+
+    rows = _machine_info_rows(latest)
+    if not rows:
+        return ''
+
+    items = [
+        f'<div><dt>{escape(label)}</dt><dd>{escape(display)}</dd></div>'
+        for label, display in rows
+    ]
+
+    commit = _field_text(latest.get('commit_hash'))
+    date = latest.get('date')
+    recorded = date.strftime('%b %d, %Y') if hasattr(date, 'strftime') else ''
+    meta = ' · '.join(part for part in (recorded, f'commit {commit[:9]}' if commit else '') if part)
+
+    return (
+        '<section class="machine-info">'
+        '<h2>System info</h2>'
+        f'<p class="subtitle">Latest recorded environment{(" · " + escape(meta)) if meta else ""}</p>'
+        f'<dl>{"".join(items)}</dl>'
+        '</section>'
+    )
+
+
+def _machine_info_markdown(run_environment: pd.DataFrame) -> list[str]:
+    latest = _latest_run_environment(run_environment)
+    if latest is None:
+        return []
+
+    rows = _machine_info_rows(latest)
+    if not rows:
+        return []
+
+    parts = [f'**{label}:** {display}' for label, display in rows]
+    return ['## System info', '', ' · '.join(parts), '']
+
+
+def _chart_footnote_html(footnote: str) -> str:
+    if not footnote:
+        return ''
+    return f'<p class="chart-footnote">{escape(footnote)}</p>'
+
+
+def _chart_section(chart: ChartEntry) -> str:
+    chart_path = f'{CHARTS_DIR}/{chart.html_filename}'
+    return (
+        '<section class="chart">'
+        f'<h2>{escape(chart.display_name)}</h2>'
+        f'{_chart_iframe(chart_path)}'
+        f'{_chart_footnote_html(chart.footnote)}'
+        '</section>'
+    )
+
+
 def write_site(
     output_dir: Path,
     pages: tuple[BenchmarkPage, ...],
     charts_by_test_id: dict[str, ChartEntry],
     *,
     summary_chart_path: str | None = None,
+    run_environment: pd.DataFrame | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
+    env_frame = run_environment if run_environment is not None else pd.DataFrame()
+    machine_panel = _machine_info_panel(env_frame)
 
     cards = ''.join(
         f'<a class="card" href="{escape(page.slug)}.html">'
@@ -143,7 +282,9 @@ def write_site(
     index_body = (
         '<h1>Windows Benchmark Dashboard</h1>'
         f'<p class="subtitle">Performance metrics from the last {CHART_WINDOW_DAYS} days. '
-        'Each point is one nightly run — x-axis shows build date; hover a point for commit hash.</p>'
+        'Each point is one nightly run — x-axis shows build date; hover a point for commit hash. '
+        'Load-time charts plot the average of runs per build.</p>'
+        f'{machine_panel}'
         f'{summary}'
         '<h2 style="margin-top:2rem">Scenarios</h2>'
         f'<div class="grid">{cards}</div>'
@@ -163,12 +304,7 @@ def write_site(
             if chart is None:
                 print(f"Warning: no chart for {test_id!r} on page {page.slug!r}")
                 continue
-            chart_path = f'{CHARTS_DIR}/{chart.html_filename}'
-            sections.append(
-                '<section class="chart">'
-                f'<h2>{escape(chart.display_name)}</h2>'
-                f'{_chart_iframe(chart_path)}</section>'
-            )
+            sections.append(_chart_section(chart))
         page_body = (
             '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
             f'<h1>{escape(page.title)}</h1>'
@@ -186,7 +322,11 @@ def write_site(
             stale_page.unlink()
             print(f'Removed stale page: {stale_page.name}')
 
-    write_github_readme(output_dir, pages, charts_by_test_id, include_summary=summary_chart_path is not None)
+    write_github_readme(
+        output_dir, pages, charts_by_test_id,
+        include_summary=summary_chart_path is not None,
+        run_environment=env_frame,
+    )
 
 
 def write_github_readme(
@@ -195,6 +335,7 @@ def write_github_readme(
     charts_by_test_id: dict[str, ChartEntry],
     *,
     include_summary: bool = False,
+    run_environment: pd.DataFrame | None = None,
 ) -> None:
     """GitHub-rendered fallback dashboard (PNG embeds) until GitHub Pages is enabled."""
     lines = [
@@ -202,7 +343,7 @@ def write_github_readme(
         '',
         'Automated test suite performance tracking for the Windows desktop app.',
         f'Charts show data from the last {CHART_WINDOW_DAYS} days — each point is one nightly run.',
-        'Lower is better.',
+        'Load-time charts plot the average of runs per build. Lower is better.',
         '',
         '> **Viewing charts:** This README renders inline PNG images on GitHub — works without',
         '> GitHub Pages. For interactive charts (hover tooltips, zoom), use the',
@@ -220,6 +361,9 @@ def write_github_readme(
             '',
         ])
 
+    env_frame = run_environment if run_environment is not None else pd.DataFrame()
+    lines.extend(_machine_info_markdown(env_frame))
+
     for page in pages:
         page_charts = [
             charts_by_test_id[test_id]
@@ -232,6 +376,8 @@ def write_github_readme(
         for chart in page_charts:
             png_name = Path(chart.html_filename).with_suffix('.png').name
             lines.append(f'![{chart.display_name}](./{png_name})')
+            if chart.footnote:
+                lines.extend([f'> {chart.footnote}', ''])
         lines.append('')
 
     lines.extend([

@@ -16,6 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
 from chart_builder import build_duration_figure, cleanup_stale_charts, render_chart, save_chart_assets
+from environment_parser import RUN_ENVIRONMENT_CSV, RUN_ENVIRONMENT_FIELDS, load_run_environment, parse_machine_info
 from site_generator import write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
@@ -64,7 +65,14 @@ def load_data(data_dir: Path) -> Tuple[pd.DataFrame, Dict[str, Optional[pd.DataF
     return summary, metrics
 
 
-def process_benchmark_run(benchmark_dir: Path, data_dir: Path, commit_hash: str, date: str):
+def process_benchmark_run(
+    benchmark_dir: Path,
+    data_dir: Path,
+    commit_hash: str,
+    date: str,
+    *,
+    machine_info_file: Optional[Path] = None,
+):
     print(f'\nProcessing benchmark: {benchmark_dir}')
 
     test_cases_dir = benchmark_dir / 'test-cases'
@@ -164,6 +172,17 @@ def process_benchmark_run(benchmark_dir: Path, data_dir: Path, commit_hash: str,
             'all_runs': row['all_runs'],
         } for row in results])
 
+    machine_info = parse_machine_info(machine_info_file)
+    if machine_info:
+        _append_csv_rows(data_dir, RUN_ENVIRONMENT_CSV, [
+            'commit_hash', 'date', *RUN_ENVIRONMENT_FIELDS,
+        ], [{
+            'commit_hash': commit_hash,
+            'date': date,
+            **{field: machine_info.get(field, '') for field in RUN_ENVIRONMENT_FIELDS},
+        }])
+        print('Recorded machine info for this run')
+
     print(f"Processed {aggregate['total_tests']} tests")
     if performance_results:
         print(f'Processed {len(performance_results)} load time results')
@@ -205,7 +224,12 @@ def generate_graphs(data_dir: Path, output_dir: Path):
             print(f'Error generating chart for {chart.test_id}: {error}')
 
     print('\nGenerating GitHub Pages site...')
-    write_site(output_dir, CONFIG.pages, charts_by_test_id, summary_chart_path=summary_chart_path)
+    run_environment = load_run_environment(data_dir)
+    write_site(
+        output_dir, CONFIG.pages, charts_by_test_id,
+        summary_chart_path=summary_chart_path,
+        run_environment=run_environment,
+    )
     write_docs_root_index(output_dir.parent)
     print(f'\nDone: {output_dir.absolute()}')
 
@@ -216,7 +240,10 @@ def cmd_parse(args):
     except ValueError:
         print(f'Error: Date must be YYYY-MM-DDTHH:MM:SS, got: {args.date}')
         sys.exit(1)
-    process_benchmark_run(args.benchmark_dir, args.data_dir, args.commit_hash, args.date)
+    process_benchmark_run(
+        args.benchmark_dir, args.data_dir, args.commit_hash, args.date,
+        machine_info_file=args.machine_info,
+    )
     print(f'\nCSV files updated in {args.data_dir.absolute()}')
 
 
@@ -244,6 +271,10 @@ def main():
     parse_parser.add_argument('--commit-hash', required=True)
     parse_parser.add_argument('--date', required=True)
     parse_parser.add_argument('--data-dir', type=Path, default=Path('data'))
+    parse_parser.add_argument(
+        '--machine-info', type=Path,
+        help='JSON file with system metadata (hostname, windows_version, os_build, cpu, ram_gb)',
+    )
     parse_parser.set_defaults(func=cmd_parse)
 
     graphs_parser = subparsers.add_parser('graphs', help='Generate charts and GitHub Pages site')

@@ -1,0 +1,7 @@
+{
+  "hostname": "win-bench-01",
+  "windows_version": "Windows 11 23H2",
+  "os_build": "22631.3880",
+  "cpu": "Intel Core i7-12700",
+  "ram_gb": "32"
+}

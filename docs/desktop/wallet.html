@@ -79,14 +79,46 @@
       border-radius: 4px;
       background: #fff;
     }
+    .chart-footnote {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 0;
+    }
     .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
     nav.back { margin-bottom: 1rem; }
     nav.back a { color: var(--link); text-decoration: none; }
     nav.back a:hover { text-decoration: underline; }
+    section.machine-info {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    section.machine-info h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+    section.machine-info dl {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem 1.5rem;
+      margin: 0;
+    }
+    section.machine-info dt {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    section.machine-info dd {
+      margin: 0.1rem 0 0;
+      font-weight: 500;
+    }
     </style>
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Wallet</h1><p class="subtitle">Wallet screen load time and per-account assets list load time.</p><section class="chart"><h2>Wallet Screen Loading Time Performance</h2><iframe src="charts/wallet_loading_time.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Wallet Assets Screen Loading Time Performance</h2><iframe src="charts/wallet_assets_loading_time.html" title="Interactive chart" loading="lazy"></iframe></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Wallet</h1><p class="subtitle">Wallet screen load time and per-account assets list load time.</p><section class="chart"><h2>Wallet Screen Loading Time Performance</h2><iframe src="charts/wallet_loading_time.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Each point = average of runs on that build.</p></section><section class="chart"><h2>Wallet Assets Screen Loading Time Performance</h2><iframe src="charts/wallet_assets_loading_time.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Each point = average of runs on that build.</p></section></main>
 </body>
 </html>

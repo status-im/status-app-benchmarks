@@ -2,7 +2,7 @@
 
 Automated test suite performance tracking for the Windows desktop app.
 Charts show data from the last 30 days — each point is one nightly run.
-Lower is better.
+Load-time charts plot the average of runs per build. Lower is better.
 
 > **Viewing charts:** This README renders inline PNG images on GitHub — works without
 > GitHub Pages. For interactive charts (hover tooltips, zoom), use the
@@ -19,6 +19,8 @@ Full CSV history: [`data/`](../../data/).
 Load time, CPU, and RAM when opening the Status community for the first time after login.
 
 ![Community Screen First Open Loading Time](./community_first_open_loading_time.png)
+> Each point = average of runs on that build.
+
 ![Community First Open CPU Usage](./community_first_open_cpu.png)
 ![Community First Open RAM Usage](./community_first_open_ram.png)
 
@@ -27,6 +29,8 @@ Load time, CPU, and RAM when opening the Status community for the first time aft
 Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open.
 
 ![Community Screen Second Open Loading Time](./community_second_open_loading_time.png)
+> Each point = average of runs on that build.
+
 ![Community Second Open CPU Usage](./community_second_open_cpu.png)
 ![Community Second Open RAM Usage](./community_second_open_ram.png)
 
@@ -35,13 +39,19 @@ Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU 
 Wallet screen load time and per-account assets list load time.
 
 ![Wallet Screen Loading Time Performance](./wallet_loading_time.png)
+> Each point = average of runs on that build.
+
 ![Wallet Assets Screen Loading Time Performance](./wallet_assets_loading_time.png)
+> Each point = average of runs on that build.
+
 
 ## Swap
 
 Swap modal load time.
 
 ![Swap Screen Loading Time Performance](./swap_loading_time.png)
+> Each point = average of runs on that build.
+
 
 ---
 
