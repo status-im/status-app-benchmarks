@@ -481,3 +481,8 @@ d39309,2026-07-08T12:00:00,SM-A366B,test_android_wallet_history_response_time,pa
 80e7c0,2026-07-12T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.597,0.691,0.653,0.662,4,4,"0.597,0.659,0.691,0.665"
 80e7c0,2026-07-12T12:00:00,SM-A366B,test_android_wallet_account_open_response_time,passed,response_time,s,0.101,0.101,0.101,0.101,1,1,0.101
 80e7c0,2026-07-12T12:00:00,SM-A366B,test_android_wallet_add_account_response_time,passed,response_time,s,0.586,1.1,0.856,0.869,4,4,"1.097,1.1,0.641,0.586"
+69f333,2026-07-14T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,1.632,2.178,1.872,1.839,4,4,"2.178,1.642,1.632,2.035"
+69f333,2026-07-14T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.613,1.021,0.737,0.657,4,4,"0.665,1.021,0.648,0.613"
+69f333,2026-07-14T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.598,0.641,0.62,0.621,4,4,"0.608,0.634,0.641,0.598"
+69f333,2026-07-14T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.064,0.718,0.237,0.082,4,4,"0.064,0.092,0.073,0.718"
+69f333,2026-07-14T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.103,0.668,0.375,0.364,4,4,"0.668,0.61,0.118,0.103"
