@@ -1086,3 +1086,11 @@ e1dd32c18,2026-07-13T13:03:30,test_wallet_loading_time[wallet_load_alex_user],pa
 69f3330f1,2026-07-13T16:54:06,test_swap_loading_time[wallet_load_alex_user],passed,0.708,1.534,0.884,5,"1.534,0.738,0.709,0.708,0.73"
 69f3330f1,2026-07-13T16:54:06,test_status_community_first_open_loading_time[user_data0-user_account0],passed,2.752,2.752,2.752,1,2.752
 69f3330f1,2026-07-13T16:54:06,test_wallet_assets_loading_time[wallet_load_alex_user],passed,0.325,1.082,0.347,10,"1.082,0.395,0.631,0.326,0.676,0.338,0.64,0.325,0.667,0.354"
+69f3330f1,2026-07-14T05:29:06,test_wallet_assets_loading_time[wallet_load_user],passed,0.557,0.659,0.628,10,"0.592,0.596,0.599,0.63,0.563,0.659,0.561,0.632,0.557,0.625"
+69f3330f1,2026-07-14T05:29:06,test_wallet_assets_loading_time[wallet_load_alex_user],passed,0.334,0.684,0.354,10,"0.665,0.334,0.635,0.356,0.684,0.337,0.644,0.384,0.669,0.36"
+69f3330f1,2026-07-14T05:29:06,test_status_community_first_open_loading_time[user_data0-user_account0],passed,3.57,3.57,3.57,1,3.57
+69f3330f1,2026-07-14T05:29:06,test_status_community_second_open_loading_time[user_data0-user_account0],passed,2.05,2.168,2.104,5,"2.168,2.05,2.1,2.113,2.088"
+69f3330f1,2026-07-14T05:29:06,test_swap_loading_time[wallet_load_alex_user],passed,0.693,1.11,0.804,5,"1.11,0.734,0.695,0.785,0.693"
+69f3330f1,2026-07-14T05:29:06,test_swap_loading_time[wallet_load_user],passed,0.695,1.167,0.804,5,"1.167,0.707,0.707,0.746,0.695"
+69f3330f1,2026-07-14T05:29:06,test_wallet_loading_time[wallet_load_user],passed,0.517,0.749,0.673,5,"0.517,0.727,0.657,0.712,0.749"
+69f3330f1,2026-07-14T05:29:06,test_wallet_loading_time[wallet_load_alex_user],passed,0.562,0.772,0.65,5,"0.669,0.562,0.609,0.772,0.636"
