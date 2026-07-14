@@ -14,6 +14,10 @@ Full CSV history: [`data/`](../../data/).
 
 ![Total Test Suite Duration](./total_duration.png)
 
+## System info
+
+**Host:** WINDOWS-NODE-01 · **Windows:** Windows Server 2022 Standard 21H2 · **OS build:** 20348.1487 · **CPU:** AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics · **RAM:** 63 GB
+
 ## Community — First Open
 
 Load time, CPU, and RAM when opening the Status community for the first time after login.
