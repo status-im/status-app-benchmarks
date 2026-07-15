@@ -10,13 +10,20 @@ import tomli as tomllib
 
 CHART_WINDOW_DAYS = 30
 DEFAULT_CONFIG = Path('scripts/tests_config.toml')
-LOAD_TIME_FOOTNOTE = 'Each point = average of runs on that build.'
-RUN_SPREAD_FOOTNOTE = (
-    'Line = average across runs on that build; shaded band = min–max. '
-    'Hover a point to see all individual run values.'
-)
+LOAD_TIME_FOOTNOTE = 'Each point = average of 5 runs on that build.'
 
 MetricsKind = Literal['performance', 'cpu', 'ram']
+
+
+@dataclass(frozen=True)
+class ChartDefaults:
+    slow_threshold_s: float = 1.0
+    fast_threshold_s: float = 0.5
+    regression_pct: float = 0.15
+    regression_consecutive: int = 3
+    rolling_window: int = 5
+    backlog_slow_of_last_n: int = 5
+    backlog_slow_min_count: int = 3
 
 
 @dataclass(frozen=True)
@@ -31,7 +38,11 @@ class ChartTest:
     attachment_keyword: str
     color: Optional[str] = None
     footnote: str = ''
-    show_run_spread: bool = False
+    description: str = ''
+    show_speed_zones: bool = False
+    show_rolling_average: bool = False
+    reference_build: Optional[str] = None
+    baselines: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -53,12 +64,26 @@ class ChartEntry:
 class BenchmarkConfig:
     pages: tuple[BenchmarkPage, ...]
     charts: tuple[ChartTest, ...]
+    defaults: ChartDefaults
 
 
 def _require_fields(raw: dict, *fields: str, context: str = 'config') -> None:
     for field in fields:
         if field not in raw:
             raise ValueError(f'Missing required field {field!r} in {context}')
+
+
+def _load_defaults(raw: dict) -> ChartDefaults:
+    entry = raw.get('defaults', {})
+    return ChartDefaults(
+        slow_threshold_s=entry.get('slow_threshold_s', 1.0),
+        fast_threshold_s=entry.get('fast_threshold_s', 0.5),
+        regression_pct=entry.get('regression_pct', 0.15),
+        regression_consecutive=entry.get('regression_consecutive', 3),
+        rolling_window=entry.get('rolling_window', 5),
+        backlog_slow_of_last_n=entry.get('backlog_slow_of_last_n', 5),
+        backlog_slow_min_count=entry.get('backlog_slow_min_count', 3),
+    )
 
 
 def _load_chart_tests(
@@ -69,6 +94,8 @@ def _load_chart_tests(
     default_ylabel: str,
     default_attachment_keyword: str,
     default_footnote: str = '',
+    default_show_speed_zones: bool = False,
+    default_show_rolling_average: bool = False,
 ) -> list[ChartTest]:
     charts = []
     for entry in entries:
@@ -77,13 +104,7 @@ def _load_chart_tests(
             'test_id', 'display_name', 'graph_filename', 'pattern',
             context=f'{metrics_kind} test',
         )
-        show_run_spread = bool(entry.get('show_run_spread', False))
-        if 'footnote' in entry:
-            footnote = entry['footnote']
-        elif show_run_spread:
-            footnote = RUN_SPREAD_FOOTNOTE
-        else:
-            footnote = default_footnote
+        baselines = entry.get('baselines', [])
         charts.append(ChartTest(
             test_id=entry['test_id'],
             display_name=entry['display_name'],
@@ -94,8 +115,12 @@ def _load_chart_tests(
             metrics_kind=metrics_kind,
             attachment_keyword=entry.get('attachment_keyword', default_attachment_keyword),
             color=entry.get('color'),
-            footnote=footnote,
-            show_run_spread=show_run_spread,
+            footnote=entry.get('footnote', default_footnote),
+            description=entry.get('description', ''),
+            show_speed_zones=entry.get('show_speed_zones', default_show_speed_zones),
+            show_rolling_average=entry.get('show_rolling_average', default_show_rolling_average),
+            reference_build=entry.get('reference_build'),
+            baselines=tuple(baselines),
         ))
     return charts
 
@@ -120,13 +145,17 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
     with open(config_file, 'rb') as handle:
         raw = tomllib.load(handle)
 
+    defaults = _load_defaults(raw)
+
     load_time_tests = _load_chart_tests(
         raw.get('tests', []),
         metrics_kind='performance',
         value_column='avg_time',
-        default_ylabel='Load Time (s)',
+        default_ylabel='seconds',
         default_attachment_keyword='load time',
         default_footnote=LOAD_TIME_FOOTNOTE,
+        default_show_speed_zones=True,
+        default_show_rolling_average=True,
     )
     if not load_time_tests:
         raise ValueError(f'No [[tests]] sections found in {config_file}')
@@ -152,4 +181,5 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
     return BenchmarkConfig(
         pages=tuple(_load_pages(raw.get('pages', []))),
         charts=tuple(charts),
+        defaults=defaults,
     )

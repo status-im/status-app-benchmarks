@@ -10,56 +10,51 @@ Load-time charts plot the average of runs per build. Lower is better.
 
 Full CSV history: [`data/`](../../data/).
 
-## Summary
-
-![Total Test Suite Duration](./total_duration.png)
-
 ## System info
 
 **Host:** WINDOWS-NODE-01 · **Windows:** Windows Server 2022 Standard 21H2 · **OS build:** 20348.1487 · **CPU:** AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics · **RAM:** 63 GB
 
-## Community — First Open
+## Wallet — Fresh account
 
-Load time, CPU, and RAM when opening the Status community for the first time after login.
+Load times for a newly onboarded account (no pre-seeded user data).
 
-![Community Screen First Open Loading Time](./community_first_open_loading_time.png)
-> Each point = average of runs on that build.
+_No data yet — charts will appear after the next nightly benchmark run._
 
-![Community First Open CPU Usage](./community_first_open_cpu.png)
-![Community First Open RAM Usage](./community_first_open_ram.png)
+## Wallet — wallet_load profile
 
-## Community — Second Open
+Returning user with wallet_load profile (~29 MB user data).
 
-Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open.
+![Desktop — Wallet load time](./wallet_loading_time_wallet_load.png)
 
-![Community Screen Second Open Loading Time](./community_second_open_loading_time.png)
-> Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.
+![Desktop — Wallet assets load time](./wallet_assets_loading_time_wallet_load.png)
 
-![Community Second Open CPU Usage](./community_second_open_cpu.png)
-> Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.
+![Desktop — Swap modal load time](./swap_loading_time_wallet_load.png)
 
-![Community Second Open RAM Usage](./community_second_open_ram.png)
-> Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.
+## Wallet — wallet_load_alex profile
 
+Returning user with wallet_load_alex profile (~16 MB user data).
 
-## Wallet
+![Desktop — Wallet load time](./wallet_loading_time_wallet_load_alex.png)
 
-Wallet screen load time and per-account assets list load time.
+![Desktop — Wallet assets load time](./wallet_assets_loading_time_wallet_load_alex.png)
 
-![Wallet Screen Loading Time Performance](./wallet_loading_time.png)
-> Each point = average of runs on that build.
+![Desktop — Swap modal load time](./swap_loading_time_wallet_load_alex.png)
 
-![Wallet Assets Screen Loading Time Performance](./wallet_assets_loading_time.png)
-> Each point = average of runs on that build.
+## Community — status_community_member profile
 
+Returning user with Status community already joined.
 
-## Swap
+![Desktop — Community first open](./community_first_open_loading_time_member.png)
 
-Swap modal load time.
+![Desktop — Community second open](./community_second_open_loading_time_member.png)
 
-![Swap Screen Loading Time Performance](./swap_loading_time.png)
-> Each point = average of runs on that build.
+![Desktop — Community first open CPU](./community_first_open_cpu_member.png)
 
+![Desktop — Community second open CPU](./community_second_open_cpu_member.png)
+
+![Desktop — Community first open RAM](./community_first_open_ram_member.png)
+
+![Desktop — Community second open RAM](./community_second_open_ram_member.png)
 
 ---
 

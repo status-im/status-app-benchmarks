@@ -1,118 +1,213 @@
 # Benchmark Configuration
-# Define all performance tests in this file
+# Each account variant gets its own chart (fresh / wallet_load / wallet_load_alex).
 
-# Scenario pages for the GitHub Pages dashboard (docs/desktop/index.html).
-# Each page groups related charts; test_ids must match test_id in [[tests]] / [[cpu_tests]] / [[ram_tests]].
+[defaults]
+slow_threshold_s = 1.0
+fast_threshold_s = 0.5
+regression_pct = 0.15
+regression_consecutive = 3
+rolling_window = 5
+backlog_slow_of_last_n = 5
+backlog_slow_min_count = 3
+
+# --- Pages ---
 
 [[pages]]
-slug = "community-first-open"
-title = "Community — First Open"
-description = "Load time, CPU, and RAM when opening the Status community for the first time after login."
+slug = "wallet-fresh"
+title = "Wallet — Fresh account"
+description = "Load times for a newly onboarded account (no pre-seeded user data)."
 test_ids = [
-    "test_status_community_first_open_loading_time",
-    "test_status_community_first_open_cpu",
-    "test_status_community_first_open_ram",
+    "test_wallet_loading_time_fresh",
+    "test_wallet_assets_loading_time_fresh",
+    "test_swap_loading_time_fresh",
 ]
 
 [[pages]]
-slug = "community-second-open"
-title = "Community — Second Open"
-description = "Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open."
+slug = "wallet-wallet-load"
+title = "Wallet — wallet_load profile"
+description = "Returning user with wallet_load profile (~29 MB user data)."
 test_ids = [
-    "test_status_community_second_open_loading_time",
-    "test_status_community_second_open_cpu",
-    "test_status_community_second_open_ram",
+    "test_wallet_loading_time_wallet_load",
+    "test_wallet_assets_loading_time_wallet_load",
+    "test_swap_loading_time_wallet_load",
 ]
 
 [[pages]]
-slug = "wallet"
-title = "Wallet"
-description = "Wallet screen load time and per-account assets list load time."
+slug = "wallet-wallet-load-alex"
+title = "Wallet — wallet_load_alex profile"
+description = "Returning user with wallet_load_alex profile (~16 MB user data)."
 test_ids = [
-    "test_wallet_loading_time",
-    "test_wallet_assets_loading_time",
+    "test_wallet_loading_time_wallet_load_alex",
+    "test_wallet_assets_loading_time_wallet_load_alex",
+    "test_swap_loading_time_wallet_load_alex",
 ]
 
 [[pages]]
-slug = "swap"
-title = "Swap"
-description = "Swap modal load time."
-test_ids = ["test_swap_loading_time"]
+slug = "community-populated"
+title = "Community — status_community_member profile"
+description = "Returning user with Status community already joined."
+test_ids = [
+    "test_status_community_first_open_loading_time_member",
+    "test_status_community_second_open_loading_time_member",
+    "test_status_community_first_open_cpu_member",
+    "test_status_community_second_open_cpu_member",
+    "test_status_community_first_open_ram_member",
+    "test_status_community_second_open_ram_member",
+]
+
+# --- Wallet load time (3 variants) ---
 
 [[tests]]
-test_id = "test_wallet_loading_time"
-display_name = "Wallet Screen Loading Time Performance"
-graph_filename = "wallet_loading_time.png"
-pattern = "test_wallet_loading_time"
-ylabel = "Load Time (s)"
+test_id = "test_wallet_loading_time_fresh"
+display_name = "Desktop — Wallet load time"
+description = "Time from opening Wallet until the screen is drawn · lower is better"
+pattern = "test_wallet_loading_time[fresh_user]"
+graph_filename = "wallet_loading_time_fresh.png"
+ylabel = "seconds"
+footnote = "Fresh account · each point = average of 5 runs on that build"
 
 [[tests]]
-test_id = "test_swap_loading_time"
-display_name = "Swap Screen Loading Time Performance"
-graph_filename = "swap_loading_time.png"
-pattern = "test_swap_loading_time"
-ylabel = "Load Time (s)"
+test_id = "test_wallet_loading_time_wallet_load"
+display_name = "Desktop — Wallet load time"
+description = "Time from opening Wallet until the screen is drawn · lower is better"
+pattern = "test_wallet_loading_time[wallet_load_user]"
+graph_filename = "wallet_loading_time_wallet_load.png"
+ylabel = "seconds"
+footnote = "wallet_load profile · each point = average of 5 runs on that build"
 
 [[tests]]
-test_id = "test_status_community_first_open_loading_time"
-display_name = "Community Screen First Open Loading Time"
-graph_filename = "community_first_open_loading_time.png"
-pattern = "test_status_community_first_open_loading_time"
-ylabel = "Load Time (s)"
+test_id = "test_wallet_loading_time_wallet_load_alex"
+display_name = "Desktop — Wallet load time"
+description = "Time from opening Wallet until the screen is drawn · lower is better"
+pattern = "test_wallet_loading_time[wallet_load_alex_user]"
+graph_filename = "wallet_loading_time_wallet_load_alex.png"
+ylabel = "seconds"
+footnote = "wallet_load_alex profile · each point = average of 5 runs on that build"
+
+# --- Swap load time (3 variants) ---
 
 [[tests]]
-test_id = "test_status_community_second_open_loading_time"
-display_name = "Community Screen Second Open Loading Time"
-graph_filename = "community_second_open_loading_time.png"
-pattern = "test_status_community_second_open_loading_time"
-ylabel = "Load Time (s)"
-show_run_spread = true
+test_id = "test_swap_loading_time_fresh"
+display_name = "Desktop — Swap modal load time"
+description = "Time from opening Swap until ready · lower is better"
+pattern = "test_swap_loading_time[fresh_user]"
+graph_filename = "swap_loading_time_fresh.png"
+ylabel = "seconds"
+footnote = "Fresh account · each point = average of 5 runs on that build"
 
 [[tests]]
-test_id = "test_wallet_assets_loading_time"
-display_name = "Wallet Assets Screen Loading Time Performance"
-graph_filename = "wallet_assets_loading_time.png"
-pattern = "test_wallet_assets_loading_time"
-ylabel = "Load Time (s)"
+test_id = "test_swap_loading_time_wallet_load"
+display_name = "Desktop — Swap modal load time"
+description = "Time from opening Swap until ready · lower is better"
+pattern = "test_swap_loading_time[wallet_load_user]"
+graph_filename = "swap_loading_time_wallet_load.png"
+ylabel = "seconds"
+footnote = "wallet_load profile · each point = average of 5 runs on that build"
+
+[[tests]]
+test_id = "test_swap_loading_time_wallet_load_alex"
+display_name = "Desktop — Swap modal load time"
+description = "Time from opening Swap until ready · lower is better"
+pattern = "test_swap_loading_time[wallet_load_alex_user]"
+graph_filename = "swap_loading_time_wallet_load_alex.png"
+ylabel = "seconds"
+footnote = "wallet_load_alex profile · each point = average of 5 runs on that build"
+
+# --- Wallet assets load time (3 variants) ---
+
+[[tests]]
+test_id = "test_wallet_assets_loading_time_fresh"
+display_name = "Desktop — Wallet assets load time"
+description = "Time from selecting a wallet account until the assets list is drawn · lower is better"
+pattern = "test_wallet_assets_loading_time[fresh_user]"
+graph_filename = "wallet_assets_loading_time_fresh.png"
+ylabel = "seconds"
+footnote = "Fresh account · each point = average of 5 runs on that build"
+
+[[tests]]
+test_id = "test_wallet_assets_loading_time_wallet_load"
+display_name = "Desktop — Wallet assets load time"
+description = "Time from selecting a wallet account until the assets list is drawn · lower is better"
+pattern = "test_wallet_assets_loading_time[wallet_load_user]"
+graph_filename = "wallet_assets_loading_time_wallet_load.png"
+ylabel = "seconds"
+footnote = "wallet_load profile · each point = average of 5 runs on that build"
+
+[[tests]]
+test_id = "test_wallet_assets_loading_time_wallet_load_alex"
+display_name = "Desktop — Wallet assets load time"
+description = "Time from selecting a wallet account until the assets list is drawn · lower is better"
+pattern = "test_wallet_assets_loading_time[wallet_load_alex_user]"
+graph_filename = "wallet_assets_loading_time_wallet_load_alex.png"
+ylabel = "seconds"
+footnote = "wallet_load_alex profile · each point = average of 5 runs on that build"
+
+# --- Community first open (member only — user must already be in community) ---
+
+[[tests]]
+test_id = "test_status_community_first_open_loading_time_member"
+display_name = "Desktop — Community first open"
+description = "Time from opening Status community for the first time · lower is better"
+pattern = "test_status_community_first_open_loading_time[user_data0-user_account0]"
+graph_filename = "community_first_open_loading_time_member.png"
+ylabel = "seconds"
+footnote = "status_community_member profile · each point = average of 5 runs on that build"
+
+# --- Community second open (member only — user must already be in community) ---
+
+[[tests]]
+test_id = "test_status_community_second_open_loading_time_member"
+display_name = "Desktop — Community second open"
+description = "Time from warm re-opening Status community · lower is better"
+pattern = "test_status_community_second_open_loading_time[user_data0-user_account0]"
+graph_filename = "community_second_open_loading_time_member.png"
+ylabel = "seconds"
+footnote = "status_community_member profile · each point = average of 5 runs on that build"
+
+# --- Community CPU (member only) ---
 
 [[cpu_tests]]
-test_id = "test_status_community_first_open_cpu"
-display_name = "Community First Open CPU Usage"
-graph_filename = "community_first_open_cpu.png"
-pattern = "test_status_community_first_open_loading_time"
+test_id = "test_status_community_first_open_cpu_member"
+display_name = "Desktop — Community first open CPU"
+description = "CPU usage while opening Status community for the first time"
+pattern = "test_status_community_first_open_loading_time[user_data0-user_account0]"
+graph_filename = "community_first_open_cpu_member.png"
 attachment_keyword = "cpu usage"
 ylabel = "CPU Usage (%)"
+footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
 [[cpu_tests]]
-test_id = "test_status_community_second_open_cpu"
-display_name = "Community Second Open CPU Usage"
-graph_filename = "community_second_open_cpu.png"
-pattern = "test_status_community_second_open_loading_time"
+test_id = "test_status_community_second_open_cpu_member"
+display_name = "Desktop — Community second open CPU"
+description = "CPU usage while warm re-opening Status community"
+pattern = "test_status_community_second_open_loading_time[user_data0-user_account0]"
+graph_filename = "community_second_open_cpu_member.png"
 attachment_keyword = "cpu usage"
 ylabel = "CPU Usage (%)"
-show_run_spread = true
+footnote = "status_community_member profile · each point = average of 5 runs on that build"
+
+# --- Community RAM (member only) ---
 
 [[ram_tests]]
-test_id = "test_status_community_first_open_ram"
-display_name = "Community First Open RAM Usage"
-graph_filename = "community_first_open_ram.png"
-pattern = "test_status_community_first_open_loading_time"
+test_id = "test_status_community_first_open_ram_member"
+display_name = "Desktop — Community first open RAM"
+description = "RAM usage while opening Status community for the first time"
+pattern = "test_status_community_first_open_loading_time[user_data0-user_account0]"
+graph_filename = "community_first_open_ram_member.png"
 attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
+footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
 [[ram_tests]]
-test_id = "test_status_community_second_open_ram"
-display_name = "Community Second Open RAM Usage"
-graph_filename = "community_second_open_ram.png"
-pattern = "test_status_community_second_open_loading_time"
+test_id = "test_status_community_second_open_ram_member"
+display_name = "Desktop — Community second open RAM"
+description = "RAM usage while warm re-opening Status community"
+pattern = "test_status_community_second_open_loading_time[user_data0-user_account0]"
+graph_filename = "community_second_open_ram_member.png"
 attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
-show_run_spread = true
+footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
-# Add new tests below, then add the test_id to a [[pages]] group (or create a new page):
-# [[tests]]
-# test_id = "test_my_new_feature_loading_time"
-# display_name = "My New Feature Loading Time Performance"
-# graph_filename = "my_new_feature_loading_time.png"
-# pattern = "test_my_new_feature_loading_time"
-# ylabel = "Load Time (s)"
+# Phase 1.5 (baselines): after a one-off release measurement run, add per-chart:
+# reference_build = "abc1234"
+# baselines = ["older_hash", "abc1234"]

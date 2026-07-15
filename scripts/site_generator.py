@@ -102,6 +102,16 @@ def _page_styles() -> str:
       font-size: 0.85rem;
       margin: 0.5rem 0 0;
     }
+    section.chart-placeholder {
+      border-style: dashed;
+      background: transparent;
+    }
+    .placeholder-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+      font-style: italic;
+    }
     .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
     nav.back { margin-bottom: 1rem; }
     nav.back a { color: var(--link); text-decoration: none; }
@@ -238,10 +248,15 @@ def _machine_info_markdown(run_environment: pd.DataFrame) -> list[str]:
     return ['## System info', '', ' · '.join(parts), '']
 
 
-def _chart_footnote_html(footnote: str) -> str:
-    if not footnote:
-        return ''
-    return f'<p class="chart-footnote">{escape(footnote)}</p>'
+def _placeholder_section(title: str) -> str:
+    return (
+        '<section class="chart chart-placeholder">'
+        f'<h2>{escape(title)}</h2>'
+        '<p class="placeholder-note">'
+        'No data yet — chart will appear after the next nightly benchmark run.'
+        '</p>'
+        '</section>'
+    )
 
 
 def _chart_section(chart: ChartEntry) -> str:
@@ -250,7 +265,6 @@ def _chart_section(chart: ChartEntry) -> str:
         '<section class="chart">'
         f'<h2>{escape(chart.display_name)}</h2>'
         f'{_chart_iframe(chart_path)}'
-        f'{_chart_footnote_html(chart.footnote)}'
         '</section>'
     )
 
@@ -260,12 +274,13 @@ def write_site(
     pages: tuple[BenchmarkPage, ...],
     charts_by_test_id: dict[str, ChartEntry],
     *,
-    summary_chart_path: str | None = None,
+    chart_labels: dict[str, str] | None = None,
     run_environment: pd.DataFrame | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     env_frame = run_environment if run_environment is not None else pd.DataFrame()
     machine_panel = _machine_info_panel(env_frame)
+    labels = chart_labels or {}
 
     cards = ''.join(
         f'<a class="card" href="{escape(page.slug)}.html">'
@@ -273,20 +288,12 @@ def write_site(
         f'<p>{escape(page.description)}</p></a>'
         for page in pages
     )
-    summary = ''
-    if summary_chart_path:
-        summary = (
-            '<section class="chart"><h2>Total Test Suite Duration</h2>'
-            f'{_chart_iframe(summary_chart_path)}</section>'
-        )
-
     index_body = (
         '<h1>Windows Benchmark Dashboard</h1>'
         f'<p class="subtitle">Performance metrics from the last {CHART_WINDOW_DAYS} days. '
         'Each point is one nightly run — x-axis shows build date; hover a point for commit hash. '
         'Load-time charts plot the average of runs per build.</p>'
         f'{machine_panel}'
-        f'{summary}'
         '<h2 style="margin-top:2rem">Scenarios</h2>'
         f'<div class="grid">{cards}</div>'
         '<p class="note">Raw CSV history lives in the repository <code>data/</code> folder. '
@@ -302,10 +309,10 @@ def write_site(
         sections = []
         for test_id in page.test_ids:
             chart = charts_by_test_id.get(test_id)
-            if chart is None:
-                print(f"Warning: no chart for {test_id!r} on page {page.slug!r}")
-                continue
-            sections.append(_chart_section(chart))
+            if chart is not None:
+                sections.append(_chart_section(chart))
+            else:
+                sections.append(_placeholder_section(labels.get(test_id, test_id)))
         page_body = (
             '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
             f'<h1>{escape(page.title)}</h1>'
@@ -325,7 +332,6 @@ def write_site(
 
     write_github_readme(
         output_dir, pages, charts_by_test_id,
-        include_summary=summary_chart_path is not None,
         run_environment=env_frame,
     )
 
@@ -335,7 +341,6 @@ def write_github_readme(
     pages: tuple[BenchmarkPage, ...],
     charts_by_test_id: dict[str, ChartEntry],
     *,
-    include_summary: bool = False,
     run_environment: pd.DataFrame | None = None,
 ) -> None:
     """GitHub-rendered fallback dashboard (PNG embeds) until GitHub Pages is enabled."""
@@ -354,14 +359,6 @@ def write_github_readme(
         '',
     ]
 
-    if include_summary:
-        lines.extend([
-            '## Summary',
-            '',
-            '![Total Test Suite Duration](./total_duration.png)',
-            '',
-        ])
-
     env_frame = run_environment if run_environment is not None else pd.DataFrame()
     lines.extend(_machine_info_markdown(env_frame))
 
@@ -371,15 +368,17 @@ def write_github_readme(
             for test_id in page.test_ids
             if test_id in charts_by_test_id
         ]
-        if not page_charts:
-            continue
         lines.extend([f'## {page.title}', '', page.description, ''])
+        if not page_charts:
+            lines.append(
+                '_No data yet — charts will appear after the next nightly benchmark run._'
+            )
+            lines.append('')
+            continue
         for chart in page_charts:
             png_name = Path(chart.html_filename).with_suffix('.png').name
             lines.append(f'![{chart.display_name}](./{png_name})')
-            if chart.footnote:
-                lines.extend([f'> {chart.footnote}', ''])
-        lines.append('')
+            lines.append('')
 
     lines.extend([
         '---',

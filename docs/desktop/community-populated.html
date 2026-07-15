@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wallet — Status App Benchmarks</title>
+  <title>Community — status_community_member profile — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -85,6 +85,16 @@
       font-size: 0.85rem;
       margin: 0.5rem 0 0;
     }
+    section.chart-placeholder {
+      border-style: dashed;
+      background: transparent;
+    }
+    .placeholder-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+      font-style: italic;
+    }
     .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
     nav.back { margin-bottom: 1rem; }
     nav.back a { color: var(--link); text-decoration: none; }
@@ -120,6 +130,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Wallet</h1><p class="subtitle">Wallet screen load time and per-account assets list load time.</p><section class="chart"><h2>Wallet Screen Loading Time Performance</h2><iframe src="charts/wallet_loading_time.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Each point = average of runs on that build.</p></section><section class="chart"><h2>Wallet Assets Screen Loading Time Performance</h2><iframe src="charts/wallet_assets_loading_time.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Each point = average of runs on that build.</p></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Community — status_community_member profile</h1><p class="subtitle">Returning user with Status community already joined.</p><section class="chart"><h2>Desktop — Community first open</h2><iframe src="charts/community_first_open_loading_time_member.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Community second open</h2><iframe src="charts/community_second_open_loading_time_member.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Community first open CPU</h2><iframe src="charts/community_first_open_cpu_member.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Community second open CPU</h2><iframe src="charts/community_second_open_cpu_member.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Community first open RAM</h2><iframe src="charts/community_first_open_ram_member.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Community second open RAM</h2><iframe src="charts/community_second_open_ram_member.html" title="Interactive chart" loading="lazy"></iframe></section></main>
 </body>
 </html>

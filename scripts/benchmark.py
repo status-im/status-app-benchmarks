@@ -5,7 +5,7 @@ import csv
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import pandas as pd
 
@@ -15,8 +15,9 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
-from chart_builder import build_duration_figure, cleanup_stale_charts, render_chart, save_chart_assets
+from chart_builder import cleanup_stale_charts, render_chart
 from environment_parser import load_run_environment, record_run_environment
+from regression_report import write_regression_report
 from site_generator import write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
@@ -53,16 +54,11 @@ def _read_metrics_csv(data_dir: Path, filename: str) -> Optional[pd.DataFrame]:
     return pd.read_csv(path, parse_dates=['date']).sort_values('date')
 
 
-def load_data(data_dir: Path) -> Tuple[pd.DataFrame, Dict[str, Optional[pd.DataFrame]]]:
-    summary = _read_metrics_csv(data_dir, 'summary_metrics.csv')
-    if summary is None:
-        print(f'Error: {data_dir / "summary_metrics.csv"} not found')
-        sys.exit(1)
-    metrics = {
+def load_metrics(data_dir: Path) -> Dict[str, Optional[pd.DataFrame]]:
+    return {
         kind: _read_metrics_csv(data_dir, csv_name)
         for kind, (csv_name, _) in METRICS_CSV.items()
     }
-    return summary, metrics
 
 
 def process_benchmark_run(
@@ -188,21 +184,15 @@ def process_benchmark_run(
 
 
 def generate_graphs(data_dir: Path, output_dir: Path):
-    graph_filenames = ['total_duration.png', *(chart.graph_filename for chart in CONFIG.charts)]
+    graph_filenames = [chart.graph_filename for chart in CONFIG.charts]
     output_dir.mkdir(parents=True, exist_ok=True)
     cleanup_stale_charts(output_dir, graph_filenames)
 
     print(f'\nLoading data from {data_dir}...')
-    summary, metrics = load_data(data_dir)
-    print(f'Loaded {len(summary)} benchmark runs')
+    metrics = load_metrics(data_dir)
+    run_environment = load_run_environment(data_dir)
 
     charts_by_test_id: Dict[str, ChartEntry] = {}
-    summary_chart_path = None
-
-    duration_fig = build_duration_figure(summary)
-    if duration_fig is not None:
-        html_name = save_chart_assets(duration_fig, output_dir, 'total_duration.png')
-        summary_chart_path = f'charts/{html_name}'
 
     print(f'\nGenerating charts in {output_dir}...')
     for chart in CONFIG.charts:
@@ -210,20 +200,25 @@ def generate_graphs(data_dir: Path, output_dir: Path):
         if frame is None or frame.empty:
             continue
         try:
-            entry = render_chart(chart, frame, output_dir)
+            entry = render_chart(chart, frame, output_dir, CONFIG.defaults)
             if entry is not None:
                 charts_by_test_id[chart.test_id] = entry
         except Exception as error:
             print(f'Error generating chart for {chart.test_id}: {error}')
 
     print('\nGenerating GitHub Pages site...')
-    run_environment = load_run_environment(data_dir)
     write_site(
         output_dir, CONFIG.pages, charts_by_test_id,
-        summary_chart_path=summary_chart_path,
+        chart_labels={chart.test_id: chart.display_name for chart in CONFIG.charts},
         run_environment=run_environment,
     )
     write_docs_root_index(output_dir.parent)
+
+    report_path = output_dir / 'regression_report.md'
+    performance = metrics.get('performance')
+    if performance is not None and not performance.empty:
+        write_regression_report(performance, CONFIG, report_path)
+
     print(f'\nDone: {output_dir.absolute()}')
 
 
@@ -242,6 +237,15 @@ def cmd_parse(args):
 
 def cmd_graphs(args):
     generate_graphs(args.data_dir, args.output_dir)
+
+
+def cmd_report(args):
+    metrics = load_metrics(args.data_dir)
+    performance = metrics.get('performance')
+    if performance is None or performance.empty:
+        print('Error: no performance metrics found')
+        sys.exit(1)
+    write_regression_report(performance, CONFIG, args.output)
 
 
 def cmd_list_tests(_args):
@@ -274,6 +278,11 @@ def main():
     graphs_parser.add_argument('--data-dir', type=Path, default=Path('data'))
     graphs_parser.add_argument('--output-dir', type=Path, default=Path('docs/desktop'))
     graphs_parser.set_defaults(func=cmd_graphs)
+
+    report_parser = subparsers.add_parser('report', help='Write regression report from CSV data')
+    report_parser.add_argument('--data-dir', type=Path, default=Path('data'))
+    report_parser.add_argument('--output', type=Path, default=Path('docs/desktop/regression_report.md'))
+    report_parser.set_defaults(func=cmd_report)
 
     subparsers.add_parser('list-tests', help='List configured charts and pages').set_defaults(func=cmd_list_tests)
 
