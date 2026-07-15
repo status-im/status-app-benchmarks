@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Community — Second Open — Status App Benchmarks</title>
+  <title>Wallet — Fresh account — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -85,6 +85,16 @@
       font-size: 0.85rem;
       margin: 0.5rem 0 0;
     }
+    section.chart-placeholder {
+      border-style: dashed;
+      background: transparent;
+    }
+    .placeholder-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+      font-style: italic;
+    }
     .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
     nav.back { margin-bottom: 1rem; }
     nav.back a { color: var(--link); text-decoration: none; }
@@ -120,6 +130,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Community — Second Open</h1><p class="subtitle">Warm open: navigate to portal then re-open. Load time averaged over 5 runs; CPU and RAM per open.</p><section class="chart"><h2>Community Screen Second Open Loading Time</h2><iframe src="charts/community_second_open_loading_time.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.</p></section><section class="chart"><h2>Community Second Open CPU Usage</h2><iframe src="charts/community_second_open_cpu.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.</p></section><section class="chart"><h2>Community Second Open RAM Usage</h2><iframe src="charts/community_second_open_ram.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Line = average across runs on that build; shaded band = min–max. Hover a point to see all individual run values.</p></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Wallet — Fresh account</h1><p class="subtitle">Load times for a newly onboarded account (no pre-seeded user data).</p><section class="chart chart-placeholder"><h2>Desktop — Wallet load time</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Desktop — Wallet assets load time</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Desktop — Swap modal load time</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section></main>
 </body>
 </html>

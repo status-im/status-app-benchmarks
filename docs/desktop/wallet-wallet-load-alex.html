@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Swap — Status App Benchmarks</title>
+  <title>Wallet — wallet_load_alex profile — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -85,6 +85,16 @@
       font-size: 0.85rem;
       margin: 0.5rem 0 0;
     }
+    section.chart-placeholder {
+      border-style: dashed;
+      background: transparent;
+    }
+    .placeholder-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+      font-style: italic;
+    }
     .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
     nav.back { margin-bottom: 1rem; }
     nav.back a { color: var(--link); text-decoration: none; }
@@ -120,6 +130,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Swap</h1><p class="subtitle">Swap modal load time.</p><section class="chart"><h2>Swap Screen Loading Time Performance</h2><iframe src="charts/swap_loading_time.html" title="Interactive chart" loading="lazy"></iframe><p class="chart-footnote">Each point = average of runs on that build.</p></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Wallet — wallet_load_alex profile</h1><p class="subtitle">Returning user with wallet_load_alex profile (~16 MB user data).</p><section class="chart"><h2>Desktop — Wallet load time</h2><iframe src="charts/wallet_loading_time_wallet_load_alex.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Wallet assets load time</h2><iframe src="charts/wallet_assets_loading_time_wallet_load_alex.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Swap modal load time</h2><iframe src="charts/swap_loading_time_wallet_load_alex.html" title="Interactive chart" loading="lazy"></iframe></section></main>
 </body>
 </html>
