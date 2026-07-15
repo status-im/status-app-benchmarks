@@ -493,3 +493,8 @@ d39309,2026-07-08T12:00:00,SM-A366B,test_android_wallet_history_response_time,pa
 69f333-n260714,2026-07-14T05:45:21,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,1.92,1.92,1.92,1.92,1,1,1.92
 69f333-n260714,2026-07-14T05:45:21,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,30.55,30.55,30.55,30.55,1,1,30.55
 69f333-n260714,2026-07-14T05:45:21,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,12.9,12.9,12.9,12.9,1,1,12.9
+4c6eaf,2026-07-15T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.049,0.616,0.211,0.089,4,4,"0.092,0.049,0.086,0.616"
+4c6eaf,2026-07-15T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.574,0.638,0.604,0.602,4,4,"0.638,0.629,0.574,0.575"
+4c6eaf,2026-07-15T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,1.603,2.005,1.717,1.629,4,4,"2.005,1.617,1.642,1.603"
+4c6eaf,2026-07-15T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.649,1.125,0.778,0.669,4,4,"0.669,0.649,0.668,1.125"
+4c6eaf,2026-07-15T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.097,0.663,0.247,0.114,4,4,"0.663,0.097,0.111,0.118"
