@@ -64,7 +64,19 @@ def _select_x_ticks(points: pd.DataFrame, max_ticks: int = 14) -> pd.DataFrame:
     return points.iloc[indices]
 
 
-def _point_label_texts(values: List[float]) -> tuple[List[str], List[str]]:
+def _format_point_label(value: float, metrics_kind: str) -> str:
+    if metrics_kind == 'performance':
+        return f'{value:.2f}s'
+    if metrics_kind == 'cpu':
+        return f'{value:.1f}%'
+    return f'{value:.1f} MB'
+
+
+def _hover_value_format(metrics_kind: str) -> str:
+    return '.2f' if metrics_kind == 'performance' else '.1f'
+
+
+def _point_label_texts(values: List[float], metrics_kind: str) -> tuple[List[str], List[str]]:
     """Alternate label positions; thin out text when many builds."""
     count = len(values)
     if count <= 16:
@@ -74,7 +86,7 @@ def _point_label_texts(values: List[float]) -> tuple[List[str], List[str]]:
     else:
         stride = 3
     texts = [
-        _format_seconds(value) if index % stride == 0 or index == count - 1 else ''
+        _format_point_label(value, metrics_kind) if index % stride == 0 or index == count - 1 else ''
         for index, value in enumerate(values)
     ]
     positions = [
@@ -103,10 +115,6 @@ def series_for_chart(metrics: pd.DataFrame, chart: ChartTest) -> Optional[pd.Dat
         return None
     aggregated = aggregate_by_build(test_data, chart.value_column, ['test_name'])
     return aggregated if not aggregated.empty else None
-
-
-def _format_seconds(value: float) -> str:
-    return f'{value:.2f}s'
 
 
 def _rolling_mean(values: List[float], window: int) -> List[float]:
@@ -324,11 +332,12 @@ def _add_build_trace(
     color: str,
     value_format: str = '.3f',
     show_point_labels: bool = False,
+    metrics_kind: str = 'performance',
 ):
     x_col = 'x_index' if 'x_index' in points.columns else 'date'
     values = points[value_col].tolist()
     if show_point_labels:
-        text, textposition = _point_label_texts(values)
+        text, textposition = _point_label_texts(values, metrics_kind)
         mode = 'lines+markers+text'
     else:
         text, textposition = None, None
@@ -400,8 +409,8 @@ def build_chart_figure(
         return None
 
     fig = go.Figure()
-    value_format = '.2f' if chart.metrics_kind == 'performance' else '.3f'
-    show_point_labels = chart.metrics_kind == 'performance'
+    value_format = _hover_value_format(chart.metrics_kind)
+    show_point_labels = True
     color = chart.color or (
         PRIMARY_LOAD_TIME_COLOR if chart.metrics_kind == 'performance'
         else PERFORMANCE_COLORS[0]
@@ -411,6 +420,7 @@ def build_chart_figure(
     _add_build_trace(
         fig, series, chart.value_column, name='per build', ylabel=chart.ylabel,
         color=color, value_format=value_format, show_point_labels=show_point_labels,
+        metrics_kind=chart.metrics_kind,
     )
     if chart.show_rolling_average:
         _add_rolling_average_trace(
