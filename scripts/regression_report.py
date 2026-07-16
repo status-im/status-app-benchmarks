@@ -102,14 +102,25 @@ def _check_backlog(series: pd.DataFrame, chart: ChartTest, defaults: ChartDefaul
     )
 
 
+def _trend_only(series: pd.DataFrame, chart: ChartTest) -> pd.DataFrame:
+    if not chart.baselines:
+        return series
+    filtered = series[~series['commit_hash'].astype(str).isin(chart.baselines)]
+    return filtered.reset_index(drop=True)
+
+
 def collect_violations(metrics: pd.DataFrame, config: BenchmarkConfig) -> List[Violation]:
     violations: List[Violation] = []
     defaults = config.defaults
     performance_charts = [c for c in config.charts if c.metrics_kind == 'performance']
 
     for chart in performance_charts:
-        series = series_for_chart(metrics, chart)
-        if series is None:
+        result = series_for_chart(metrics, chart)
+        if result is None:
+            continue
+        series, _n_baselines = result
+        series = _trend_only(series, chart)
+        if series.empty:
             continue
         regression = _check_regression(series, chart, defaults)
         if regression:

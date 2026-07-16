@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Optional
@@ -11,6 +12,7 @@ import tomli as tomllib
 CHART_WINDOW_DAYS = 30
 DEFAULT_CONFIG = Path('scripts/tests_config.toml')
 LOAD_TIME_FOOTNOTE = 'Each point = average of 5 runs on that build.'
+DESKTOP_BUILD_LABELS = Path('data/desktop/build_labels.csv')
 
 MetricsKind = Literal['performance', 'cpu', 'ram']
 
@@ -24,6 +26,8 @@ class ChartDefaults:
     rolling_window: int = 5
     backlog_slow_of_last_n: int = 5
     backlog_slow_min_count: int = 3
+    baselines: tuple[str, ...] = ()
+    reference_build: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -73,8 +77,25 @@ def _require_fields(raw: dict, *fields: str, context: str = 'config') -> None:
             raise ValueError(f'Missing required field {field!r} in {context}')
 
 
+def load_desktop_build_labels(labels_file: Path = DESKTOP_BUILD_LABELS) -> dict[str, str]:
+    """Map commit_hash -> display label (| separates lines on the chart axis)."""
+    if not labels_file.exists():
+        return {}
+    labels: dict[str, str] = {}
+    with open(labels_file, newline='', encoding='utf-8') as handle:
+        for row in csv.DictReader(handle):
+            if row.get('exclude'):
+                continue
+            commit_hash = row.get('commit_hash', '').strip()
+            label = row.get('label', '').strip()
+            if commit_hash and label:
+                labels[commit_hash] = label
+    return labels
+
+
 def _load_defaults(raw: dict) -> ChartDefaults:
     entry = raw.get('defaults', {})
+    baselines = entry.get('baselines', [])
     return ChartDefaults(
         slow_threshold_s=entry.get('slow_threshold_s', 1.0),
         fast_threshold_s=entry.get('fast_threshold_s', 0.5),
@@ -83,6 +104,8 @@ def _load_defaults(raw: dict) -> ChartDefaults:
         rolling_window=entry.get('rolling_window', 5),
         backlog_slow_of_last_n=entry.get('backlog_slow_of_last_n', 5),
         backlog_slow_min_count=entry.get('backlog_slow_min_count', 3),
+        baselines=tuple(baselines),
+        reference_build=entry.get('reference_build'),
     )
 
 
@@ -93,9 +116,11 @@ def _load_chart_tests(
     value_column: str,
     default_ylabel: str,
     default_attachment_keyword: str,
+    defaults: ChartDefaults,
     default_footnote: str = '',
     default_show_speed_zones: bool = False,
     default_show_rolling_average: bool = False,
+    inherit_baselines: bool = True,
 ) -> list[ChartTest]:
     charts = []
     for entry in entries:
@@ -104,7 +129,16 @@ def _load_chart_tests(
             'test_id', 'display_name', 'graph_filename', 'pattern',
             context=f'{metrics_kind} test',
         )
-        baselines = entry.get('baselines', [])
+        if 'baselines' in entry:
+            baselines = tuple(entry['baselines'])
+        elif inherit_baselines:
+            baselines = defaults.baselines
+        else:
+            baselines = ()
+        reference_build = (
+            entry['reference_build'] if 'reference_build' in entry
+            else (defaults.reference_build if inherit_baselines else None)
+        )
         charts.append(ChartTest(
             test_id=entry['test_id'],
             display_name=entry['display_name'],
@@ -119,8 +153,8 @@ def _load_chart_tests(
             description=entry.get('description', ''),
             show_speed_zones=entry.get('show_speed_zones', default_show_speed_zones),
             show_rolling_average=entry.get('show_rolling_average', default_show_rolling_average),
-            reference_build=entry.get('reference_build'),
-            baselines=tuple(baselines),
+            reference_build=reference_build,
+            baselines=baselines,
         ))
     return charts
 
@@ -153,6 +187,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
         value_column='avg_time',
         default_ylabel='seconds',
         default_attachment_keyword='load time',
+        defaults=defaults,
         default_footnote=LOAD_TIME_FOOTNOTE,
         default_show_speed_zones=True,
         default_show_rolling_average=True,
@@ -168,6 +203,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
             value_column='avg_cpu',
             default_ylabel='CPU Usage (%)',
             default_attachment_keyword='cpu usage',
+            defaults=defaults,
             default_show_rolling_average=True,
         ),
         *_load_chart_tests(
@@ -176,6 +212,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
             value_column='avg_ram_mb',
             default_ylabel='RAM Usage (MB)',
             default_attachment_keyword='ram usage',
+            defaults=defaults,
             default_show_rolling_average=True,
         ),
     ]

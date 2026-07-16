@@ -9,6 +9,8 @@ regression_consecutive = 3
 rolling_window = 5
 backlog_slow_of_last_n = 5
 backlog_slow_min_count = 3
+baselines = ["760417", "5f66de"]
+reference_build = "5f66de"
 
 # --- Pages ---
 
@@ -208,6 +210,4 @@ attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
 footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
-# Phase 1.5 (baselines): after a one-off release measurement run, add per-chart:
-# reference_build = "abc1234"
-# baselines = ["older_hash", "abc1234"]
+# Per-chart baselines/reference_build override [defaults] when set on [[tests]] / [[cpu_tests]] / [[ram_tests]].
