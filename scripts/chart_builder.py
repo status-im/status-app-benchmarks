@@ -22,6 +22,13 @@ PERFORMANCE_COLORS = ['#10AC84', '#2E86DE', '#F79F1F', '#54A0FF']
 PRIMARY_LOAD_TIME_COLOR = '#10AC84'
 ROLLING_AVG_COLOR = '#34495e'
 
+# Reference levels for pinned release baselines (hash -> line/label color).
+BASELINE_REFERENCE_COLORS = {
+    '760417': '#2E86DE',  # 2.37.1
+    '5f66de': '#1e8449',  # 2.38.0 (GA)
+}
+BASELINE_REFERENCE_COLOR_FALLBACK = ['#2E86DE', '#1e8449', '#F79F1F', '#9b59b6']
+
 CHART_WIDTH = 1200
 CHART_HEIGHT = 600
 CHART_SCALE = 1
@@ -83,7 +90,13 @@ def _hover_value_format(metrics_kind: str) -> str:
     return '.2f' if metrics_kind == 'performance' else '.1f'
 
 
-def _point_label_texts(values: List[float], metrics_kind: str) -> tuple[List[str], List[str]]:
+def _point_label_texts(
+    values: List[float],
+    metrics_kind: str,
+    *,
+    n_baselines: int = 0,
+    ref_levels: Optional[List[float]] = None,
+) -> tuple[List[str], List[str]]:
     """Alternate label positions; thin out text when many builds."""
     count = len(values)
     if count <= 16:
@@ -92,10 +105,20 @@ def _point_label_texts(values: List[float], metrics_kind: str) -> tuple[List[str
         stride = 2
     else:
         stride = 3
-    texts = [
-        _format_point_label(value, metrics_kind) if index % stride == 0 or index == count - 1 else ''
-        for index, value in enumerate(values)
-    ]
+    ref_levels = ref_levels or []
+    y_tol = 0.04 if metrics_kind == 'performance' else 0.5
+    texts = []
+    for index, value in enumerate(values):
+        if index < n_baselines:
+            texts.append('')
+            continue
+        near_ref = any(abs(value - level) < y_tol for level in ref_levels)
+        if near_ref:
+            texts.append('')
+        elif index % stride == 0 or index == count - 1:
+            texts.append(_format_point_label(value, metrics_kind))
+        else:
+            texts.append('')
     positions = [
         'top center' if index % 2 == 0 else 'bottom center'
         for index in range(count)
@@ -204,9 +227,17 @@ def _trace_customdata(points: pd.DataFrame) -> list:
     ]).tolist()
 
 
-def _axis_ticks(axis_points: pd.DataFrame) -> pd.DataFrame:
+def _axis_ticks(axis_points: pd.DataFrame, n_baselines: int = 0) -> pd.DataFrame:
     if 'x_index' in axis_points.columns:
-        return _select_x_ticks(axis_points.sort_values('x_index'))
+        sorted_pts = axis_points.sort_values('x_index')
+        selected = _select_x_ticks(sorted_pts)
+        if n_baselines > 0:
+            baseline_ticks = sorted_pts[sorted_pts['x_index'] < n_baselines]
+            selected = pd.concat([
+                baseline_ticks,
+                selected[~selected['x_index'].isin(baseline_ticks['x_index'])],
+            ]).drop_duplicates('x_index').sort_values('x_index')
+        return selected
     ticks = axis_points.sort_values('date').copy()
     ticks['day'] = ticks['date'].dt.normalize()
     return ticks.drop_duplicates('day', keep='last')
@@ -293,28 +324,84 @@ def _bottom_margin(*, show_zones: bool, footnote: str) -> int:
     return reserve
 
 
-def _add_reference_line(
+def _reference_builds_for_chart(chart: ChartTest) -> tuple[str, ...]:
+    if chart.baselines:
+        return chart.baselines
+    if chart.reference_build:
+        return (chart.reference_build,)
+    return ()
+
+
+def _reference_line_color(commit_hash: str, index: int) -> str:
+    return BASELINE_REFERENCE_COLORS.get(
+        commit_hash,
+        BASELINE_REFERENCE_COLOR_FALLBACK[index % len(BASELINE_REFERENCE_COLOR_FALLBACK)],
+    )
+
+
+def _reference_label_text(level: float, version: str, metrics_kind: str) -> str:
+    return f'{version} ({_format_point_label(level, metrics_kind)})'
+
+
+def _add_reference_lines(
     fig: go.Figure,
     points: pd.DataFrame,
     value_col: str,
-    reference_build: Optional[str],
+    reference_builds: tuple[str, ...],
     build_labels: Optional[dict[str, str]] = None,
+    *,
+    ymax: float,
+    metrics_kind: str = 'performance',
 ):
-    if not reference_build:
-        return
-    ref_rows = points[points['commit_hash'].astype(str) == reference_build]
-    if ref_rows.empty:
-        return
-    level = float(ref_rows[value_col].iloc[0])
-    label = reference_build[:8]
-    if build_labels and reference_build in build_labels:
-        label = _version_from_label(build_labels[reference_build])
-    fig.add_hline(y=level, line_color='#333333', line_width=1.1, opacity=0.85)
-    fig.add_annotation(
-        x=1, y=level, xref='paper', yref='y',
-        text=f' {label}', showarrow=False,
-        xanchor='right', yanchor='bottom', font=dict(size=9, color='#333333'),
+    labels = build_labels or {}
+    refs: list[tuple[float, str, str, int]] = []
+    for index, commit_hash in enumerate(reference_builds):
+        ref_rows = points[points['commit_hash'].astype(str) == commit_hash]
+        if ref_rows.empty:
+            continue
+        level = float(ref_rows[value_col].iloc[0])
+        label = (
+            _version_from_label(labels[commit_hash])
+            if commit_hash in labels
+            else commit_hash[:8]
+        )
+        color = _reference_line_color(commit_hash, index)
+        x_pos = int(ref_rows['x_index'].iloc[0])
+        refs.append((level, label, color, x_pos))
+
+    min_label_gap = ymax * 0.06
+    close_labels = (
+        len(refs) > 1
+        and abs(refs[0][0] - refs[1][0]) < min_label_gap
     )
+    higher_idx = (
+        0 if refs[0][0] >= refs[1][0] else 1
+    ) if close_labels else 0
+    label_offset_px = 4
+    for index, (level, label, color, x_pos) in enumerate(refs):
+        fig.add_shape(
+            type='line',
+            xref='paper', x0=0, x1=1,
+            yref='y', y0=level, y1=level,
+            line=dict(color=color, width=1.2),
+            layer='below',
+        )
+        if close_labels:
+            if index == higher_idx:
+                yanchor, yshift = 'bottom', label_offset_px
+            else:
+                yanchor, yshift = 'top', -label_offset_px
+        else:
+            yanchor, yshift = 'bottom', label_offset_px
+        fig.add_annotation(
+            x=x_pos, y=level, xref='x', yref='y',
+            text=f' {_reference_label_text(level, label, metrics_kind)}',
+            showarrow=False,
+            xanchor='center',
+            yanchor=yanchor,
+            yshift=yshift,
+            font=dict(size=9, color=color),
+        )
 
 
 def _add_baseline_separator(fig: go.Figure, n_baselines: int, n_points: int) -> None:
@@ -347,8 +434,9 @@ def _apply_layout(
     show_zones: bool,
     footnote: str = '',
     chart_width: int = CHART_WIDTH,
+    n_baselines: int = 0,
 ):
-    ticks = _axis_ticks(axis_points)
+    ticks = _axis_ticks(axis_points, n_baselines=n_baselines)
     uses_build_index = 'x_index' in axis_points.columns
     top_margin = 95 if chart.description else 80
     bottom = _bottom_margin(show_zones=show_zones, footnote=footnote)
@@ -406,6 +494,29 @@ def _apply_layout(
     )
 
 
+def _disconnected_trace_series(
+    points: pd.DataFrame,
+    value_col: str,
+    *,
+    n_baselines: int = 0,
+) -> tuple[list, list]:
+    """Break lines between pinned baseline columns and before trend."""
+    x_out: list = []
+    y_out: list = []
+    rows = points.reset_index(drop=True)
+    for pos in range(len(rows)):
+        row = rows.iloc[pos]
+        if x_out and n_baselines > 0:
+            prev_x = int(rows.iloc[pos - 1]['x_index'])
+            curr_x = int(row['x_index'])
+            if prev_x < n_baselines or curr_x < n_baselines:
+                x_out.append(None)
+                y_out.append(None)
+        x_out.append(int(row['x_index']))
+        y_out.append(row[value_col])
+    return x_out, y_out
+
+
 def _add_build_trace(
     fig: go.Figure,
     points: pd.DataFrame,
@@ -417,29 +528,70 @@ def _add_build_trace(
     value_format: str = '.3f',
     show_point_labels: bool = False,
     metrics_kind: str = 'performance',
+    n_baselines: int = 0,
+    ref_levels: Optional[List[float]] = None,
 ):
     x_col = 'x_index' if 'x_index' in points.columns else 'date'
     values = points[value_col].tolist()
-    if show_point_labels:
-        text, textposition = _point_label_texts(values, metrics_kind)
-        mode = 'lines+markers+text'
+    if x_col == 'x_index' and n_baselines > 0:
+        x_values, y_values = _disconnected_trace_series(
+            points.reset_index(drop=True), value_col, n_baselines=n_baselines,
+        )
+        full_cd = _trace_customdata(points)
+        customdata: list = []
+        value_idx = 0
+        for x in x_values:
+            if x is None:
+                customdata.append(['', ''])
+            else:
+                customdata.append(full_cd[value_idx])
+                value_idx += 1
+        # Map disconnected indices back to text labels (skip None slots).
+        if show_point_labels:
+            full_text, full_pos = _point_label_texts(
+                values, metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
+            )
+            text, textposition = [], []
+            value_idx = 0
+            for x in x_values:
+                if x is None:
+                    text.append('')
+                    textposition.append('top center')
+                else:
+                    text.append(full_text[value_idx])
+                    textposition.append(full_pos[value_idx])
+                    value_idx += 1
+            mode = 'lines+markers+text'
+        else:
+            text, textposition = None, None
+            mode = 'lines+markers'
     else:
-        text, textposition = None, None
-        mode = 'lines+markers'
+        x_values = points[x_col].tolist()
+        y_values = values
+        customdata = _trace_customdata(points)
+        if show_point_labels:
+            text, textposition = _point_label_texts(
+                values, metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
+            )
+            mode = 'lines+markers+text'
+        else:
+            text, textposition = None, None
+            mode = 'lines+markers'
     marker_size = 6 if len(points) > 24 else 7
     trace_kwargs = dict(
-        x=points[x_col],
-        y=points[value_col],
+        x=x_values,
+        y=y_values,
         mode=mode,
         name=name,
         line=dict(color=color, width=2.5),
         marker=dict(size=marker_size, color=color),
-        customdata=_trace_customdata(points),
+        customdata=customdata,
         hovertemplate=_hover_template(name, ylabel, value_format=value_format),
         text=text,
         textposition=textposition,
         textfont=dict(size=8, color=color),
         cliponaxis=False,
+        connectgaps=False,
     )
     fig.add_trace(go.Scatter(**trace_kwargs))
 
@@ -521,10 +673,17 @@ def build_chart_figure(
     )
     show_legend = bool(chart.show_rolling_average)
 
+    ref_builds = _reference_builds_for_chart(chart)
+    ref_levels = [
+        float(series.loc[series['commit_hash'].astype(str) == h, chart.value_column].iloc[0])
+        for h in ref_builds
+        if not series.loc[series['commit_hash'].astype(str) == h].empty
+    ]
+
     _add_build_trace(
         fig, series, chart.value_column, name='per build', ylabel=chart.ylabel,
         color=color, value_format=value_format, show_point_labels=show_point_labels,
-        metrics_kind=chart.metrics_kind,
+        metrics_kind=chart.metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
     )
     if chart.show_rolling_average:
         _add_rolling_average_trace_trend_only(
@@ -546,7 +705,10 @@ def build_chart_figure(
             slow_threshold=defaults.slow_threshold_s,
         )
 
-    _add_reference_line(fig, series, chart.value_column, chart.reference_build, labels)
+    _add_reference_lines(
+        fig, series, chart.value_column, ref_builds, labels,
+        ymax=ymax, metrics_kind=chart.metrics_kind,
+    )
     _add_baseline_separator(fig, n_baselines, len(series))
 
     n_points = len(series)
@@ -555,7 +717,7 @@ def build_chart_figure(
     _apply_layout(
         fig, chart, chart.ylabel, series,
         show_legend=show_legend, ymax=ymax, show_zones=show_zones,
-        footnote=footnote, chart_width=chart_width,
+        footnote=footnote, chart_width=chart_width, n_baselines=n_baselines,
     )
     return fig
 
