@@ -10,7 +10,13 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-from benchmark_config import CHART_WINDOW_DAYS, ChartDefaults, ChartEntry, ChartTest
+from benchmark_config import (
+    CHART_WINDOW_DAYS,
+    ChartDefaults,
+    ChartEntry,
+    ChartTest,
+    load_desktop_build_labels,
+)
 
 PERFORMANCE_COLORS = ['#10AC84', '#2E86DE', '#F79F1F', '#54A0FF']
 PRIMARY_LOAD_TIME_COLOR = '#10AC84'
@@ -19,6 +25,7 @@ ROLLING_AVG_COLOR = '#34495e'
 CHART_WIDTH = 1200
 CHART_HEIGHT = 600
 CHART_SCALE = 1
+MAX_RECENT_BUILDS = 28
 
 # Share of figure height reserved below the plot (tilted ticks + footer lines).
 BOTTOM_RESERVE_RATIO = 0.34
@@ -107,14 +114,69 @@ def variant_name(test_name: str) -> str:
     return 'default'
 
 
-def series_for_chart(metrics: pd.DataFrame, chart: ChartTest) -> Optional[pd.DataFrame]:
-    """Filter metrics to one chart pattern and aggregate to one point per build."""
+def _version_from_label(label: str) -> str:
+    """Extract release version from a CSV label (date|version · hash)."""
+    if '|' not in label:
+        return label.strip()
+    return label.split('|', 1)[1].split('·')[0].strip()
+
+
+def _baseline_tick_label(build_labels: dict[str, str], commit_hash: str) -> str:
+    raw = build_labels.get(commit_hash, '')
+    version = _version_from_label(raw) if raw else commit_hash[:7]
+    return f'{version}\nbaseline'
+
+
+def series_for_chart(
+    metrics: pd.DataFrame,
+    chart: ChartTest,
+    build_labels: Optional[dict[str, str]] = None,
+) -> Optional[tuple[pd.DataFrame, int]]:
+    """Filter metrics to one chart pattern and aggregate to one point per build.
+
+    Returns (series, n_baselines). n_baselines is 0 when pinning is inactive.
+    """
     filtered = filter_recent(metrics)
     test_data = filtered[match_test_pattern(filtered['test_name'], chart.pattern)].copy()
     if test_data.empty:
         return None
     aggregated = aggregate_by_build(test_data, chart.value_column, ['test_name'])
-    return aggregated if not aggregated.empty else None
+    if aggregated.empty:
+        return None
+
+    labels = build_labels if build_labels is not None else {}
+    n_baselines = 0
+    if chart.baselines:
+        present = set(aggregated['commit_hash'].astype(str))
+        base_order = [h for h in chart.baselines if h in present]
+        if base_order:
+            baseline_set = set(base_order)
+            recent = (
+                aggregated[~aggregated['commit_hash'].astype(str).isin(baseline_set)]
+                .sort_values('date')
+                .tail(MAX_RECENT_BUILDS)
+            )
+            order_hashes = base_order + recent['commit_hash'].astype(str).tolist()
+            aggregated = aggregated[aggregated['commit_hash'].astype(str).isin(order_hashes)].copy()
+            order_map = {h: index for index, h in enumerate(order_hashes)}
+            aggregated['_sort'] = aggregated['commit_hash'].astype(str).map(order_map)
+            aggregated = (
+                aggregated.sort_values('_sort')
+                .drop(columns='_sort')
+                .reset_index(drop=True)
+            )
+            aggregated['x_index'] = range(len(aggregated))
+            n_baselines = len(base_order)
+
+            def tick_label(row: pd.Series) -> str:
+                commit_hash = str(row['commit_hash'])
+                if int(row['x_index']) < n_baselines:
+                    return _baseline_tick_label(labels, commit_hash)
+                return f"{row['date'].strftime('%b %d')}\n{commit_hash[:7]}"
+
+            aggregated['tick_label'] = aggregated.apply(tick_label, axis=1)
+
+    return aggregated, n_baselines
 
 
 def _rolling_mean(values: List[float], window: int) -> List[float]:
@@ -236,19 +298,41 @@ def _add_reference_line(
     points: pd.DataFrame,
     value_col: str,
     reference_build: Optional[str],
-    label: str = '',
+    build_labels: Optional[dict[str, str]] = None,
 ):
     if not reference_build:
         return
-    ref_rows = points[points['commit_hash'] == reference_build]
+    ref_rows = points[points['commit_hash'].astype(str) == reference_build]
     if ref_rows.empty:
         return
     level = float(ref_rows[value_col].iloc[0])
+    label = reference_build[:8]
+    if build_labels and reference_build in build_labels:
+        label = _version_from_label(build_labels[reference_build])
     fig.add_hline(y=level, line_color='#333333', line_width=1.1, opacity=0.85)
     fig.add_annotation(
         x=1, y=level, xref='paper', yref='y',
-        text=f' {label or reference_build[:8]}', showarrow=False,
+        text=f' {label}', showarrow=False,
         xanchor='right', yanchor='bottom', font=dict(size=9, color='#333333'),
+    )
+
+
+def _add_baseline_separator(fig: go.Figure, n_baselines: int, n_points: int) -> None:
+    if not (0 < n_baselines < n_points):
+        return
+    fig.add_vline(
+        x=n_baselines - 0.5,
+        line_color='#bbbbbb',
+        line_width=1,
+        opacity=0.9,
+    )
+    fig.add_annotation(
+        xref='x', yref='paper',
+        x=n_baselines - 0.5, y=1.0,
+        text='baselines | trend',
+        showarrow=False,
+        xanchor='center', yanchor='bottom',
+        font=dict(size=7, color='#999999'),
     )
 
 
@@ -386,6 +470,23 @@ def _add_rolling_average_trace(
     ))
 
 
+def _add_rolling_average_trace_trend_only(
+    fig: go.Figure,
+    points: pd.DataFrame,
+    value_col: str,
+    *,
+    n_baselines: int,
+    window: int,
+    ylabel: str,
+    value_format: str = '.2f',
+):
+    trend = points[points['x_index'] >= n_baselines] if n_baselines > 0 else points
+    _add_rolling_average_trace(
+        fig, trend, value_col,
+        window=window, ylabel=ylabel, value_format=value_format,
+    )
+
+
 def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> str:
     charts_dir = output_dir / 'charts'
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -402,11 +503,14 @@ def build_chart_figure(
     defaults: ChartDefaults,
     *,
     footnote: str = '',
+    build_labels: Optional[dict[str, str]] = None,
 ) -> Optional[go.Figure]:
-    series = series_for_chart(metrics, chart)
-    if series is None:
+    labels = build_labels if build_labels is not None else load_desktop_build_labels()
+    result = series_for_chart(metrics, chart, labels)
+    if result is None:
         print(f'Warning: No data for {chart.test_id} in the last {CHART_WINDOW_DAYS} days')
         return None
+    series, n_baselines = result
 
     fig = go.Figure()
     value_format = _hover_value_format(chart.metrics_kind)
@@ -423,11 +527,13 @@ def build_chart_figure(
         metrics_kind=chart.metrics_kind,
     )
     if chart.show_rolling_average:
-        _add_rolling_average_trace(
+        _add_rolling_average_trace_trend_only(
             fig, series, chart.value_column,
+            n_baselines=n_baselines,
             window=defaults.rolling_window, ylabel=chart.ylabel, value_format=value_format,
         )
-        if len(series) >= 4:
+        trend_len = len(series) - n_baselines if n_baselines > 0 else len(series)
+        if trend_len >= 4:
             show_legend = True
 
     ymax = series[chart.value_column].max() * 1.35
@@ -440,7 +546,8 @@ def build_chart_figure(
             slow_threshold=defaults.slow_threshold_s,
         )
 
-    _add_reference_line(fig, series, chart.value_column, chart.reference_build)
+    _add_reference_line(fig, series, chart.value_column, chart.reference_build, labels)
+    _add_baseline_separator(fig, n_baselines, len(series))
 
     n_points = len(series)
     chart_width = max(CHART_WIDTH, min(2000, 800 + n_points * 24))
