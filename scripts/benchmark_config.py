@@ -168,6 +168,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
             value_column='avg_cpu',
             default_ylabel='CPU Usage (%)',
             default_attachment_keyword='cpu usage',
+            default_show_rolling_average=True,
         ),
         *_load_chart_tests(
             raw.get('ram_tests', []),
@@ -175,6 +176,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
             value_column='avg_ram_mb',
             default_ylabel='RAM Usage (MB)',
             default_attachment_keyword='ram usage',
+            default_show_rolling_average=True,
         ),
     ]
 

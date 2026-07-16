@@ -1,6 +1,6 @@
 # Desktop benchmark regression report
 
-Generated: 2026-07-16 10:39
+Generated: 2026-07-16 12:05
 
 **Total flags:** 2
 
