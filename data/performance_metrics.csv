@@ -1153,3 +1153,14 @@ df161fdc6,2026-07-16T08:38:17,test_wallet_loading_time[fresh_user],passed,0.413,
 df161fdc6,2026-07-16T08:38:17,test_wallet_loading_time[wallet_load_alex_user],passed,0.633,0.747,0.691,5,"0.747,0.701,0.633,0.721,0.651"
 df161fdc6,2026-07-16T08:38:17,test_status_community_first_open_loading_time[user_data0-user_account0],passed,3.173,3.173,3.173,1,3.173
 df161fdc6,2026-07-16T08:38:17,test_status_community_second_open_loading_time[user_data0-user_account0],passed,2.105,2.17,2.133,5,"2.123,2.125,2.17,2.143,2.105"
+df161fdc6,2026-07-16T09:47:50,test_status_community_second_open_loading_time[user_data0-user_account0],passed,2.082,2.122,2.11,5,"2.117,2.082,2.122,2.109,2.122"
+df161fdc6,2026-07-16T09:47:50,test_wallet_assets_loading_time[fresh_user],passed,0.236,0.702,0.602,5,"0.236,0.695,0.69,0.688,0.702"
+df161fdc6,2026-07-16T09:47:50,test_wallet_loading_time[wallet_load_user],passed,0.625,0.715,0.665,5,"0.625,0.715,0.7,0.649,0.637"
+df161fdc6,2026-07-16T09:47:50,test_swap_loading_time[fresh_user],passed,0.623,1.213,0.75,5,"1.213,0.623,0.645,0.633,0.637"
+df161fdc6,2026-07-16T09:47:50,test_wallet_loading_time[fresh_user],passed,0.454,0.51,0.481,5,"0.49,0.476,0.51,0.476,0.454"
+df161fdc6,2026-07-16T09:47:50,test_wallet_loading_time[wallet_load_alex_user],passed,0.55,0.721,0.641,5,"0.674,0.55,0.636,0.721,0.621"
+df161fdc6,2026-07-16T09:47:50,test_status_community_first_open_loading_time[user_data0-user_account0],passed,4.546,4.546,4.546,1,4.546
+df161fdc6,2026-07-16T09:47:50,test_wallet_assets_loading_time[wallet_load_alex_user],passed,0.332,0.648,0.34,10,"0.624,0.347,0.63,0.332,0.648,0.333,0.636,0.344,0.625,0.343"
+df161fdc6,2026-07-16T09:47:50,test_wallet_assets_loading_time[wallet_load_user],passed,0.566,0.682,0.617,10,"0.682,0.566,0.592,0.606,0.577,0.651,0.584,0.633,0.568,0.627"
+df161fdc6,2026-07-16T09:47:50,test_swap_loading_time[wallet_load_alex_user],passed,0.689,1.513,0.883,5,"1.513,0.735,0.689,0.771,0.707"
+df161fdc6,2026-07-16T09:47:50,test_swap_loading_time[wallet_load_user],passed,0.7,1.207,0.821,5,"1.207,0.721,0.751,0.7,0.727"
