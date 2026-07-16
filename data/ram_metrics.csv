@@ -45,3 +45,5 @@ df161fdc6,2026-07-16T09:47:50,test_status_community_second_open_loading_time[use
 df161fdc6,2026-07-16T09:47:50,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram_member,passed,779.243,779.243,779.243,1,779.243
 5f66de,2026-07-16T10:08:15,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram_member,passed,865.851,1006.071,946.631,5,"865.851,896.922,1006.071,967.241,997.072"
 5f66de,2026-07-16T10:08:15,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram_member,passed,758.527,758.527,758.527,1,758.527
+760417,2026-07-16T12:50:14,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram_member,passed,828.76,980.51,901.123,5,"828.76,845.491,905.207,945.648,980.51"
+760417,2026-07-16T12:50:14,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram_member,passed,782.846,782.846,782.846,1,782.846
