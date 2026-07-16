@@ -18,7 +18,11 @@ Full CSV history: [`data/`](../../data/).
 
 Load times for a newly onboarded account (no pre-seeded user data).
 
-_No data yet — charts will appear after the next nightly benchmark run._
+![Desktop — Wallet load time](./wallet_loading_time_fresh.png)
+
+![Desktop — Wallet assets load time](./wallet_assets_loading_time_fresh.png)
+
+![Desktop — Swap modal load time](./swap_loading_time_fresh.png)
 
 ## Wallet — wallet_load profile
 
