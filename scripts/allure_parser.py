@@ -57,22 +57,22 @@ def parse_metric_attachment(attachment_file: Path, metric_keyword: str) -> Dict:
 
 def find_attachment_source(test_data: Dict, keyword: str) -> Optional[str]:
     keyword = keyword.lower()
-    test_stage = test_data.get('testStage', {})
 
-    for attachment in test_stage.get('attachments', []):
-        if keyword in attachment.get('name', '').lower():
-            source = attachment.get('source', '')
-            if source:
-                return source
-
-    for step in test_stage.get('steps', []):
-        for attachment in step.get('attachments', []):
+    def find_in_stage(stage: Dict) -> Optional[str]:
+        for attachment in stage.get('attachments', []):
             if keyword in attachment.get('name', '').lower():
                 source = attachment.get('source', '')
                 if source:
                     return source
 
-    return None
+        for step in stage.get('steps', []):
+            source = find_in_stage(step)
+            if source:
+                return source
+
+        return None
+
+    return find_in_stage(test_data.get('testStage', {}))
 
 
 def _load_time_row(test_name: str, status: str, metric_data: Dict) -> Dict:
