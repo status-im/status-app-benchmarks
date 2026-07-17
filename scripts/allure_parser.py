@@ -96,11 +96,21 @@ def _resource_row(chart: ChartTest, test_name: str, status: str, metric_data: Di
     }
 
 
+def _attachment_keyword_for_test(chart: ChartTest, test_name: str) -> str:
+    for index, pattern in enumerate(chart.historical_patterns):
+        if pattern not in test_name:
+            continue
+        if index < len(chart.historical_attachment_keywords):
+            return chart.historical_attachment_keywords[index]
+        break
+    return chart.attachment_keyword
+
+
 def parse_test_case_json(
     json_file: Path,
     benchmark_dir: Path,
     config: BenchmarkConfig,
-) -> Tuple[Dict, Optional[Dict], List[Dict], List[Dict]]:
+) -> Tuple[Dict, List[Dict], List[Dict], List[Dict]]:
     data = json.loads(json_file.read_text(encoding='utf-8'))
 
     test_result = {
@@ -111,29 +121,39 @@ def parse_test_case_json(
         'flaky': data.get('flaky', False),
     }
     test_name = test_result['test_name']
-    performance_metrics = None
+    performance_results: List[Dict] = []
     cpu_results: List[Dict] = []
     ram_results: List[Dict] = []
 
     for chart in config.charts:
-        patterns = (chart.pattern, *chart.historical_patterns)
+        patterns = (
+            chart.source_pattern or chart.pattern,
+            *chart.historical_patterns,
+        )
         if not any(pattern in test_name for pattern in patterns):
             continue
-        attachment_source = find_attachment_source(data, chart.attachment_keyword)
+        attachment_keyword = _attachment_keyword_for_test(chart, test_name)
+        attachment_source = find_attachment_source(data, attachment_keyword)
         if not attachment_source:
             continue
         metric_data = parse_metric_attachment(
             attachment_path(benchmark_dir, attachment_source),
-            chart.attachment_keyword,
+            attachment_keyword,
         )
         if not metric_data:
             continue
 
         if chart.metrics_kind == 'performance':
-            performance_metrics = _load_time_row(test_name, test_result['status'], metric_data)
+            performance_results.append(
+                _load_time_row(chart.pattern, test_result['status'], metric_data)
+            )
         elif chart.metrics_kind == 'cpu':
-            cpu_results.append(_resource_row(chart, test_name, test_result['status'], metric_data))
+            cpu_results.append(
+                _resource_row(chart, chart.pattern, test_result['status'], metric_data)
+            )
         else:
-            ram_results.append(_resource_row(chart, test_name, test_result['status'], metric_data))
+            ram_results.append(
+                _resource_row(chart, chart.pattern, test_result['status'], metric_data)
+            )
 
-    return test_result, performance_metrics, cpu_results, ram_results
+    return test_result, performance_results, cpu_results, ram_results

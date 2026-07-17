@@ -43,6 +43,7 @@ class ChartTest:
     metrics_kind: MetricsKind
     attachment_keyword: str
     area: ProductArea
+    source_pattern: Optional[str] = None
     color: Optional[str] = None
     footnote: str = ''
     description: str = ''
@@ -51,6 +52,7 @@ class ChartTest:
     reference_build: Optional[str] = None
     baselines: tuple[str, ...] = ()
     historical_patterns: tuple[str, ...] = ()
+    historical_attachment_keywords: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -162,6 +164,7 @@ def _load_chart_tests(
             metrics_kind=metrics_kind,
             attachment_keyword=entry.get('attachment_keyword', default_attachment_keyword),
             area=entry.get('area', 'wallet'),
+            source_pattern=entry.get('source_pattern'),
             color=entry.get('color'),
             footnote=entry.get('footnote', default_footnote),
             description=entry.get('description', ''),
@@ -170,6 +173,9 @@ def _load_chart_tests(
             reference_build=reference_build,
             baselines=baselines,
             historical_patterns=tuple(entry.get('historical_patterns', [])),
+            historical_attachment_keywords=tuple(
+                entry.get('historical_attachment_keywords', [])
+            ),
         ))
     return charts
 
@@ -207,15 +213,32 @@ def _expand_wallet_scenarios(
             )
             suffix = profile['suffix']
             scenario_id = scenario['scenario_id']
-            test_pattern = f"{scenario['test_pattern']}[{profile['param_id']}]"
+            source_pattern = f"{scenario['test_pattern']}[{profile['param_id']}]"
+            series_test_pattern = scenario.get(
+                'series_test_pattern', scenario['test_pattern']
+            )
+            test_pattern = f"{series_test_pattern}[{profile['param_id']}]"
             historical_patterns = [
                 f"{pattern}[{profile['param_id']}]"
                 for pattern in scenario.get('historical_test_patterns', [])
             ]
+            historical_attachment_subjects = scenario.get(
+                'historical_attachment_subjects', []
+            )
+            if (
+                historical_attachment_subjects
+                and len(historical_attachment_subjects) != len(historical_patterns)
+            ):
+                raise ValueError(
+                    f"Wallet scenario {scenario_id!r} must define one "
+                    'historical_attachment_subject per historical_test_pattern'
+                )
             footnote = f"{profile['footnote_prefix']} · {scenario['footnote']}"
+            attachment_subject = scenario.get('attachment_subject')
             base_entry = {
                 'area': 'wallet',
                 'pattern': test_pattern,
+                'source_pattern': source_pattern,
                 'historical_patterns': historical_patterns,
                 'footnote': footnote,
             }
@@ -228,6 +251,14 @@ def _expand_wallet_scenarios(
                         'display_name': scenario['display_name'],
                         'description': 'Lower is better.',
                         'graph_filename': f"{scenario['graph_stem']}_time_{suffix}.png",
+                        **(
+                            {'attachment_keyword': f'{attachment_subject} load time'}
+                            if attachment_subject else {}
+                        ),
+                        'historical_attachment_keywords': [
+                            f'{subject} load time'
+                            for subject in historical_attachment_subjects
+                        ],
                     },
                 ),
                 (
@@ -237,6 +268,14 @@ def _expand_wallet_scenarios(
                         'test_id': f'test_{scenario_id}_cpu_{suffix}',
                         'display_name': f"CPU usage while {scenario['resource_action']}",
                         'graph_filename': f"{scenario['graph_stem']}_cpu_{suffix}.png",
+                        **(
+                            {'attachment_keyword': f'{attachment_subject} CPU usage'}
+                            if attachment_subject else {}
+                        ),
+                        'historical_attachment_keywords': [
+                            f'{subject} CPU usage'
+                            for subject in historical_attachment_subjects
+                        ],
                     },
                 ),
                 (
@@ -246,6 +285,14 @@ def _expand_wallet_scenarios(
                         'test_id': f'test_{scenario_id}_ram_{suffix}',
                         'display_name': f"RAM usage while {scenario['resource_action']}",
                         'graph_filename': f"{scenario['graph_stem']}_ram_{suffix}.png",
+                        **(
+                            {'attachment_keyword': f'{attachment_subject} RAM usage'}
+                            if attachment_subject else {}
+                        ),
+                        'historical_attachment_keywords': [
+                            f'{subject} RAM usage'
+                            for subject in historical_attachment_subjects
+                        ],
                     },
                 ),
             )

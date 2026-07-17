@@ -108,8 +108,7 @@ def process_benchmark_run(
             aggregate['total_retries'] += test_result['retries_count']
             if test_result['flaky']:
                 aggregate['flaky_tests'] += 1
-            if performance_metrics:
-                performance_results.append(performance_metrics)
+            performance_results.extend(performance_metrics)
             cpu_results.extend(cpu_metrics)
             ram_results.extend(ram_metrics)
         except Exception as error:
