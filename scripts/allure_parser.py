@@ -116,7 +116,8 @@ def parse_test_case_json(
     ram_results: List[Dict] = []
 
     for chart in config.charts:
-        if chart.pattern not in test_name:
+        patterns = (chart.pattern, *chart.historical_patterns)
+        if not any(pattern in test_name for pattern in patterns):
             continue
         attachment_source = find_attachment_source(data, chart.attachment_keyword)
         if not attachment_source:

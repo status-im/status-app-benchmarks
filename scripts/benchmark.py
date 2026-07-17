@@ -17,7 +17,7 @@ from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
 from chart_builder import cleanup_stale_charts, render_chart
 from environment_parser import load_run_environment, record_run_environment
-from regression_report import write_regression_report
+from regression_report import collect_scenario_summaries, write_regression_report
 from site_generator import write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
@@ -207,9 +207,11 @@ def generate_graphs(data_dir: Path, output_dir: Path):
             print(f'Error generating chart for {chart.test_id}: {error}')
 
     print('\nGenerating GitHub Pages site...')
+    summaries = collect_scenario_summaries(metrics, CONFIG)
     write_site(
         output_dir, CONFIG.pages, charts_by_test_id,
-        chart_labels={chart.test_id: chart.display_name for chart in CONFIG.charts},
+        chart_tests=CONFIG.charts,
+        summaries=summaries,
         run_environment=run_environment,
     )
     write_docs_root_index(output_dir.parent)

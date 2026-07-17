@@ -131,6 +131,13 @@ def match_test_pattern(series: pd.Series, pattern: str) -> pd.Series:
     return series.str.contains(rf'{escaped}(?:\[|$)', regex=True, na=False)
 
 
+def match_chart_patterns(series: pd.Series, chart: ChartTest) -> pd.Series:
+    matches = match_test_pattern(series, chart.pattern)
+    for pattern in chart.historical_patterns:
+        matches |= match_test_pattern(series, pattern)
+    return matches
+
+
 def variant_name(test_name: str) -> str:
     if '[' in test_name and ']' in test_name:
         return test_name.split('[')[1].split(']')[0]
@@ -160,9 +167,10 @@ def series_for_chart(
     Returns (series, n_baselines). n_baselines is 0 when pinning is inactive.
     """
     filtered = filter_recent(metrics)
-    test_data = filtered[match_test_pattern(filtered['test_name'], chart.pattern)].copy()
+    test_data = filtered[match_chart_patterns(filtered['test_name'], chart)].copy()
     if test_data.empty:
         return None
+    test_data['test_name'] = chart.pattern
     aggregated = aggregate_by_build(test_data, chart.value_column, ['test_name'])
     if aggregated.empty:
         return None
@@ -261,6 +269,7 @@ def _add_chart_footer(
     fig: go.Figure,
     *,
     show_zones: bool,
+    normal_range_label: str,
     footnote: str,
     plot_height_px: float,
 ) -> None:
@@ -272,14 +281,26 @@ def _add_chart_footer(
     if show_zones:
         fig.add_annotation(
             xref='paper', yref='paper', x=0.5, y=zones_y,
-            text='zones: &lt;0.5s fast · 0.5–1.0s ok · &gt;1.0s slow',
+            text=(
+                'zones: &lt;0.5s fast · 0.5–0.9s ok · '
+                '0.9–1.0s ok near slow · &gt;1.0s slow'
+            ),
             showarrow=False, xanchor='center', yanchor='top',
             font=dict(size=9, color='#888888'),
         )
+    next_y = zones_y - line_gap if show_zones else zones_y
+    if normal_range_label:
+        fig.add_annotation(
+            xref='paper', yref='paper', x=0.5, y=next_y,
+            text=f'dotted = {normal_range_label} normal range',
+            showarrow=False, xanchor='center', yanchor='top',
+            font=dict(size=9, color='#888888'),
+        )
+        next_y -= line_gap
     if footnote:
         fig.add_annotation(
             xref='paper', yref='paper', x=0.5,
-            y=zones_y - line_gap if show_zones else zones_y,
+            y=next_y,
             text=footnote,
             showarrow=False, xanchor='center', yanchor='top',
             font=dict(size=9, color='#888888'),
@@ -315,9 +336,11 @@ def _add_speed_zones(
         )
 
 
-def _bottom_margin(*, show_zones: bool, footnote: str) -> int:
+def _bottom_margin(*, show_zones: bool, normal_range_label: str, footnote: str) -> int:
     reserve = int(CHART_HEIGHT * BOTTOM_RESERVE_RATIO)
     if show_zones:
+        reserve += 14
+    if normal_range_label:
         reserve += 14
     if footnote.strip():
         reserve += 14
@@ -404,6 +427,40 @@ def _add_reference_lines(
         )
 
 
+def _add_normal_range(
+    fig: go.Figure,
+    points: pd.DataFrame,
+    chart: ChartTest,
+    defaults: ChartDefaults,
+    build_labels: dict[str, str],
+) -> str:
+    if chart.metrics_kind != 'performance':
+        return ''
+    reference_build = chart.reference_build or defaults.reference_build
+    if not reference_build:
+        return ''
+    reference_rows = points[points['commit_hash'].astype(str) == reference_build]
+    if reference_rows.empty:
+        return ''
+
+    reference_value = float(reference_rows[chart.value_column].iloc[0])
+    for level in (
+        reference_value * (1 - defaults.regression_pct),
+        reference_value * (1 + defaults.regression_pct),
+    ):
+        fig.add_hline(
+            y=level,
+            line_dash='dot',
+            line_color='#555555',
+            line_width=0.9,
+            opacity=0.55,
+            layer='below',
+        )
+    raw_label = build_labels.get(reference_build, '')
+    version = _version_from_label(raw_label) if raw_label else reference_build[:8]
+    return f'{version} ±{defaults.regression_pct:.0%}'
+
+
 def _add_baseline_separator(fig: go.Figure, n_baselines: int, n_points: int) -> None:
     if not (0 < n_baselines < n_points):
         return
@@ -432,6 +489,7 @@ def _apply_layout(
     show_legend: bool,
     ymax: float,
     show_zones: bool,
+    normal_range_label: str = '',
     footnote: str = '',
     chart_width: int = CHART_WIDTH,
     n_baselines: int = 0,
@@ -439,7 +497,11 @@ def _apply_layout(
     ticks = _axis_ticks(axis_points, n_baselines=n_baselines)
     uses_build_index = 'x_index' in axis_points.columns
     top_margin = 95 if chart.description else 80
-    bottom = _bottom_margin(show_zones=show_zones, footnote=footnote)
+    bottom = _bottom_margin(
+        show_zones=show_zones,
+        normal_range_label=normal_range_label,
+        footnote=footnote,
+    )
     plot_height_px = CHART_HEIGHT - top_margin - bottom
     title_pad = dict(b=12)
 
@@ -490,7 +552,11 @@ def _apply_layout(
         fig.update_xaxes(type='linear', showgrid=False)
 
     _add_chart_footer(
-        fig, show_zones=show_zones, footnote=footnote, plot_height_px=plot_height_px,
+        fig,
+        show_zones=show_zones,
+        normal_range_label=normal_range_label,
+        footnote=footnote,
+        plot_height_px=plot_height_px,
     )
 
 
@@ -644,7 +710,26 @@ def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> 
     charts_dir.mkdir(parents=True, exist_ok=True)
     html_filename = Path(graph_filename).with_suffix('.html').name
     fig.write_image(output_dir / graph_filename, scale=CHART_SCALE)
-    fig.write_html(charts_dir / html_filename, include_plotlyjs='directory', full_html=True)
+    html_figure = go.Figure(fig)
+    html_figure.update_layout(width=None, height=None, autosize=True)
+    html_path = charts_dir / html_filename
+    html_figure.write_html(
+        html_path,
+        include_plotlyjs='directory',
+        full_html=True,
+        config={'responsive': True},
+        default_width='100%',
+        default_height='100%',
+    )
+    html = html_path.read_text(encoding='utf-8')
+    html = html.replace(
+        '<head>',
+        '<head><style>'
+        'html,body,.plotly-graph-div{width:100%;height:100%;margin:0;overflow:hidden;}'
+        '</style>',
+        1,
+    )
+    html_path.write_text(html, encoding='utf-8')
     print(f'Generated {graph_filename} and charts/{html_filename}')
     return html_filename
 
@@ -709,6 +794,7 @@ def build_chart_figure(
         fig, series, chart.value_column, ref_builds, labels,
         ymax=ymax, metrics_kind=chart.metrics_kind,
     )
+    normal_range_label = _add_normal_range(fig, series, chart, defaults, labels)
     _add_baseline_separator(fig, n_baselines, len(series))
 
     n_points = len(series)
@@ -717,7 +803,8 @@ def build_chart_figure(
     _apply_layout(
         fig, chart, chart.ylabel, series,
         show_legend=show_legend, ymax=ymax, show_zones=show_zones,
-        footnote=footnote, chart_width=chart_width, n_baselines=n_baselines,
+        normal_range_label=normal_range_label, footnote=footnote,
+        chart_width=chart_width, n_baselines=n_baselines,
     )
     return fig
 

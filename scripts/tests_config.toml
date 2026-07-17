@@ -1,9 +1,9 @@
 # Benchmark Configuration
-# Each account variant gets its own chart (fresh / wallet_load / wallet_load_alex).
 
 [defaults]
 slow_threshold_s = 1.0
 fast_threshold_s = 0.5
+ok_near_slow_ratio = 0.10
 regression_pct = 0.15
 regression_consecutive = 3
 rolling_window = 5
@@ -16,38 +16,39 @@ reference_build = "5f66de"
 
 [[pages]]
 slug = "wallet-fresh"
-title = "Wallet — Fresh account"
-description = "Load times for a newly onboarded account (no pre-seeded user data)."
-test_ids = [
-    "test_wallet_loading_time_fresh",
-    "test_wallet_assets_loading_time_fresh",
-    "test_swap_loading_time_fresh",
-]
+title = "New user profile"
+description = "Newly created user profile (no-preseeded user data)"
+user_data_size = "No pre-seeded data"
+wallet = { tokens = "0", nfts = "0", transactions = "0" }
+messenger = { direct_chats = "0", group_chats = "0" }
+communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "wallet-wallet-load"
-title = "Wallet — wallet_load profile"
+title = "Returning user (heavy wallet account)"
 description = "Returning user with wallet_load profile (~29 MB user data)."
-test_ids = [
-    "test_wallet_loading_time_wallet_load",
-    "test_wallet_assets_loading_time_wallet_load",
-    "test_swap_loading_time_wallet_load",
-]
+user_data_size = "~29 MB"
+wallet = { tokens = "TBD", nfts = "TBD", transactions = "TBD" }
+messenger = { direct_chats = "0", group_chats = "0" }
+communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "wallet-wallet-load-alex"
-title = "Wallet — wallet_load_alex profile"
+title = "Returning user (medium heavy wallet account from Alex)"
 description = "Returning user with wallet_load_alex profile (~16 MB user data)."
-test_ids = [
-    "test_wallet_loading_time_wallet_load_alex",
-    "test_wallet_assets_loading_time_wallet_load_alex",
-    "test_swap_loading_time_wallet_load_alex",
-]
+user_data_size = "~16 MB"
+wallet = { tokens = "TBD", nfts = "TBD", transactions = "TBD" }
+messenger = { direct_chats = "0", group_chats = "0" }
+communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "community-populated"
-title = "Community — status_community_member profile"
+title = "Returning user (Status community member)"
 description = "Returning user with Status community already joined."
+user_data_size = "TBD"
+wallet = { tokens = "0", nfts = "0", transactions = "0" }
+messenger = { direct_chats = "0", group_chats = "0" }
+communities = { joined = "1", spectated = "0" }
 test_ids = [
     "test_status_community_first_open_loading_time_member",
     "test_status_community_second_open_loading_time_member",
@@ -57,157 +58,170 @@ test_ids = [
     "test_status_community_second_open_ram_member",
 ]
 
-# --- Wallet load time (3 variants) ---
+# --- Wallet profile matrix ---
 
-[[tests]]
-test_id = "test_wallet_loading_time_fresh"
-display_name = "Desktop — Wallet load time"
-description = "Time from opening Wallet until the screen is drawn · lower is better"
-pattern = "test_wallet_loading_time[fresh_user]"
-graph_filename = "wallet_loading_time_fresh.png"
-ylabel = "seconds"
-footnote = "Fresh account · each point = average of 5 runs on that build"
+[[wallet_profile_variants]]
+suffix = "fresh"
+param_id = "fresh_user"
+page_slug = "wallet-fresh"
+footnote_prefix = "New user profile"
 
-[[tests]]
-test_id = "test_wallet_loading_time_wallet_load"
-display_name = "Desktop — Wallet load time"
-description = "Time from opening Wallet until the screen is drawn · lower is better"
-pattern = "test_wallet_loading_time[wallet_load_user]"
-graph_filename = "wallet_loading_time_wallet_load.png"
-ylabel = "seconds"
-footnote = "wallet_load profile · each point = average of 5 runs on that build"
+[[wallet_profile_variants]]
+suffix = "wallet_load"
+param_id = "wallet_load_user"
+page_slug = "wallet-wallet-load"
+footnote_prefix = "wallet_load profile"
 
-[[tests]]
-test_id = "test_wallet_loading_time_wallet_load_alex"
-display_name = "Desktop — Wallet load time"
-description = "Time from opening Wallet until the screen is drawn · lower is better"
-pattern = "test_wallet_loading_time[wallet_load_alex_user]"
-graph_filename = "wallet_loading_time_wallet_load_alex.png"
-ylabel = "seconds"
-footnote = "wallet_load_alex profile · each point = average of 5 runs on that build"
+[[wallet_profile_variants]]
+suffix = "wallet_load_alex"
+param_id = "wallet_load_alex_user"
+page_slug = "wallet-wallet-load-alex"
+footnote_prefix = "wallet_load_alex profile"
 
-# --- Swap load time (3 variants) ---
+# Each declaration expands to load time, CPU, and RAM charts for all profiles.
 
-[[tests]]
-test_id = "test_swap_loading_time_fresh"
-display_name = "Desktop — Swap modal load time"
-description = "Time from opening Swap until ready · lower is better"
-pattern = "test_swap_loading_time[fresh_user]"
-graph_filename = "swap_loading_time_fresh.png"
-ylabel = "seconds"
-footnote = "Fresh account · each point = average of 5 runs on that build"
+[[wallet_scenarios]]
+scenario_id = "wallet_first_open"
+display_name = "Time to open Wallet for the first time after login"
+resource_action = "opening Wallet for the first time after login"
+test_pattern = "test_wallet_first_open_loading_time"
+graph_stem = "wallet_first_open"
+footnote = "each point = one first-open sample on that build"
 
-[[tests]]
-test_id = "test_swap_loading_time_wallet_load"
-display_name = "Desktop — Swap modal load time"
-description = "Time from opening Swap until ready · lower is better"
-pattern = "test_swap_loading_time[wallet_load_user]"
-graph_filename = "swap_loading_time_wallet_load.png"
-ylabel = "seconds"
-footnote = "wallet_load profile · each point = average of 5 runs on that build"
+[[wallet_scenarios]]
+scenario_id = "wallet_repeat_open"
+display_name = "Time to reopen Wallet in the same session"
+resource_action = "reopening Wallet in the same session"
+test_pattern = "test_wallet_repeat_open_loading_time"
+historical_test_patterns = ["test_wallet_loading_time"]
+graph_stem = "wallet_repeat_open"
+footnote = "each point = average of 5 runs on that build"
 
-[[tests]]
-test_id = "test_swap_loading_time_wallet_load_alex"
-display_name = "Desktop — Swap modal load time"
-description = "Time from opening Swap until ready · lower is better"
-pattern = "test_swap_loading_time[wallet_load_alex_user]"
-graph_filename = "swap_loading_time_wallet_load_alex.png"
-ylabel = "seconds"
-footnote = "wallet_load_alex profile · each point = average of 5 runs on that build"
+[[wallet_scenarios]]
+scenario_id = "wallet_account_first_open"
+display_name = "Time to open a Wallet account for the first time"
+resource_action = "opening a Wallet account for the first time"
+test_pattern = "test_wallet_account_open_loading_time"
+graph_stem = "wallet_account_first_open"
+footnote = "each point = one first account-open sample on that build"
 
-# --- Wallet assets load time (3 variants) ---
+[[wallet_scenarios]]
+scenario_id = "wallet_add_account"
+display_name = "Time to open the Add account modal"
+resource_action = "opening the Add account modal"
+test_pattern = "test_wallet_add_account_loading_time"
+graph_stem = "wallet_add_account"
+footnote = "each point = average of 5 runs on that build"
 
-[[tests]]
-test_id = "test_wallet_assets_loading_time_fresh"
-display_name = "Desktop — Wallet assets load time"
-description = "Time from selecting a wallet account until the assets list is drawn · lower is better"
-pattern = "test_wallet_assets_loading_time[fresh_user]"
-graph_filename = "wallet_assets_loading_time_fresh.png"
-ylabel = "seconds"
-footnote = "Fresh account · each point = average of 5 runs on that build"
+[[wallet_scenarios]]
+scenario_id = "wallet_receive"
+display_name = "Time to open the Receive modal"
+resource_action = "opening the Receive modal"
+test_pattern = "test_wallet_receive_loading_time"
+graph_stem = "wallet_receive"
+footnote = "each point = average of 5 runs on that build"
 
-[[tests]]
-test_id = "test_wallet_assets_loading_time_wallet_load"
-display_name = "Desktop — Wallet assets load time"
-description = "Time from selecting a wallet account until the assets list is drawn · lower is better"
-pattern = "test_wallet_assets_loading_time[wallet_load_user]"
-graph_filename = "wallet_assets_loading_time_wallet_load.png"
-ylabel = "seconds"
-footnote = "wallet_load profile · each point = average of 5 runs on that build"
+[[wallet_scenarios]]
+scenario_id = "wallet_send"
+display_name = "Time to open the Send modal"
+resource_action = "opening the Send modal"
+test_pattern = "test_wallet_send_loading_time"
+graph_stem = "wallet_send"
+footnote = "each point = average of 5 runs on that build"
 
-[[tests]]
-test_id = "test_wallet_assets_loading_time_wallet_load_alex"
-display_name = "Desktop — Wallet assets load time"
-description = "Time from selecting a wallet account until the assets list is drawn · lower is better"
-pattern = "test_wallet_assets_loading_time[wallet_load_alex_user]"
-graph_filename = "wallet_assets_loading_time_wallet_load_alex.png"
-ylabel = "seconds"
-footnote = "wallet_load_alex profile · each point = average of 5 runs on that build"
+[[wallet_scenarios]]
+scenario_id = "wallet_swap"
+display_name = "Time to open the Swap modal"
+resource_action = "opening the Swap modal"
+test_pattern = "test_wallet_swap_loading_time"
+historical_test_patterns = ["test_swap_loading_time"]
+graph_stem = "wallet_swap"
+footnote = "each point = average of 5 runs on that build"
 
-# --- Community first open (member only — user must already be in community) ---
+[[wallet_scenarios]]
+scenario_id = "wallet_assets_tab"
+display_name = "Time to open the Assets tab"
+resource_action = "opening the Assets tab"
+test_pattern = "test_wallet_assets_tab_loading_time"
+graph_stem = "wallet_assets_tab"
+footnote = "each point = average of 5 runs on that build"
+
+[[wallet_scenarios]]
+scenario_id = "wallet_collectibles_tab"
+display_name = "Time to open the Collectibles tab"
+resource_action = "opening the Collectibles tab"
+test_pattern = "test_wallet_collectibles_tab_loading_time"
+graph_stem = "wallet_collectibles_tab"
+footnote = "each point = average of 5 runs on that build"
+
+[[wallet_scenarios]]
+scenario_id = "wallet_activity_tab"
+display_name = "Time to open the Activity tab"
+resource_action = "opening the Activity tab"
+test_pattern = "test_wallet_activity_tab_loading_time"
+graph_stem = "wallet_activity_tab"
+footnote = "each point = average of 5 runs on that build"
+
+# --- Community first open (member only) ---
 
 [[tests]]
 test_id = "test_status_community_first_open_loading_time_member"
-display_name = "Desktop — Community first open"
-description = "Time from opening Status community for the first time · lower is better"
+area = "communities"
+display_name = "Time to open Status community for the first time after login"
+description = "Lower is better."
 pattern = "test_status_community_first_open_loading_time[user_data0-user_account0]"
 graph_filename = "community_first_open_loading_time_member.png"
 ylabel = "seconds"
-footnote = "status_community_member profile · each point = average of 5 runs on that build"
-
-# --- Community second open (member only — user must already be in community) ---
+footnote = "status_community_member profile · each point = one first-open sample on that build"
 
 [[tests]]
 test_id = "test_status_community_second_open_loading_time_member"
-display_name = "Desktop — Community second open"
-description = "Time from warm re-opening Status community · lower is better"
+area = "communities"
+display_name = "Time to reopen Status community in the same session"
+description = "Lower is better."
 pattern = "test_status_community_second_open_loading_time[user_data0-user_account0]"
 graph_filename = "community_second_open_loading_time_member.png"
 ylabel = "seconds"
 footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
-# --- Community CPU (member only) ---
-
 [[cpu_tests]]
 test_id = "test_status_community_first_open_cpu_member"
-display_name = "Desktop — Community first open CPU"
-description = "CPU usage while opening Status community for the first time"
+area = "communities"
+display_name = "CPU usage while opening Status community for the first time after login"
 pattern = "test_status_community_first_open_loading_time[user_data0-user_account0]"
 graph_filename = "community_first_open_cpu_member.png"
 attachment_keyword = "cpu usage"
 ylabel = "CPU Usage (%)"
-footnote = "status_community_member profile · each point = average of 5 runs on that build"
+footnote = "status_community_member profile · each point = one first-open sample on that build"
 
 [[cpu_tests]]
 test_id = "test_status_community_second_open_cpu_member"
-display_name = "Desktop — Community second open CPU"
-description = "CPU usage while warm re-opening Status community"
+area = "communities"
+display_name = "CPU usage while reopening Status community in the same session"
 pattern = "test_status_community_second_open_loading_time[user_data0-user_account0]"
 graph_filename = "community_second_open_cpu_member.png"
 attachment_keyword = "cpu usage"
 ylabel = "CPU Usage (%)"
 footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
-# --- Community RAM (member only) ---
-
 [[ram_tests]]
 test_id = "test_status_community_first_open_ram_member"
-display_name = "Desktop — Community first open RAM"
-description = "RAM usage while opening Status community for the first time"
+area = "communities"
+display_name = "RAM usage while opening Status community for the first time after login"
 pattern = "test_status_community_first_open_loading_time[user_data0-user_account0]"
 graph_filename = "community_first_open_ram_member.png"
 attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
-footnote = "status_community_member profile · each point = average of 5 runs on that build"
+footnote = "status_community_member profile · each point = one first-open sample on that build"
 
 [[ram_tests]]
 test_id = "test_status_community_second_open_ram_member"
-display_name = "Desktop — Community second open RAM"
-description = "RAM usage while warm re-opening Status community"
+area = "communities"
+display_name = "RAM usage while reopening Status community in the same session"
 pattern = "test_status_community_second_open_loading_time[user_data0-user_account0]"
 graph_filename = "community_second_open_ram_member.png"
 attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
 footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
-# Per-chart baselines/reference_build override [defaults] when set on [[tests]] / [[cpu_tests]] / [[ram_tests]].
+# Per-chart baselines/reference_build override [defaults] when set.

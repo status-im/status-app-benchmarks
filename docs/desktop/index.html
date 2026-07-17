@@ -64,6 +64,114 @@
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .profile-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.35rem 0.75rem;
+      margin-top: 0.85rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .profile-facts span:first-child { grid-column: 1 / -1; }
+    .profile-details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    .profile-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .profile-details h3 { margin: 0 0 0.35rem; font-size: 0.9rem; }
+    .profile-details dl { margin: 0; }
+    .profile-details dt { color: var(--muted); font-size: 0.78rem; }
+    .profile-details dd { margin: 0 0 0.3rem; font-weight: 500; }
+    .area-group { margin-top: 2rem; }
+    .area-group > h2 { margin-bottom: 0.75rem; }
+    .area-empty {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      color: var(--muted);
+    }
+    .summary-link {
+      display: inline-block;
+      margin-top: 1rem;
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .summary-link:hover { text-decoration: underline; }
+    .summary-profile { margin: 2rem 0; }
+    .summary-profile h2 { margin-bottom: 0.25rem; }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .summary-table th,
+    .summary-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .summary-table th { color: var(--muted); font-size: 0.78rem; }
+    .summary-table .load-time-column {
+      min-width: 145px;
+      white-space: nowrap;
+    }
+    .summary-table .reference-column {
+      min-width: 105px;
+      white-space: nowrap;
+    }
+    .summary-table tr:last-child td { border-bottom: 0; }
+    .load-time-cell {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .metric-value { white-space: nowrap; font-weight: 600; }
+    .status {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      margin: 0 0.2rem 0.2rem 0;
+      white-space: nowrap;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-fast { color: #1a7f37; border-color: #1a7f37; }
+    .status-ok { color: var(--link); border-color: var(--link); }
+    .status-ok-warn { color: #9a6700; border-color: #9a6700; }
+    .status-slow { color: #cf222e; border-color: #cf222e; }
+    .status-neutral,
+    .status-no-data,
+    .status-not-tested { color: var(--muted); }
+    .speed-legend {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      margin-top: 0.2rem;
+    }
+    .speed-fast { color: #1a7f37; font-weight: 600; }
+    .speed-ok { color: var(--link); font-weight: 600; }
+    .speed-ok-warn { color: #9a6700; font-weight: 600; }
+    .speed-slow { color: #cf222e; font-weight: 600; }
+    .reference-value { font-weight: 600; white-space: nowrap; }
+    .reference-parity,
+    .reference-improvement { color: #1a7f37; }
+    .reference-regression { color: #cf222e; }
+    .reference-neutral { color: var(--muted); }
     section.chart {
       background: var(--card);
       border: 1px solid var(--border);
@@ -71,10 +179,9 @@
       padding: 1rem 1.25rem 1.25rem;
       margin-bottom: 1.5rem;
     }
-    section.chart h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
     section.chart iframe {
       width: 100%;
-      height: 540px;
+      height: 600px;
       border: 0;
       border-radius: 4px;
       background: #fff;
@@ -126,10 +233,26 @@
       margin: 0.1rem 0 0;
       font-weight: 500;
     }
+    @media (max-width: 700px) {
+      main { padding: 1rem; }
+      .summary-table,
+      .summary-table tbody,
+      .summary-table tr,
+      .summary-table td { display: block; width: 100%; }
+      .summary-table thead { display: none; }
+      .summary-table tr { padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+      .summary-table tr:last-child { border-bottom: 0; }
+      .summary-table td { border: 0; padding: 0.25rem 0.75rem; }
+      .summary-table td::before {
+        content: attr(data-label) ": ";
+        color: var(--muted);
+        font-weight: 600;
+      }
+    }
     </style>
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Performance metrics from the last 30 days. Each point is one nightly run — x-axis shows build date; hover a point for commit hash. Load-time charts plot the average of runs per build.</p><section class="machine-info"><h2>System info</h2><p class="subtitle">Latest recorded environment · Jul 17, 2026 · commit e05886b4e</p><dl><div><dt>Host</dt><dd>WINDOWS-NODE-01</dd></div><div><dt>Windows</dt><dd>Windows Server 2022 Standard 21H2</dd></div><div><dt>OS build</dt><dd>20348.1487</dd></div><div><dt>CPU</dt><dd>AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics</dd></div><div><dt>RAM</dt><dd>63 GB</dd></div></dl></section><h2 style="margin-top:2rem">Scenarios</h2><div class="grid"><a class="card" href="wallet-fresh.html"><h2>Wallet — Fresh account</h2><p>Load times for a newly onboarded account (no pre-seeded user data).</p></a><a class="card" href="wallet-wallet-load.html"><h2>Wallet — wallet_load profile</h2><p>Returning user with wallet_load profile (~29 MB user data).</p></a><a class="card" href="wallet-wallet-load-alex.html"><h2>Wallet — wallet_load_alex profile</h2><p>Returning user with wallet_load_alex profile (~16 MB user data).</p></a><a class="card" href="community-populated.html"><h2>Community — status_community_member profile</h2><p>Returning user with Status community already joined.</p></a></div><p class="note">Raw CSV history lives in the repository <code>data/</code> folder. PNG charts on GitHub: <a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/README.md">docs/desktop/README.md</a>.</p></main>
+  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Performance metrics from the last 30 days. Each point is one nightly run — x-axis shows build date; hover a point for commit hash. Load-time charts plot the average of runs per build.</p><section class="machine-info"><h2>System info</h2><p class="subtitle">Latest recorded environment · Jul 17, 2026 · commit e05886b4e</p><dl><div><dt>Host</dt><dd>WINDOWS-NODE-01</dd></div><div><dt>Windows</dt><dd>Windows Server 2022 Standard 21H2</dd></div><div><dt>OS build</dt><dd>20348.1487</dd></div><div><dt>CPU</dt><dd>AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics</dd></div><div><dt>RAM</dt><dd>63 GB</dd></div></dl></section><a class="summary-link" href="summary.html">View scenario summary →</a><h2 style="margin-top:2rem">User profiles</h2><div class="grid"><a class="card" href="wallet-fresh.html"><h2>New user profile</h2><p>Newly created user profile (no-preseeded user data)</p><div class="profile-facts"><span>User data: No pre-seeded data</span><span>Tokens: 0</span><span>NFTs: 0</span><span>Transactions: 0</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 0</span><span>Spectated communities: 0</span></div></a><a class="card" href="wallet-wallet-load.html"><h2>Returning user (heavy wallet account)</h2><p>Returning user with wallet_load profile (~29 MB user data).</p><div class="profile-facts"><span>User data: ~29 MB</span><span>Tokens: TBD</span><span>NFTs: TBD</span><span>Transactions: TBD</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 0</span><span>Spectated communities: 0</span></div></a><a class="card" href="wallet-wallet-load-alex.html"><h2>Returning user (medium heavy wallet account from Alex)</h2><p>Returning user with wallet_load_alex profile (~16 MB user data).</p><div class="profile-facts"><span>User data: ~16 MB</span><span>Tokens: TBD</span><span>NFTs: TBD</span><span>Transactions: TBD</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 0</span><span>Spectated communities: 0</span></div></a><a class="card" href="community-populated.html"><h2>Returning user (Status community member)</h2><p>Returning user with Status community already joined.</p><div class="profile-facts"><span>User data: TBD</span><span>Tokens: 0</span><span>NFTs: 0</span><span>Transactions: 0</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 1</span><span>Spectated communities: 0</span></div></a></div><p class="note">Raw CSV history lives in the repository <code>data/</code> folder. PNG charts on GitHub: <a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/README.md">docs/desktop/README.md</a>.</p></main>
 </body>
 </html>
