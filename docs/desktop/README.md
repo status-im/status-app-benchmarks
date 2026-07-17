@@ -24,9 +24,9 @@ Reference parity means the latest value is within ±15% of 2.38.0.
 
 | User profile | Area | Scenario | Load time / Speed | vs 2.38.0 | CPU | RAM | Measured |
 |--------------|------|----------|-------------------|-----------|-----|-----|----------|
-| New user profile | Wallet | Time to open Wallet for the first time after login | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to reopen Wallet in the same session | 0.464s · Fast | parity | — | — | e05886b4e · 2026-07-17 |
-| New user profile | Wallet | Time to open a Wallet account for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open Wallet for the first time after login | 0.458s · Fast | no baseline | 11.6% | 667.0 MB | 0e23fd3cc · 2026-07-17 |
+| New user profile | Wallet | Time to reopen Wallet in the same session | 0.499s · Fast | parity | 44.2% | 874.6 MB | 0e23fd3cc · 2026-07-17 |
+| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.158s · Fast | no baseline | 78.1% | 750.5 MB | 0e23fd3cc · 2026-07-17 |
 | New user profile | Wallet | Time to open the Add account modal for the first time in the session | — · No data | — | — | — | — · — |
 | New user profile | Wallet | Time to reopen the Add account modal in the same session | — · No data | — | — | — | — · — |
 | New user profile | Wallet | Time to open the Receive modal for the first time in the session | — · No data | — | — | — | — · — |
@@ -43,9 +43,9 @@ Reference parity means the latest value is within ±15% of 2.38.0.
 | New user profile | Messenger | Not tested | Not tested | — | — | — | — |
 | New user profile | Communities | Not tested | Not tested | — | — | — | — |
 | New user profile | Browser | Not tested | Not tested | — | — | — | — |
-| Returning user (heavy wallet account) | Wallet | Time to open Wallet for the first time after login | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.680s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| Returning user (heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 0.593s · Ok | no baseline | 45.1% | 677.0 MB | 0e23fd3cc · 2026-07-17 |
+| Returning user (heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.691s · Ok | parity | 48.0% | 857.2 MB | 0e23fd3cc · 2026-07-17 |
+| Returning user (heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.378s · Fast | no baseline | 28.7% | 696.5 MB | 0e23fd3cc · 2026-07-17 |
 | Returning user (heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | — · No data | — | — | — | — · — |
 | Returning user (heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | — · No data | — | — | — | — · — |
 | Returning user (heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | — · No data | — | — | — | — · — |
@@ -62,9 +62,9 @@ Reference parity means the latest value is within ±15% of 2.38.0.
 | Returning user (heavy wallet account) | Messenger | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy wallet account) | Communities | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy wallet account) | Browser | Not tested | Not tested | — | — | — | — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open Wallet for the first time after login | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.678s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open Wallet for the first time after login | 0.312s · Fast | no baseline | 41.2% | 781.8 MB | 0e23fd3cc · 2026-07-17 |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.776s · Ok | parity | 43.4% | 869.0 MB | 0e23fd3cc · 2026-07-17 |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.327s · Fast | no baseline | 38.9% | 770.4 MB | 0e23fd3cc · 2026-07-17 |
 | Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | — · No data | — | — | — | — · — |
 | Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Add account modal in the same session | — · No data | — | — | — | — · — |
 | Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | — · No data | — | — | — | — · — |
@@ -83,8 +83,8 @@ Reference parity means the latest value is within ±15% of 2.38.0.
 | Returning user (medium heavy wallet account from Alex) | Browser | Not tested | Not tested | — | — | — | — |
 | Returning user (Status community member) | Wallet | Not tested | Not tested | — | — | — | — |
 | Returning user (Status community member) | Messenger | Not tested | Not tested | — | — | — | — |
-| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 4.269s · Slow | parity | 17.2% | 905.9 MB | e05886b4e · 2026-07-17 |
-| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 2.196s · Slow | parity | 37.2% | 865.6 MB | e05886b4e · 2026-07-17 |
+| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 3.989s · Slow | parity | 17.5% | 740.1 MB | 0e23fd3cc · 2026-07-17 |
+| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 2.181s · Slow | parity | 12.2% | 980.9 MB | 0e23fd3cc · 2026-07-17 |
 | Returning user (Status community member) | Browser | Not tested | Not tested | — | — | — | — |
 
 ## New user profile
@@ -100,39 +100,23 @@ Newly created user profile (no-preseeded user data)
 
 ### Wallet
 
-**Time to open Wallet for the first time after login**
+![Time to open Wallet for the first time after login](./wallet_first_open_time_fresh.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![CPU usage while opening Wallet for the first time after login](./wallet_first_open_cpu_fresh.png)
 
-**CPU usage while opening Wallet for the first time after login**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while opening Wallet for the first time after login**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while opening Wallet for the first time after login](./wallet_first_open_ram_fresh.png)
 
 ![Time to reopen Wallet in the same session](./wallet_repeat_open_time_fresh.png)
 
-**CPU usage while reopening Wallet in the same session**
+![CPU usage while reopening Wallet in the same session](./wallet_repeat_open_cpu_fresh.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while reopening Wallet in the same session](./wallet_repeat_open_ram_fresh.png)
 
-**RAM usage while reopening Wallet in the same session**
+![Time to open a Wallet account for the first time in the session](./wallet_account_first_open_time_fresh.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![CPU usage while opening a Wallet account for the first time in the session](./wallet_account_first_open_cpu_fresh.png)
 
-**Time to open a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while opening a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while opening a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while opening a Wallet account for the first time in the session](./wallet_account_first_open_ram_fresh.png)
 
 **Time to open the Add account modal for the first time in the session**
 
@@ -313,39 +297,23 @@ Returning user with wallet_load profile (~29 MB user data).
 
 ### Wallet
 
-**Time to open Wallet for the first time after login**
+![Time to open Wallet for the first time after login](./wallet_first_open_time_wallet_load.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![CPU usage while opening Wallet for the first time after login](./wallet_first_open_cpu_wallet_load.png)
 
-**CPU usage while opening Wallet for the first time after login**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while opening Wallet for the first time after login**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while opening Wallet for the first time after login](./wallet_first_open_ram_wallet_load.png)
 
 ![Time to reopen Wallet in the same session](./wallet_repeat_open_time_wallet_load.png)
 
-**CPU usage while reopening Wallet in the same session**
+![CPU usage while reopening Wallet in the same session](./wallet_repeat_open_cpu_wallet_load.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while reopening Wallet in the same session](./wallet_repeat_open_ram_wallet_load.png)
 
-**RAM usage while reopening Wallet in the same session**
+![Time to open a Wallet account for the first time in the session](./wallet_account_first_open_time_wallet_load.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![CPU usage while opening a Wallet account for the first time in the session](./wallet_account_first_open_cpu_wallet_load.png)
 
-**Time to open a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while opening a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while opening a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while opening a Wallet account for the first time in the session](./wallet_account_first_open_ram_wallet_load.png)
 
 **Time to open the Add account modal for the first time in the session**
 
@@ -526,39 +494,23 @@ Returning user with wallet_load_alex profile (~16 MB user data).
 
 ### Wallet
 
-**Time to open Wallet for the first time after login**
+![Time to open Wallet for the first time after login](./wallet_first_open_time_wallet_load_alex.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![CPU usage while opening Wallet for the first time after login](./wallet_first_open_cpu_wallet_load_alex.png)
 
-**CPU usage while opening Wallet for the first time after login**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while opening Wallet for the first time after login**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while opening Wallet for the first time after login](./wallet_first_open_ram_wallet_load_alex.png)
 
 ![Time to reopen Wallet in the same session](./wallet_repeat_open_time_wallet_load_alex.png)
 
-**CPU usage while reopening Wallet in the same session**
+![CPU usage while reopening Wallet in the same session](./wallet_repeat_open_cpu_wallet_load_alex.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while reopening Wallet in the same session](./wallet_repeat_open_ram_wallet_load_alex.png)
 
-**RAM usage while reopening Wallet in the same session**
+![Time to open a Wallet account for the first time in the session](./wallet_account_first_open_time_wallet_load_alex.png)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+![CPU usage while opening a Wallet account for the first time in the session](./wallet_account_first_open_cpu_wallet_load_alex.png)
 
-**Time to open a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while opening a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while opening a Wallet account for the first time in the session**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+![RAM usage while opening a Wallet account for the first time in the session](./wallet_account_first_open_ram_wallet_load_alex.png)
 
 **Time to open the Add account modal for the first time in the session**
 

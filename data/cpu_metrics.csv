@@ -53,3 +53,14 @@ df161fdc6,2026-07-16T13:38:02,test_status_community_first_open_loading_time[user
 5dae9b2ba,2026-07-17T05:16:52,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu_member,passed,21.341,21.341,21.341,1,21.341
 e05886b4e,2026-07-17T12:12:05,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu_member,passed,17.212,17.212,17.212,1,17.212
 e05886b4e,2026-07-17T12:12:05,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_cpu_member,passed,7.368,53.131,37.188,5,"22.747,7.368,53.131,52.347,50.348"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_first_open_loading_time[wallet_load_user],test_wallet_first_open_cpu_wallet_load,passed,45.146,45.146,45.146,1,45.146
+0e23fd3cc,2026-07-17T20:28:29,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_cpu_member,passed,3.635,24.653,12.159,5,"10.96,24.653,12.94,8.609,3.635"
+0e23fd3cc,2026-07-17T20:28:29,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu_member,passed,17.52,17.52,17.52,1,17.52
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_first_open_loading_time[fresh_user],test_wallet_first_open_cpu_fresh,passed,11.644,11.644,11.644,1,11.644
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_first_open_loading_time[wallet_load_alex_user],test_wallet_first_open_cpu_wallet_load_alex,passed,41.244,41.244,41.244,1,41.244
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_account_open_loading_time[wallet_load_alex_user],test_wallet_account_first_open_cpu_wallet_load_alex,passed,38.894,38.894,38.894,1,38.894
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_repeat_open_loading_time[wallet_load_user],test_wallet_repeat_open_cpu_wallet_load,passed,44.266,57.963,48.041,5,"46.484,44.341,47.153,57.963,44.266"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_account_open_loading_time[wallet_load_user],test_wallet_account_first_open_cpu_wallet_load,passed,28.7,28.7,28.7,1,28.7
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_repeat_open_loading_time[fresh_user],test_wallet_repeat_open_cpu_fresh,passed,29.044,54.303,44.216,5,"29.044,44.85,52.344,54.303,40.541"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_repeat_open_loading_time[wallet_load_alex_user],test_wallet_repeat_open_cpu_wallet_load_alex,passed,28.256,59.931,43.369,5,"45.169,59.931,28.256,37.834,45.656"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_account_open_loading_time[fresh_user],test_wallet_account_first_open_cpu_fresh,passed,78.125,78.125,78.125,1,78.125

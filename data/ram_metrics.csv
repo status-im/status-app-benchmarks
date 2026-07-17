@@ -53,3 +53,14 @@ df161fdc6,2026-07-16T13:38:02,test_status_community_first_open_loading_time[user
 5dae9b2ba,2026-07-17T05:16:52,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram_member,passed,790.621,790.621,790.621,1,790.621
 e05886b4e,2026-07-17T12:12:05,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram_member,passed,905.925,905.925,905.925,1,905.925
 e05886b4e,2026-07-17T12:12:05,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram_member,passed,787.225,1029.654,865.619,5,"787.225,805.604,822.952,882.66,1029.654"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_first_open_loading_time[wallet_load_user],test_wallet_first_open_ram_wallet_load,passed,676.974,676.974,676.974,1,676.974
+0e23fd3cc,2026-07-17T20:28:29,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_ram_member,passed,852.245,1025.078,980.894,5,"852.245,1010.041,995.306,1021.802,1025.078"
+0e23fd3cc,2026-07-17T20:28:29,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_ram_member,passed,740.072,740.072,740.072,1,740.072
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_first_open_loading_time[fresh_user],test_wallet_first_open_ram_fresh,passed,666.973,666.973,666.973,1,666.973
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_first_open_loading_time[wallet_load_alex_user],test_wallet_first_open_ram_wallet_load_alex,passed,781.758,781.758,781.758,1,781.758
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_account_open_loading_time[wallet_load_alex_user],test_wallet_account_first_open_ram_wallet_load_alex,passed,770.355,770.355,770.355,1,770.355
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_repeat_open_loading_time[wallet_load_user],test_wallet_repeat_open_ram_wallet_load,passed,771.428,897.248,857.185,5,"771.428,859.146,897.248,871.246,886.855"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_account_open_loading_time[wallet_load_user],test_wallet_account_first_open_ram_wallet_load,passed,696.521,696.521,696.521,1,696.521
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_repeat_open_loading_time[fresh_user],test_wallet_repeat_open_ram_fresh,passed,831.014,933.539,874.562,5,"831.014,933.539,881.969,875.752,850.539"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_repeat_open_loading_time[wallet_load_alex_user],test_wallet_repeat_open_ram_wallet_load_alex,passed,836.818,887.375,868.99,5,"836.818,860.965,887.375,882.398,877.395"
+0e23fd3cc,2026-07-17T20:28:29,test_wallet_account_open_loading_time[fresh_user],test_wallet_account_first_open_ram_fresh,passed,750.473,750.473,750.473,1,750.473
