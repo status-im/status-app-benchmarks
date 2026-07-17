@@ -49,3 +49,5 @@ df161fdc6,2026-07-16T09:47:50,test_status_community_first_open_loading_time[user
 760417,2026-07-16T12:50:14,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu_member,passed,23.982,23.982,23.982,1,23.982
 df161fdc6,2026-07-16T13:38:02,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_cpu_member,passed,4.83,55.818,40.877,5,"4.83,44.079,47.643,55.818,52.014"
 df161fdc6,2026-07-16T13:38:02,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu_member,passed,18.77,18.77,18.77,1,18.77
+5dae9b2ba,2026-07-17T05:16:52,test_status_community_second_open_loading_time[user_data0-user_account0],test_status_community_second_open_cpu_member,passed,9.229,24.104,14.108,5,"9.229,24.104,13.06,12.461,11.685"
+5dae9b2ba,2026-07-17T05:16:52,test_status_community_first_open_loading_time[user_data0-user_account0],test_status_community_first_open_cpu_member,passed,21.341,21.341,21.341,1,21.341
