@@ -99,67 +99,135 @@ footnote = "each point = average of 5 runs on that build"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_account_first_open"
-display_name = "Time to open a Wallet account for the first time"
-resource_action = "opening a Wallet account for the first time"
+display_name = "Time to open a Wallet account for the first time in the session"
+resource_action = "opening a Wallet account for the first time in the session"
 test_pattern = "test_wallet_account_open_loading_time"
 graph_stem = "wallet_account_first_open"
 footnote = "each point = one first account-open sample on that build"
 
 [[wallet_scenarios]]
+scenario_id = "wallet_add_account_first_open"
+display_name = "Time to open the Add account modal for the first time in the session"
+resource_action = "opening the Add account modal for the first time in the session"
+test_pattern = "test_wallet_add_account_loading_time"
+series_test_pattern = "test_wallet_add_account_first_open_loading_time"
+graph_stem = "wallet_add_account_first_open"
+attachment_subject = "Wallet Add account modal first open"
+footnote = "each point = one first-open sample on that build"
+
+[[wallet_scenarios]]
 scenario_id = "wallet_add_account"
-display_name = "Time to open the Add account modal"
-resource_action = "opening the Add account modal"
+display_name = "Time to reopen the Add account modal in the same session"
+resource_action = "reopening the Add account modal in the same session"
 test_pattern = "test_wallet_add_account_loading_time"
 graph_stem = "wallet_add_account"
+attachment_subject = "Wallet Add account modal reopen"
 footnote = "each point = average of 5 runs on that build"
+
+[[wallet_scenarios]]
+scenario_id = "wallet_receive_first_open"
+display_name = "Time to open the Receive modal for the first time in the session"
+resource_action = "opening the Receive modal for the first time in the session"
+test_pattern = "test_wallet_receive_loading_time"
+series_test_pattern = "test_wallet_receive_first_open_loading_time"
+graph_stem = "wallet_receive_first_open"
+attachment_subject = "Wallet Receive modal first open"
+footnote = "each point = one first-open sample on that build"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_receive"
-display_name = "Time to open the Receive modal"
-resource_action = "opening the Receive modal"
+display_name = "Time to reopen the Receive modal in the same session"
+resource_action = "reopening the Receive modal in the same session"
 test_pattern = "test_wallet_receive_loading_time"
 graph_stem = "wallet_receive"
+attachment_subject = "Wallet Receive modal reopen"
 footnote = "each point = average of 5 runs on that build"
+
+[[wallet_scenarios]]
+scenario_id = "wallet_send_first_open"
+display_name = "Time to open the Send modal for the first time in the session"
+resource_action = "opening the Send modal for the first time in the session"
+test_pattern = "test_wallet_send_loading_time"
+series_test_pattern = "test_wallet_send_first_open_loading_time"
+graph_stem = "wallet_send_first_open"
+attachment_subject = "Wallet Send modal first open"
+footnote = "each point = one first-open sample on that build"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_send"
-display_name = "Time to open the Send modal"
-resource_action = "opening the Send modal"
+display_name = "Time to reopen the Send modal in the same session"
+resource_action = "reopening the Send modal in the same session"
 test_pattern = "test_wallet_send_loading_time"
 graph_stem = "wallet_send"
+attachment_subject = "Wallet Send modal reopen"
 footnote = "each point = average of 5 runs on that build"
 
 [[wallet_scenarios]]
+scenario_id = "wallet_swap_first_open"
+display_name = "Time to open the Swap modal for the first time in the session"
+resource_action = "opening the Swap modal for the first time in the session"
+test_pattern = "test_wallet_swap_loading_time"
+series_test_pattern = "test_wallet_swap_first_open_loading_time"
+graph_stem = "wallet_swap_first_open"
+attachment_subject = "Wallet Swap modal first open"
+footnote = "each point = one first-open sample on that build"
+
+[[wallet_scenarios]]
 scenario_id = "wallet_swap"
-display_name = "Time to open the Swap modal"
-resource_action = "opening the Swap modal"
+display_name = "Time to reopen the Swap modal in the same session"
+resource_action = "reopening the Swap modal in the same session"
 test_pattern = "test_wallet_swap_loading_time"
 historical_test_patterns = ["test_swap_loading_time"]
+historical_attachment_subjects = ["Swap modal"]
 graph_stem = "wallet_swap"
+attachment_subject = "Wallet Swap modal reopen"
 footnote = "each point = average of 5 runs on that build"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_assets_tab"
-display_name = "Time to open the Assets tab"
-resource_action = "opening the Assets tab"
+display_name = "Time to reopen the Assets tab in the same session"
+resource_action = "reopening the Assets tab in the same session"
 test_pattern = "test_wallet_assets_tab_loading_time"
 graph_stem = "wallet_assets_tab"
+attachment_subject = "Wallet Assets tab reopen"
 footnote = "each point = average of 5 runs on that build"
+
+[[wallet_scenarios]]
+scenario_id = "wallet_collectibles_tab_first_open"
+display_name = "Time to open the Collectibles tab for the first time in the session"
+resource_action = "opening the Collectibles tab for the first time in the session"
+test_pattern = "test_wallet_collectibles_tab_loading_time"
+series_test_pattern = "test_wallet_collectibles_tab_first_open_loading_time"
+graph_stem = "wallet_collectibles_tab_first_open"
+attachment_subject = "Wallet Collectibles tab first open"
+footnote = "each point = one first-open sample on that build"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_collectibles_tab"
-display_name = "Time to open the Collectibles tab"
-resource_action = "opening the Collectibles tab"
+display_name = "Time to reopen the Collectibles tab in the same session"
+resource_action = "reopening the Collectibles tab in the same session"
 test_pattern = "test_wallet_collectibles_tab_loading_time"
 graph_stem = "wallet_collectibles_tab"
+attachment_subject = "Wallet Collectibles tab reopen"
 footnote = "each point = average of 5 runs on that build"
 
 [[wallet_scenarios]]
+scenario_id = "wallet_activity_tab_first_open"
+display_name = "Time to open the History tab for the first time in the session"
+resource_action = "opening the History tab for the first time in the session"
+test_pattern = "test_wallet_activity_tab_loading_time"
+series_test_pattern = "test_wallet_activity_tab_first_open_loading_time"
+graph_stem = "wallet_activity_tab_first_open"
+attachment_subject = "Wallet History tab first open"
+footnote = "each point = one first-open sample on that build"
+
+[[wallet_scenarios]]
 scenario_id = "wallet_activity_tab"
-display_name = "Time to open the Activity tab"
-resource_action = "opening the Activity tab"
+display_name = "Time to reopen the History tab in the same session"
+resource_action = "reopening the History tab in the same session"
 test_pattern = "test_wallet_activity_tab_loading_time"
 graph_stem = "wallet_activity_tab"
+attachment_subject = "Wallet History tab reopen"
 footnote = "each point = average of 5 runs on that build"
 
 # --- Community first open (member only) ---

@@ -26,40 +26,58 @@ Reference parity means the latest value is within ±15% of 2.38.0.
 |--------------|------|----------|-------------------|-----------|-----|-----|----------|
 | New user profile | Wallet | Time to open Wallet for the first time after login | — · No data | — | — | — | — · — |
 | New user profile | Wallet | Time to reopen Wallet in the same session | 0.464s · Fast | parity | — | — | e05886b4e · 2026-07-17 |
-| New user profile | Wallet | Time to open a Wallet account for the first time | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to open the Add account modal | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to open the Receive modal | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to open the Send modal | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to open the Swap modal | 0.755s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| New user profile | Wallet | Time to open the Assets tab | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to open the Collectibles tab | — · No data | — | — | — | — · — |
-| New user profile | Wallet | Time to open the Activity tab | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open a Wallet account for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open the Add account modal for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to reopen the Add account modal in the same session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open the Receive modal for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to reopen the Receive modal in the same session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open the Send modal for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to reopen the Send modal in the same session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open the Swap modal for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.755s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
+| New user profile | Wallet | Time to reopen the Assets tab in the same session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to open the History tab for the first time in the session | — · No data | — | — | — | — · — |
+| New user profile | Wallet | Time to reopen the History tab in the same session | — · No data | — | — | — | — · — |
 | New user profile | Messenger | Not tested | Not tested | — | — | — | — |
 | New user profile | Communities | Not tested | Not tested | — | — | — | — |
 | New user profile | Browser | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy wallet account) | Wallet | Time to open Wallet for the first time after login | — · No data | — | — | — | — · — |
 | Returning user (heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.680s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| Returning user (heavy wallet account) | Wallet | Time to open a Wallet account for the first time | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to open the Add account modal | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to open the Receive modal | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to open the Send modal | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to open the Swap modal | 0.829s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| Returning user (heavy wallet account) | Wallet | Time to open the Assets tab | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to open the Collectibles tab | — · No data | — | — | — | — · — |
-| Returning user (heavy wallet account) | Wallet | Time to open the Activity tab | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.829s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (heavy wallet account) | Wallet | Time to reopen the History tab in the same session | — · No data | — | — | — | — · — |
 | Returning user (heavy wallet account) | Messenger | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy wallet account) | Communities | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy wallet account) | Browser | Not tested | Not tested | — | — | — | — |
 | Returning user (medium heavy wallet account from Alex) | Wallet | Time to open Wallet for the first time after login | — · No data | — | — | — | — · — |
 | Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.678s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open a Wallet account for the first time | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Add account modal | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Receive modal | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Send modal | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Swap modal | 0.787s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Assets tab | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Collectibles tab | — · No data | — | — | — | — · — |
-| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Activity tab | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Add account modal in the same session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Receive modal in the same session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Send modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Send modal in the same session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.787s · Ok | parity | — | — | e05886b4e · 2026-07-17 |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Assets tab in the same session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to open the History tab for the first time in the session | — · No data | — | — | — | — · — |
+| Returning user (medium heavy wallet account from Alex) | Wallet | Time to reopen the History tab in the same session | — · No data | — | — | — | — · — |
 | Returning user (medium heavy wallet account from Alex) | Messenger | Not tested | Not tested | — | — | — | — |
 | Returning user (medium heavy wallet account from Alex) | Communities | Not tested | Not tested | — | — | — | — |
 | Returning user (medium heavy wallet account from Alex) | Browser | Not tested | Not tested | — | — | — | — |
@@ -104,97 +122,169 @@ _No data yet — chart will appear after the next nightly benchmark run._
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open a Wallet account for the first time**
+**Time to open a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening a Wallet account for the first time**
+**CPU usage while opening a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening a Wallet account for the first time**
+**RAM usage while opening a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Add account modal**
+**Time to open the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Add account modal**
+**CPU usage while opening the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Add account modal**
+**RAM usage while opening the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Receive modal**
+**Time to reopen the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Receive modal**
+**CPU usage while reopening the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Receive modal**
+**RAM usage while reopening the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Send modal**
+**Time to open the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Send modal**
+**CPU usage while opening the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Send modal**
+**RAM usage while opening the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-![Time to open the Swap modal](./wallet_swap_time_fresh.png)
-
-**CPU usage while opening the Swap modal**
+**Time to reopen the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Swap modal**
+**CPU usage while reopening the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Assets tab**
+**RAM usage while reopening the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Assets tab**
+**Time to open the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Assets tab**
+**CPU usage while opening the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Collectibles tab**
+**RAM usage while opening the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Collectibles tab**
+**Time to reopen the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Collectibles tab**
+**CPU usage while reopening the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Activity tab**
+**RAM usage while reopening the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Activity tab**
+**Time to open the Swap modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Activity tab**
+**CPU usage while opening the Swap modal for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the Swap modal for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+![Time to reopen the Swap modal in the same session](./wallet_swap_time_fresh.png)
+
+**CPU usage while reopening the Swap modal in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Swap modal in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to open the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while opening the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to open the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while opening the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the History tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the History tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the History tab in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
@@ -245,97 +335,169 @@ _No data yet — chart will appear after the next nightly benchmark run._
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open a Wallet account for the first time**
+**Time to open a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening a Wallet account for the first time**
+**CPU usage while opening a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening a Wallet account for the first time**
+**RAM usage while opening a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Add account modal**
+**Time to open the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Add account modal**
+**CPU usage while opening the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Add account modal**
+**RAM usage while opening the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Receive modal**
+**Time to reopen the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Receive modal**
+**CPU usage while reopening the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Receive modal**
+**RAM usage while reopening the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Send modal**
+**Time to open the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Send modal**
+**CPU usage while opening the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Send modal**
+**RAM usage while opening the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-![Time to open the Swap modal](./wallet_swap_time_wallet_load.png)
-
-**CPU usage while opening the Swap modal**
+**Time to reopen the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Swap modal**
+**CPU usage while reopening the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Assets tab**
+**RAM usage while reopening the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Assets tab**
+**Time to open the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Assets tab**
+**CPU usage while opening the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Collectibles tab**
+**RAM usage while opening the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Collectibles tab**
+**Time to reopen the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Collectibles tab**
+**CPU usage while reopening the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Activity tab**
+**RAM usage while reopening the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Activity tab**
+**Time to open the Swap modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Activity tab**
+**CPU usage while opening the Swap modal for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the Swap modal for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+![Time to reopen the Swap modal in the same session](./wallet_swap_time_wallet_load.png)
+
+**CPU usage while reopening the Swap modal in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Swap modal in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to open the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while opening the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to open the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while opening the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the History tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the History tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the History tab in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
@@ -386,97 +548,169 @@ _No data yet — chart will appear after the next nightly benchmark run._
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open a Wallet account for the first time**
+**Time to open a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening a Wallet account for the first time**
+**CPU usage while opening a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening a Wallet account for the first time**
+**RAM usage while opening a Wallet account for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Add account modal**
+**Time to open the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Add account modal**
+**CPU usage while opening the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Add account modal**
+**RAM usage while opening the Add account modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Receive modal**
+**Time to reopen the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Receive modal**
+**CPU usage while reopening the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Receive modal**
+**RAM usage while reopening the Add account modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Send modal**
+**Time to open the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Send modal**
+**CPU usage while opening the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Send modal**
+**RAM usage while opening the Receive modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-![Time to open the Swap modal](./wallet_swap_time_wallet_load_alex.png)
-
-**CPU usage while opening the Swap modal**
+**Time to reopen the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Swap modal**
+**CPU usage while reopening the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Assets tab**
+**RAM usage while reopening the Receive modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Assets tab**
+**Time to open the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Assets tab**
+**CPU usage while opening the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Collectibles tab**
+**RAM usage while opening the Send modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Collectibles tab**
+**Time to reopen the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Collectibles tab**
+**CPU usage while reopening the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**Time to open the Activity tab**
+**RAM usage while reopening the Send modal in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**CPU usage while opening the Activity tab**
+**Time to open the Swap modal for the first time in the session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
-**RAM usage while opening the Activity tab**
+**CPU usage while opening the Swap modal for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the Swap modal for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+![Time to reopen the Swap modal in the same session](./wallet_swap_time_wallet_load_alex.png)
+
+**CPU usage while reopening the Swap modal in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Swap modal in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Assets tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to open the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while opening the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the Collectibles tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the Collectibles tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to open the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while opening the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while opening the History tab for the first time in the session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**Time to reopen the History tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**CPU usage while reopening the History tab in the same session**
+
+_No data yet — chart will appear after the next nightly benchmark run._
+
+**RAM usage while reopening the History tab in the same session**
 
 _No data yet — chart will appear after the next nightly benchmark run._
 
