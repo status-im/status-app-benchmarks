@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wallet — Fresh account — Status App Benchmarks</title>
+  <title>New user profile — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -64,6 +64,114 @@
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .profile-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.35rem 0.75rem;
+      margin-top: 0.85rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .profile-facts span:first-child { grid-column: 1 / -1; }
+    .profile-details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    .profile-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .profile-details h3 { margin: 0 0 0.35rem; font-size: 0.9rem; }
+    .profile-details dl { margin: 0; }
+    .profile-details dt { color: var(--muted); font-size: 0.78rem; }
+    .profile-details dd { margin: 0 0 0.3rem; font-weight: 500; }
+    .area-group { margin-top: 2rem; }
+    .area-group > h2 { margin-bottom: 0.75rem; }
+    .area-empty {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      color: var(--muted);
+    }
+    .summary-link {
+      display: inline-block;
+      margin-top: 1rem;
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .summary-link:hover { text-decoration: underline; }
+    .summary-profile { margin: 2rem 0; }
+    .summary-profile h2 { margin-bottom: 0.25rem; }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .summary-table th,
+    .summary-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .summary-table th { color: var(--muted); font-size: 0.78rem; }
+    .summary-table .load-time-column {
+      min-width: 145px;
+      white-space: nowrap;
+    }
+    .summary-table .reference-column {
+      min-width: 105px;
+      white-space: nowrap;
+    }
+    .summary-table tr:last-child td { border-bottom: 0; }
+    .load-time-cell {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .metric-value { white-space: nowrap; font-weight: 600; }
+    .status {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      margin: 0 0.2rem 0.2rem 0;
+      white-space: nowrap;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-fast { color: #1a7f37; border-color: #1a7f37; }
+    .status-ok { color: var(--link); border-color: var(--link); }
+    .status-ok-warn { color: #9a6700; border-color: #9a6700; }
+    .status-slow { color: #cf222e; border-color: #cf222e; }
+    .status-neutral,
+    .status-no-data,
+    .status-not-tested { color: var(--muted); }
+    .speed-legend {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      margin-top: 0.2rem;
+    }
+    .speed-fast { color: #1a7f37; font-weight: 600; }
+    .speed-ok { color: var(--link); font-weight: 600; }
+    .speed-ok-warn { color: #9a6700; font-weight: 600; }
+    .speed-slow { color: #cf222e; font-weight: 600; }
+    .reference-value { font-weight: 600; white-space: nowrap; }
+    .reference-parity,
+    .reference-improvement { color: #1a7f37; }
+    .reference-regression { color: #cf222e; }
+    .reference-neutral { color: var(--muted); }
     section.chart {
       background: var(--card);
       border: 1px solid var(--border);
@@ -71,10 +179,9 @@
       padding: 1rem 1.25rem 1.25rem;
       margin-bottom: 1.5rem;
     }
-    section.chart h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
     section.chart iframe {
       width: 100%;
-      height: 540px;
+      height: 600px;
       border: 0;
       border-radius: 4px;
       background: #fff;
@@ -126,10 +233,26 @@
       margin: 0.1rem 0 0;
       font-weight: 500;
     }
+    @media (max-width: 700px) {
+      main { padding: 1rem; }
+      .summary-table,
+      .summary-table tbody,
+      .summary-table tr,
+      .summary-table td { display: block; width: 100%; }
+      .summary-table thead { display: none; }
+      .summary-table tr { padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+      .summary-table tr:last-child { border-bottom: 0; }
+      .summary-table td { border: 0; padding: 0.25rem 0.75rem; }
+      .summary-table td::before {
+        content: attr(data-label) ": ";
+        color: var(--muted);
+        font-weight: 600;
+      }
+    }
     </style>
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Wallet — Fresh account</h1><p class="subtitle">Load times for a newly onboarded account (no pre-seeded user data).</p><section class="chart"><h2>Desktop — Wallet load time</h2><iframe src="charts/wallet_loading_time_fresh.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Wallet assets load time</h2><iframe src="charts/wallet_assets_loading_time_fresh.html" title="Interactive chart" loading="lazy"></iframe></section><section class="chart"><h2>Desktop — Swap modal load time</h2><iframe src="charts/swap_loading_time_fresh.html" title="Interactive chart" loading="lazy"></iframe></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>New user profile</h1><p class="subtitle">Newly created user profile (no-preseeded user data)</p><section class="profile-details"><h2>User data profile</h2><p class="subtitle">Stored data: No pre-seeded data</p><div class="profile-details-grid"><div><h3>Wallet</h3><dl><dt>Tokens with balance &gt; 0</dt><dd>0</dd><dt>NFTs</dt><dd>0</dd><dt>Transaction history</dt><dd>0</dd></dl></div><div><h3>Messenger</h3><dl><dt>1-on-1 chats</dt><dd>0</dd><dt>Group chats</dt><dd>0</dd></dl></div><div><h3>Communities</h3><dl><dt>Joined communities</dt><dd>0</dd><dt>Spectated communities</dt><dd>0</dd></dl></div></div></section><section class="area-group"><h2>Wallet</h2><section class="chart chart-placeholder"><h2>Time to open Wallet for the first time after login</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening Wallet for the first time after login</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening Wallet for the first time after login</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart"><iframe src="charts/wallet_repeat_open_time_fresh.html" title="Time to reopen Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart chart-placeholder"><h2>CPU usage while reopening Wallet in the same session</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while reopening Wallet in the same session</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open a Wallet account for the first time</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening a Wallet account for the first time</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening a Wallet account for the first time</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open the Add account modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Add account modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Add account modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open the Receive modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Receive modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Receive modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open the Send modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Send modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Send modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart"><iframe src="charts/wallet_swap_time_fresh.html" title="Time to open the Swap modal" loading="lazy" scrolling="no"></iframe></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Swap modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Swap modal</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open the Assets tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Assets tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Assets tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open the Collectibles tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Collectibles tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Collectibles tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>Time to open the Activity tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>CPU usage while opening the Activity tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section><section class="chart chart-placeholder"><h2>RAM usage while opening the Activity tab</h2><p class="placeholder-note">No data yet — chart will appear after the next nightly benchmark run.</p></section></section><section class="area-group"><h2>Messenger</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Communities</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Browser</h2><div class="area-empty">Not tested for this user profile.</div></section></main>
 </body>
 </html>

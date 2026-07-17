@@ -24,6 +24,17 @@ class Violation:
     detail: str
 
 
+@dataclass(frozen=True)
+class ScenarioSummary:
+    test_id: str
+    value: Optional[float]
+    commit_hash: str
+    date: str
+    speed_status: str
+    vs_reference: str
+    detail: str
+
+
 def _check_regression(
     series: pd.DataFrame,
     chart: ChartTest,
@@ -137,6 +148,97 @@ def collect_violations(metrics: pd.DataFrame, config: BenchmarkConfig) -> List[V
     return violations
 
 
+def collect_scenario_summaries(
+    metrics: dict[str, pd.DataFrame],
+    config: BenchmarkConfig,
+) -> dict[str, ScenarioSummary]:
+    summaries: dict[str, ScenarioSummary] = {}
+    defaults = config.defaults
+    for chart in config.charts:
+        frame = metrics.get(chart.metrics_kind)
+        result = series_for_chart(frame, chart) if frame is not None and not frame.empty else None
+        if result is None:
+            summaries[chart.test_id] = ScenarioSummary(
+                test_id=chart.test_id,
+                value=None,
+                commit_hash='',
+                date='',
+                speed_status='no-data',
+                vs_reference='—',
+                detail='No data in the current chart window.',
+            )
+            continue
+
+        full_series, _n_baselines = result
+        trend = _trend_only(full_series, chart)
+        if trend.empty:
+            summaries[chart.test_id] = ScenarioSummary(
+                test_id=chart.test_id,
+                value=None,
+                commit_hash='',
+                date='',
+                speed_status='no-data',
+                vs_reference='—',
+                detail='No trend data in the current chart window.',
+            )
+            continue
+
+        latest = trend.iloc[-1]
+        value = float(latest[chart.value_column])
+        if chart.metrics_kind == 'performance':
+            ok_warn_threshold = (
+                defaults.slow_threshold_s * (1 - defaults.ok_near_slow_ratio)
+            )
+            if value < defaults.fast_threshold_s:
+                speed_status = 'fast'
+            elif value > defaults.slow_threshold_s:
+                speed_status = 'slow'
+            elif value >= ok_warn_threshold:
+                speed_status = 'ok-warn'
+            else:
+                speed_status = 'ok'
+
+            reference_build = chart.reference_build or defaults.reference_build
+            reference_rows = (
+                full_series[full_series['commit_hash'].astype(str) == reference_build]
+                if reference_build else pd.DataFrame()
+            )
+            if reference_rows.empty:
+                vs_reference = 'no baseline'
+                reference_detail = 'No reference-build result is available.'
+            else:
+                reference_value = float(reference_rows[chart.value_column].iloc[0])
+                delta = value - reference_value
+                if abs(delta) <= reference_value * defaults.regression_pct:
+                    vs_reference = 'parity'
+                else:
+                    vs_reference = f'{delta:+.3f}s'
+                reference_detail = (
+                    f'Latest {value:.3f}s vs reference {reference_value:.3f}s '
+                    f'({delta:+.3f}s); parity is within ±{defaults.regression_pct:.0%}.'
+                )
+            detail = (
+                f'Speed: {speed_status}; fast <{defaults.fast_threshold_s}s, '
+                f'ok {defaults.fast_threshold_s}–{ok_warn_threshold:.1f}s, '
+                f'ok near slow {ok_warn_threshold:.1f}–{defaults.slow_threshold_s}s, '
+                f'slow >{defaults.slow_threshold_s}s. {reference_detail}'
+            )
+        else:
+            speed_status = 'neutral'
+            vs_reference = '—'
+            detail = 'Time-based thresholds do not apply to this metric.'
+        summaries[chart.test_id] = ScenarioSummary(
+            test_id=chart.test_id,
+            value=value,
+            commit_hash=str(latest['commit_hash']),
+            date=latest['date'].strftime('%Y-%m-%d'),
+            speed_status=speed_status,
+            vs_reference=vs_reference,
+            detail=detail,
+        )
+    return summaries
+
+
 def _format_section(title: str, items: List[Violation]) -> List[str]:
     lines = [f'## {title}', '']
     if not items:
@@ -163,9 +265,9 @@ def write_regression_report(
 ) -> List[Violation]:
     violations = collect_violations(metrics, config)
     by_rule = {
-        '2.1 Regression': [v for v in violations if v.rule == '2.1 Regression'],
-        '2.2 Slow build': [v for v in violations if v.rule == '2.2 Slow build'],
-        '2.3 Backlog candidate': [v for v in violations if v.rule == '2.3 Backlog candidate'],
+        'Regression': [v for v in violations if v.rule == '2.1 Regression'],
+        'Slow builds': [v for v in violations if v.rule == '2.2 Slow build'],
+        'Backlog candidates': [v for v in violations if v.rule == '2.3 Backlog candidate'],
     }
 
     lines = [
