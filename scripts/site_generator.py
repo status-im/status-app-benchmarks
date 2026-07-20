@@ -167,6 +167,23 @@ def _page_styles() -> str:
       min-width: 105px;
       white-space: nowrap;
     }
+    .summary-table .measured-column {
+      min-width: 6.5rem;
+    }
+    .measured-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      line-height: 1.2;
+    }
+    .measured-build {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+    }
+    .measured-date {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
     .summary-table tr:last-child td { border-bottom: 0; }
     .load-time-cell {
       display: flex;
@@ -506,6 +523,17 @@ def _measured_summary(
     return None
 
 
+def _measured_cell_html(build: str, date: str) -> str:
+    if build == '—' and date == '—':
+        return '—'
+    return (
+        '<div class="measured-cell">'
+        f'<span class="measured-build">{escape(build)}</span>'
+        f'<span class="measured-date">{escape(date)}</span>'
+        '</div>'
+    )
+
+
 def _reference_style(value: str) -> tuple[str, str]:
     if value == 'parity':
         return 'reference-parity', 'Within ±15% of 2.38.0'
@@ -584,7 +612,8 @@ def _summary_row(
         f'{_reference_html(vs_reference)}</td>'
         f'<td data-label="CPU">{escape(cpu_value)}</td>'
         f'<td data-label="RAM">{escape(ram_value)}</td>'
-        f'<td data-label="Measured">{escape(build)} · {escape(date)}</td>'
+        f'<td class="measured-column" data-label="Measured">'
+        f'{_measured_cell_html(build, date)}</td>'
         '</tr>'
     )
 
@@ -619,7 +648,8 @@ def _summary_page(
             'title="Difference from the 2.38.0 reference build">vs 2.38.0</th>'
             '<th title="Average CPU usage during the scenario">CPU</th>'
             '<th title="Average RAM usage during the scenario">RAM</th>'
-            '<th title="Build and date of the latest scenario result">Measured</th>'
+            '<th class="measured-column" '
+            'title="Build and date of the latest scenario result">Measured</th>'
             f'</tr></thead><tbody>{"".join(rows)}</tbody></table>'
             '</section>'
         )
@@ -808,11 +838,15 @@ def _github_summary_markdown(
                     if measured is not None and measured.commit_hash else '—'
                 )
                 date = measured.date if measured is not None and measured.date else '—'
+                measured_cell = (
+                    f'{build}<br>{date}'
+                    if build != '—' or date != '—' else '—'
+                )
                 lines.append(
                     f'| {page.title} | {area_label} | {scenario.display_name} '
                     f'| {load_time} | {_reference_markdown(vs_reference)} '
                     f'| {cpu_value} | {ram_value} '
-                    f'| {build} · {date} |'
+                    f'| {measured_cell} |'
                 )
     lines.append('')
     return lines
