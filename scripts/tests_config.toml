@@ -9,7 +9,7 @@ regression_consecutive = 3
 rolling_window = 5
 backlog_slow_of_last_n = 5
 backlog_slow_min_count = 3
-baselines = ["760417", "5f66de"]
+baselines = ["5f66de"]
 reference_build = "5f66de"
 
 # --- Pages ---

@@ -24,7 +24,6 @@ ROLLING_AVG_COLOR = '#34495e'
 
 # Reference levels for pinned release baselines (hash -> line/label color).
 BASELINE_REFERENCE_COLORS = {
-    '760417': '#2E86DE',  # 2.37.1
     '5f66de': '#1e8449',  # 2.38.0 (GA)
 }
 BASELINE_REFERENCE_COLOR_FALLBACK = ['#2E86DE', '#1e8449', '#F79F1F', '#9b59b6']
@@ -45,6 +44,28 @@ ZONE_SLOW_COLOR = 'rgba(192, 57, 43, 0.14)'
 def filter_recent(df: pd.DataFrame, days: int = CHART_WINDOW_DAYS) -> pd.DataFrame:
     cutoff = pd.Timestamp.now().normalize() - pd.Timedelta(days=days)
     return df[df['date'] >= cutoff].copy()
+
+
+def metrics_in_chart_window(
+    metrics: pd.DataFrame,
+    baselines: Optional[Iterable[str]] = None,
+    days: int = CHART_WINDOW_DAYS,
+) -> pd.DataFrame:
+    """Recent window plus pinned baseline rows so reference builds never age out."""
+    recent = filter_recent(metrics, days=days)
+    if not baselines:
+        return recent
+    baseline_hashes = {str(commit_hash) for commit_hash in baselines if commit_hash}
+    if not baseline_hashes:
+        return recent
+    baseline_rows = metrics[metrics['commit_hash'].astype(str).isin(baseline_hashes)]
+    if baseline_rows.empty:
+        return recent
+    return (
+        pd.concat([recent, baseline_rows], ignore_index=True)
+        .drop_duplicates(subset=['commit_hash', 'test_name', 'date'], keep='last')
+        .reset_index(drop=True)
+    )
 
 
 def aggregate_by_build(
@@ -166,7 +187,7 @@ def series_for_chart(
 
     Returns (series, n_baselines). n_baselines is 0 when pinning is inactive.
     """
-    filtered = filter_recent(metrics)
+    filtered = metrics_in_chart_window(metrics, chart.baselines)
     test_data = filtered[match_chart_patterns(filtered['test_name'], chart)].copy()
     if test_data.empty:
         return None
