@@ -62,6 +62,7 @@ class BenchmarkPage:
     description: str
     test_ids: tuple[str, ...]
     user_data_size: str
+    wallet_accounts: str
     wallet_tokens: str
     wallet_nfts: str
     wallet_transactions: str
@@ -355,6 +356,7 @@ def _load_pages(
             description=entry.get('description', ''),
             test_ids=tuple(test_ids),
             user_data_size=str(entry.get('user_data_size', 'TBD')),
+            wallet_accounts=str(wallet.get('accounts', 'TBD')),
             wallet_tokens=str(wallet.get('tokens', 'TBD')),
             wallet_nfts=str(wallet.get('nfts', 'TBD')),
             wallet_transactions=str(wallet.get('transactions', 'TBD')),

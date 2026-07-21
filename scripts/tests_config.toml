@@ -19,25 +19,25 @@ slug = "wallet-fresh"
 title = "New user profile"
 description = "Newly created user profile (no-preseeded user data)"
 user_data_size = "No pre-seeded data"
-wallet = { tokens = "0", nfts = "0", transactions = "0" }
+wallet = { accounts = "1", tokens = "0", nfts = "0", transactions = "0" }
 messenger = { direct_chats = "0", group_chats = "0" }
 communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "wallet-wallet-load"
 title = "Returning user (heavy wallet account)"
-description = "Returning user with wallet_load profile (~29 MB user data)."
-user_data_size = "~29 MB"
-wallet = { tokens = "TBD", nfts = "TBD", transactions = "TBD" }
+description = "Returning user with wallet_load profile (~34 MB user data)."
+user_data_size = "~34 MB"
+wallet = { accounts = "3", tokens = "83", nfts = "166", transactions = "736" }
 messenger = { direct_chats = "0", group_chats = "0" }
 communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "wallet-wallet-load-alex"
 title = "Returning user (medium heavy wallet account from Alex)"
-description = "Returning user with wallet_load_alex profile (~16 MB user data)."
-user_data_size = "~16 MB"
-wallet = { tokens = "TBD", nfts = "TBD", transactions = "TBD" }
+description = "Returning user with wallet_load_alex profile (~35 MB user data)."
+user_data_size = "~35 MB"
+wallet = { accounts = "4", tokens = "144", nfts = "773", transactions = "5239" }
 messenger = { direct_chats = "0", group_chats = "0" }
 communities = { joined = "0", spectated = "0" }
 
@@ -46,7 +46,7 @@ slug = "community-populated"
 title = "Returning user (Status community member)"
 description = "Returning user with Status community already joined."
 user_data_size = "TBD"
-wallet = { tokens = "0", nfts = "0", transactions = "0" }
+wallet = { accounts = "1", tokens = "0", nfts = "0", transactions = "0" }
 messenger = { direct_chats = "0", group_chats = "0" }
 communities = { joined = "1", spectated = "0" }
 test_ids = [
