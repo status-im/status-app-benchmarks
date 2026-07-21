@@ -50,6 +50,14 @@ def _page_styles() -> str:
       --link: #0969da;
       --header-bg: #24292f;
       --header-text: #ffffff;
+      --accent-data: #57606a;
+      --accent-data-bg: #eaeef2;
+      --accent-wallet: #6e40c9;
+      --accent-wallet-bg: #f3f0ff;
+      --accent-messenger: #1a7f37;
+      --accent-messenger-bg: #dafbe1;
+      --accent-communities: #bc4c00;
+      --accent-communities-bg: #fff1e5;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -61,6 +69,14 @@ def _page_styles() -> str:
         --link: #58a6ff;
         --header-bg: #010409;
         --header-text: #e6edf3;
+        --accent-data: #8b949e;
+        --accent-data-bg: #21262d;
+        --accent-wallet: #a371f7;
+        --accent-wallet-bg: #2b1f47;
+        --accent-messenger: #3fb950;
+        --accent-messenger-bg: #12261e;
+        --accent-communities: #f0883e;
+        --accent-communities-bg: #2d1f14;
       }
     }
     * { box-sizing: border-box; }
@@ -99,15 +115,58 @@ def _page_styles() -> str:
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-    .profile-facts {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.35rem 0.75rem;
+    .profile-fact-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
       margin-top: 0.85rem;
-      color: var(--muted);
-      font-size: 0.78rem;
     }
-    .profile-facts span:first-child { grid-column: 1 / -1; }
+    .stat-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .stat-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 5.5rem;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.2rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .stat-chip strong { font-weight: 700; }
+    .stat-chip.stat-zero { opacity: 0.55; }
+    .stat-data {
+      align-self: flex-start;
+      background: var(--accent-data-bg);
+      color: var(--accent-data);
+      font-weight: 600;
+    }
+    .stat-wallet .stat-group-label { color: var(--accent-wallet); }
+    .stat-wallet .stat-chip {
+      background: var(--accent-wallet-bg);
+      color: var(--accent-wallet);
+    }
+    .stat-messenger .stat-group-label { color: var(--accent-messenger); }
+    .stat-messenger .stat-chip {
+      background: var(--accent-messenger-bg);
+      color: var(--accent-messenger);
+    }
+    .stat-communities .stat-group-label { color: var(--accent-communities); }
+    .stat-communities .stat-chip {
+      background: var(--accent-communities-bg);
+      color: var(--accent-communities);
+    }
     .profile-details {
       background: var(--card);
       border: 1px solid var(--border);
@@ -118,13 +177,38 @@ def _page_styles() -> str:
     .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
     .profile-details-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1rem;
     }
-    .profile-details h3 { margin: 0 0 0.35rem; font-size: 0.9rem; }
-    .profile-details dl { margin: 0; }
-    .profile-details dt { color: var(--muted); font-size: 0.78rem; }
-    .profile-details dd { margin: 0 0 0.3rem; font-weight: 500; }
+    .profile-detail-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+    }
+    .profile-detail-section h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .profile-detail-section.stat-wallet {
+      border-color: color-mix(in srgb, var(--accent-wallet) 35%, var(--border));
+    }
+    .profile-detail-section.stat-wallet h3 { color: var(--accent-wallet); }
+    .profile-detail-section.stat-messenger {
+      border-color: color-mix(in srgb, var(--accent-messenger) 35%, var(--border));
+    }
+    .profile-detail-section.stat-messenger h3 { color: var(--accent-messenger); }
+    .profile-detail-section.stat-communities {
+      border-color: color-mix(in srgb, var(--accent-communities) 35%, var(--border));
+    }
+    .profile-detail-section.stat-communities h3 { color: var(--accent-communities); }
+    .profile-detail-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
     .area-group { margin-top: 2rem; }
     .area-group > h2 { margin-bottom: 0.75rem; }
     .area-empty {
@@ -426,40 +510,93 @@ def _chart_section(chart: ChartEntry) -> str:
     )
 
 
-def _profile_facts(page: BenchmarkPage) -> str:
+def _is_zero_stat(value: str) -> bool:
+    normalized = value.strip().lower()
+    return normalized in ('0', 'tbd', '—', '-', '')
+
+
+def _stat_chip(label: str, value: str, category: str) -> str:
+    zero_class = ' stat-zero' if _is_zero_stat(value) else ''
     return (
-        '<div class="profile-facts">'
-        f'<span>User data: {escape(page.user_data_size)}</span>'
-        f'<span>Tokens: {escape(page.wallet_tokens)}</span>'
-        f'<span>NFTs: {escape(page.wallet_nfts)}</span>'
-        f'<span>Transactions: {escape(page.wallet_transactions)}</span>'
-        f'<span>1-on-1 chats: {escape(page.messenger_direct_chats)}</span>'
-        f'<span>Group chats: {escape(page.messenger_group_chats)}</span>'
-        f'<span>Joined communities: {escape(page.communities_joined)}</span>'
-        f'<span>Spectated communities: {escape(page.communities_spectated)}</span>'
+        f'<span class="stat-chip stat-{category}{zero_class}">'
+        f'<strong>{escape(value)}</strong> {escape(label)}'
+        '</span>'
+    )
+
+
+def _stat_group(title: str, category: str, chips: str) -> str:
+    return (
+        f'<div class="stat-group stat-{category}">'
+        f'<span class="stat-group-label">{escape(title)}</span>'
+        f'{chips}'
+        '</div>'
+    )
+
+
+def _user_data_chip(user_data_size: str) -> str:
+    label = user_data_size
+    if 'data' not in user_data_size.lower():
+        label = f'{user_data_size} user data'
+    return f'<span class="stat-chip stat-data">{escape(label)}</span>'
+
+
+def _profile_detail_section(title: str, category: str, chips: str) -> str:
+    return (
+        f'<div class="profile-detail-section stat-{category}">'
+        f'<h3>{escape(title)}</h3>'
+        f'<div class="profile-detail-chips">{chips}</div>'
+        '</div>'
+    )
+
+
+def _profile_facts(page: BenchmarkPage) -> str:
+    wallet_chips = ''.join([
+        _stat_chip('accounts', page.wallet_accounts, 'wallet'),
+        _stat_chip('tokens', page.wallet_tokens, 'wallet'),
+        _stat_chip('NFTs', page.wallet_nfts, 'wallet'),
+        _stat_chip('txs', page.wallet_transactions, 'wallet'),
+    ])
+    messenger_chips = ''.join([
+        _stat_chip('DMs', page.messenger_direct_chats, 'messenger'),
+        _stat_chip('groups', page.messenger_group_chats, 'messenger'),
+    ])
+    community_chips = ''.join([
+        _stat_chip('joined', page.communities_joined, 'communities'),
+        _stat_chip('spectated', page.communities_spectated, 'communities'),
+    ])
+    return (
+        '<div class="profile-fact-groups">'
+        f'{_user_data_chip(page.user_data_size)}'
+        f'{_stat_group("Wallet", "wallet", wallet_chips)}'
+        f'{_stat_group("Messenger", "messenger", messenger_chips)}'
+        f'{_stat_group("Communities", "communities", community_chips)}'
         '</div>'
     )
 
 
 def _profile_details(page: BenchmarkPage) -> str:
+    wallet_chips = ''.join([
+        _stat_chip('accounts', page.wallet_accounts, 'wallet'),
+        _stat_chip('tokens with balance > 0', page.wallet_tokens, 'wallet'),
+        _stat_chip('NFTs', page.wallet_nfts, 'wallet'),
+        _stat_chip('transactions', page.wallet_transactions, 'wallet'),
+    ])
+    messenger_chips = ''.join([
+        _stat_chip('1-on-1 chats', page.messenger_direct_chats, 'messenger'),
+        _stat_chip('group chats', page.messenger_group_chats, 'messenger'),
+    ])
+    community_chips = ''.join([
+        _stat_chip('joined', page.communities_joined, 'communities'),
+        _stat_chip('spectated', page.communities_spectated, 'communities'),
+    ])
     return (
         '<section class="profile-details">'
         '<h2>User data profile</h2>'
         f'<p class="subtitle">Stored data: {escape(page.user_data_size)}</p>'
         '<div class="profile-details-grid">'
-        '<div><h3>Wallet</h3><dl>'
-        f'<dt>Tokens with balance &gt; 0</dt><dd>{escape(page.wallet_tokens)}</dd>'
-        f'<dt>NFTs</dt><dd>{escape(page.wallet_nfts)}</dd>'
-        f'<dt>Transaction history</dt><dd>{escape(page.wallet_transactions)}</dd>'
-        '</dl></div>'
-        '<div><h3>Messenger</h3><dl>'
-        f'<dt>1-on-1 chats</dt><dd>{escape(page.messenger_direct_chats)}</dd>'
-        f'<dt>Group chats</dt><dd>{escape(page.messenger_group_chats)}</dd>'
-        '</dl></div>'
-        '<div><h3>Communities</h3><dl>'
-        f'<dt>Joined communities</dt><dd>{escape(page.communities_joined)}</dd>'
-        f'<dt>Spectated communities</dt><dd>{escape(page.communities_spectated)}</dd>'
-        '</dl></div>'
+        f'{_profile_detail_section("Wallet", "wallet", wallet_chips)}'
+        f'{_profile_detail_section("Messenger", "messenger", messenger_chips)}'
+        f'{_profile_detail_section("Communities", "communities", community_chips)}'
         '</div></section>'
     )
 
@@ -768,7 +905,8 @@ def _profile_data_markdown(page: BenchmarkPage) -> list[str]:
         '',
         f'- **Stored data:** {page.user_data_size}',
         (
-            f'- **Wallet:** {page.wallet_tokens} tokens with balance > 0 · '
+            f'- **Wallet:** {page.wallet_accounts} wallet accounts · '
+            f'{page.wallet_tokens} tokens with balance > 0 · '
             f'{page.wallet_nfts} NFTs · {page.wallet_transactions} transactions'
         ),
         (

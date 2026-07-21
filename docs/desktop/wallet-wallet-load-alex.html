@@ -15,6 +15,14 @@
       --link: #0969da;
       --header-bg: #24292f;
       --header-text: #ffffff;
+      --accent-data: #57606a;
+      --accent-data-bg: #eaeef2;
+      --accent-wallet: #6e40c9;
+      --accent-wallet-bg: #f3f0ff;
+      --accent-messenger: #1a7f37;
+      --accent-messenger-bg: #dafbe1;
+      --accent-communities: #bc4c00;
+      --accent-communities-bg: #fff1e5;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -26,6 +34,14 @@
         --link: #58a6ff;
         --header-bg: #010409;
         --header-text: #e6edf3;
+        --accent-data: #8b949e;
+        --accent-data-bg: #21262d;
+        --accent-wallet: #a371f7;
+        --accent-wallet-bg: #2b1f47;
+        --accent-messenger: #3fb950;
+        --accent-messenger-bg: #12261e;
+        --accent-communities: #f0883e;
+        --accent-communities-bg: #2d1f14;
       }
     }
     * { box-sizing: border-box; }
@@ -64,15 +80,58 @@
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-    .profile-facts {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.35rem 0.75rem;
+    .profile-fact-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
       margin-top: 0.85rem;
-      color: var(--muted);
-      font-size: 0.78rem;
     }
-    .profile-facts span:first-child { grid-column: 1 / -1; }
+    .stat-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .stat-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 5.5rem;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.2rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .stat-chip strong { font-weight: 700; }
+    .stat-chip.stat-zero { opacity: 0.55; }
+    .stat-data {
+      align-self: flex-start;
+      background: var(--accent-data-bg);
+      color: var(--accent-data);
+      font-weight: 600;
+    }
+    .stat-wallet .stat-group-label { color: var(--accent-wallet); }
+    .stat-wallet .stat-chip {
+      background: var(--accent-wallet-bg);
+      color: var(--accent-wallet);
+    }
+    .stat-messenger .stat-group-label { color: var(--accent-messenger); }
+    .stat-messenger .stat-chip {
+      background: var(--accent-messenger-bg);
+      color: var(--accent-messenger);
+    }
+    .stat-communities .stat-group-label { color: var(--accent-communities); }
+    .stat-communities .stat-chip {
+      background: var(--accent-communities-bg);
+      color: var(--accent-communities);
+    }
     .profile-details {
       background: var(--card);
       border: 1px solid var(--border);
@@ -83,13 +142,38 @@
     .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
     .profile-details-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1rem;
     }
-    .profile-details h3 { margin: 0 0 0.35rem; font-size: 0.9rem; }
-    .profile-details dl { margin: 0; }
-    .profile-details dt { color: var(--muted); font-size: 0.78rem; }
-    .profile-details dd { margin: 0 0 0.3rem; font-weight: 500; }
+    .profile-detail-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+    }
+    .profile-detail-section h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .profile-detail-section.stat-wallet {
+      border-color: color-mix(in srgb, var(--accent-wallet) 35%, var(--border));
+    }
+    .profile-detail-section.stat-wallet h3 { color: var(--accent-wallet); }
+    .profile-detail-section.stat-messenger {
+      border-color: color-mix(in srgb, var(--accent-messenger) 35%, var(--border));
+    }
+    .profile-detail-section.stat-messenger h3 { color: var(--accent-messenger); }
+    .profile-detail-section.stat-communities {
+      border-color: color-mix(in srgb, var(--accent-communities) 35%, var(--border));
+    }
+    .profile-detail-section.stat-communities h3 { color: var(--accent-communities); }
+    .profile-detail-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
     .area-group { margin-top: 2rem; }
     .area-group > h2 { margin-bottom: 0.75rem; }
     .area-empty {
@@ -270,6 +354,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Returning user (medium heavy wallet account from Alex)</h1><p class="subtitle">Returning user with wallet_load_alex profile (~16 MB user data).</p><section class="profile-details"><h2>User data profile</h2><p class="subtitle">Stored data: ~16 MB</p><div class="profile-details-grid"><div><h3>Wallet</h3><dl><dt>Tokens with balance &gt; 0</dt><dd>TBD</dd><dt>NFTs</dt><dd>TBD</dd><dt>Transaction history</dt><dd>TBD</dd></dl></div><div><h3>Messenger</h3><dl><dt>1-on-1 chats</dt><dd>0</dd><dt>Group chats</dt><dd>0</dd></dl></div><div><h3>Communities</h3><dl><dt>Joined communities</dt><dd>0</dd><dt>Spectated communities</dt><dd>0</dd></dl></div></div></section><section class="area-group"><h2>Wallet</h2><section class="chart"><iframe src="charts/wallet_first_open_time_wallet_load_alex.html" title="Time to open Wallet for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening Wallet for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_first_open_ram_wallet_load_alex.html" title="RAM usage while opening Wallet for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_repeat_open_time_wallet_load_alex.html" title="Time to reopen Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_repeat_open_cpu_wallet_load_alex.html" title="CPU usage while reopening Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_repeat_open_ram_wallet_load_alex.html" title="RAM usage while reopening Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_account_first_open_time_wallet_load_alex.html" title="Time to open a Wallet account for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_account_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening a Wallet account for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_account_first_open_ram_wallet_load_alex.html" title="RAM usage while opening a Wallet account for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_first_open_time_wallet_load_alex.html" title="Time to open the Add account modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Add account modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Add account modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_time_wallet_load_alex.html" title="Time to reopen the Add account modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_cpu_wallet_load_alex.html" title="CPU usage while reopening the Add account modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_ram_wallet_load_alex.html" title="RAM usage while reopening the Add account modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_first_open_time_wallet_load_alex.html" title="Time to open the Receive modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Receive modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Receive modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_time_wallet_load_alex.html" title="Time to reopen the Receive modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_cpu_wallet_load_alex.html" title="CPU usage while reopening the Receive modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_ram_wallet_load_alex.html" title="RAM usage while reopening the Receive modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_first_open_time_wallet_load_alex.html" title="Time to open the Send modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Send modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Send modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_time_wallet_load_alex.html" title="Time to reopen the Send modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_cpu_wallet_load_alex.html" title="CPU usage while reopening the Send modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_ram_wallet_load_alex.html" title="RAM usage while reopening the Send modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_first_open_time_wallet_load_alex.html" title="Time to open the Swap modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Swap modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Swap modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_time_wallet_load_alex.html" title="Time to reopen the Swap modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_cpu_wallet_load_alex.html" title="CPU usage while reopening the Swap modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_ram_wallet_load_alex.html" title="RAM usage while reopening the Swap modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_assets_tab_time_wallet_load_alex.html" title="Time to reopen the Assets tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_assets_tab_cpu_wallet_load_alex.html" title="CPU usage while reopening the Assets tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_assets_tab_ram_wallet_load_alex.html" title="RAM usage while reopening the Assets tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_first_open_time_wallet_load_alex.html" title="Time to open the Collectibles tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Collectibles tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Collectibles tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_time_wallet_load_alex.html" title="Time to reopen the Collectibles tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_cpu_wallet_load_alex.html" title="CPU usage while reopening the Collectibles tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_ram_wallet_load_alex.html" title="RAM usage while reopening the Collectibles tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_first_open_time_wallet_load_alex.html" title="Time to open the History tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the History tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the History tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_time_wallet_load_alex.html" title="Time to reopen the History tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_cpu_wallet_load_alex.html" title="CPU usage while reopening the History tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_ram_wallet_load_alex.html" title="RAM usage while reopening the History tab in the same session" loading="lazy" scrolling="no"></iframe></section></section><section class="area-group"><h2>Messenger</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Communities</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Browser</h2><div class="area-empty">Not tested for this user profile.</div></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Returning user (medium heavy wallet account from Alex)</h1><p class="subtitle">Returning user with wallet_load_alex profile (~35 MB user data).</p><section class="profile-details"><h2>User data profile</h2><p class="subtitle">Stored data: ~35 MB</p><div class="profile-details-grid"><div class="profile-detail-section stat-wallet"><h3>Wallet</h3><div class="profile-detail-chips"><span class="stat-chip stat-wallet"><strong>4</strong> accounts</span><span class="stat-chip stat-wallet"><strong>144</strong> tokens with balance &gt; 0</span><span class="stat-chip stat-wallet"><strong>773</strong> NFTs</span><span class="stat-chip stat-wallet"><strong>5239</strong> transactions</span></div></div><div class="profile-detail-section stat-messenger"><h3>Messenger</h3><div class="profile-detail-chips"><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> 1-on-1 chats</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> group chats</span></div></div><div class="profile-detail-section stat-communities"><h3>Communities</h3><div class="profile-detail-chips"><span class="stat-chip stat-communities stat-zero"><strong>0</strong> joined</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> spectated</span></div></div></div></section><section class="area-group"><h2>Wallet</h2><section class="chart"><iframe src="charts/wallet_first_open_time_wallet_load_alex.html" title="Time to open Wallet for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening Wallet for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_first_open_ram_wallet_load_alex.html" title="RAM usage while opening Wallet for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_repeat_open_time_wallet_load_alex.html" title="Time to reopen Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_repeat_open_cpu_wallet_load_alex.html" title="CPU usage while reopening Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_repeat_open_ram_wallet_load_alex.html" title="RAM usage while reopening Wallet in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_account_first_open_time_wallet_load_alex.html" title="Time to open a Wallet account for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_account_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening a Wallet account for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_account_first_open_ram_wallet_load_alex.html" title="RAM usage while opening a Wallet account for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_first_open_time_wallet_load_alex.html" title="Time to open the Add account modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Add account modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Add account modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_time_wallet_load_alex.html" title="Time to reopen the Add account modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_cpu_wallet_load_alex.html" title="CPU usage while reopening the Add account modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_add_account_ram_wallet_load_alex.html" title="RAM usage while reopening the Add account modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_first_open_time_wallet_load_alex.html" title="Time to open the Receive modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Receive modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Receive modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_time_wallet_load_alex.html" title="Time to reopen the Receive modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_cpu_wallet_load_alex.html" title="CPU usage while reopening the Receive modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_receive_ram_wallet_load_alex.html" title="RAM usage while reopening the Receive modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_first_open_time_wallet_load_alex.html" title="Time to open the Send modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Send modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Send modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_time_wallet_load_alex.html" title="Time to reopen the Send modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_cpu_wallet_load_alex.html" title="CPU usage while reopening the Send modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_send_ram_wallet_load_alex.html" title="RAM usage while reopening the Send modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_first_open_time_wallet_load_alex.html" title="Time to open the Swap modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Swap modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Swap modal for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_time_wallet_load_alex.html" title="Time to reopen the Swap modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_cpu_wallet_load_alex.html" title="CPU usage while reopening the Swap modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_swap_ram_wallet_load_alex.html" title="RAM usage while reopening the Swap modal in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_assets_tab_time_wallet_load_alex.html" title="Time to reopen the Assets tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_assets_tab_cpu_wallet_load_alex.html" title="CPU usage while reopening the Assets tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_assets_tab_ram_wallet_load_alex.html" title="RAM usage while reopening the Assets tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_first_open_time_wallet_load_alex.html" title="Time to open the Collectibles tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the Collectibles tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the Collectibles tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_time_wallet_load_alex.html" title="Time to reopen the Collectibles tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_cpu_wallet_load_alex.html" title="CPU usage while reopening the Collectibles tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_collectibles_tab_ram_wallet_load_alex.html" title="RAM usage while reopening the Collectibles tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_first_open_time_wallet_load_alex.html" title="Time to open the History tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_first_open_cpu_wallet_load_alex.html" title="CPU usage while opening the History tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_first_open_ram_wallet_load_alex.html" title="RAM usage while opening the History tab for the first time in the session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_time_wallet_load_alex.html" title="Time to reopen the History tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_cpu_wallet_load_alex.html" title="CPU usage while reopening the History tab in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart"><iframe src="charts/wallet_activity_tab_ram_wallet_load_alex.html" title="RAM usage while reopening the History tab in the same session" loading="lazy" scrolling="no"></iframe></section></section><section class="area-group"><h2>Messenger</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Communities</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Browser</h2><div class="area-empty">Not tested for this user profile.</div></section></main>
 </body>
 </html>

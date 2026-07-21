@@ -94,7 +94,7 @@ Newly created user profile (no-preseeded user data)
 ### User data profile
 
 - **Stored data:** No pre-seeded data
-- **Wallet:** 0 tokens with balance > 0 · 0 NFTs · 0 transactions
+- **Wallet:** 1 wallet accounts · 0 tokens with balance > 0 · 0 NFTs · 0 transactions
 - **Messenger:** 0 1-on-1 chats · 0 group chats
 - **Communities:** 0 joined communities · 0 spectated communities
 
@@ -210,12 +210,12 @@ _Not tested for this user profile._
 
 ## Returning user (heavy wallet account)
 
-Returning user with wallet_load profile (~29 MB user data).
+Returning user with wallet_load profile (~34 MB user data).
 
 ### User data profile
 
-- **Stored data:** ~29 MB
-- **Wallet:** TBD tokens with balance > 0 · TBD NFTs · TBD transactions
+- **Stored data:** ~34 MB
+- **Wallet:** 3 wallet accounts · 83 tokens with balance > 0 · 166 NFTs · 736 transactions
 - **Messenger:** 0 1-on-1 chats · 0 group chats
 - **Communities:** 0 joined communities · 0 spectated communities
 
@@ -331,12 +331,12 @@ _Not tested for this user profile._
 
 ## Returning user (medium heavy wallet account from Alex)
 
-Returning user with wallet_load_alex profile (~16 MB user data).
+Returning user with wallet_load_alex profile (~35 MB user data).
 
 ### User data profile
 
-- **Stored data:** ~16 MB
-- **Wallet:** TBD tokens with balance > 0 · TBD NFTs · TBD transactions
+- **Stored data:** ~35 MB
+- **Wallet:** 4 wallet accounts · 144 tokens with balance > 0 · 773 NFTs · 5239 transactions
 - **Messenger:** 0 1-on-1 chats · 0 group chats
 - **Communities:** 0 joined communities · 0 spectated communities
 
@@ -457,7 +457,7 @@ Returning user with Status community already joined.
 ### User data profile
 
 - **Stored data:** TBD
-- **Wallet:** 0 tokens with balance > 0 · 0 NFTs · 0 transactions
+- **Wallet:** 1 wallet accounts · 0 tokens with balance > 0 · 0 NFTs · 0 transactions
 - **Messenger:** 0 1-on-1 chats · 0 group chats
 - **Communities:** 1 joined communities · 0 spectated communities
 

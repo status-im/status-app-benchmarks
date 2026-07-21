@@ -15,6 +15,14 @@
       --link: #0969da;
       --header-bg: #24292f;
       --header-text: #ffffff;
+      --accent-data: #57606a;
+      --accent-data-bg: #eaeef2;
+      --accent-wallet: #6e40c9;
+      --accent-wallet-bg: #f3f0ff;
+      --accent-messenger: #1a7f37;
+      --accent-messenger-bg: #dafbe1;
+      --accent-communities: #bc4c00;
+      --accent-communities-bg: #fff1e5;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -26,6 +34,14 @@
         --link: #58a6ff;
         --header-bg: #010409;
         --header-text: #e6edf3;
+        --accent-data: #8b949e;
+        --accent-data-bg: #21262d;
+        --accent-wallet: #a371f7;
+        --accent-wallet-bg: #2b1f47;
+        --accent-messenger: #3fb950;
+        --accent-messenger-bg: #12261e;
+        --accent-communities: #f0883e;
+        --accent-communities-bg: #2d1f14;
       }
     }
     * { box-sizing: border-box; }
@@ -64,15 +80,58 @@
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-    .profile-facts {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.35rem 0.75rem;
+    .profile-fact-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
       margin-top: 0.85rem;
-      color: var(--muted);
-      font-size: 0.78rem;
     }
-    .profile-facts span:first-child { grid-column: 1 / -1; }
+    .stat-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .stat-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 5.5rem;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.2rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .stat-chip strong { font-weight: 700; }
+    .stat-chip.stat-zero { opacity: 0.55; }
+    .stat-data {
+      align-self: flex-start;
+      background: var(--accent-data-bg);
+      color: var(--accent-data);
+      font-weight: 600;
+    }
+    .stat-wallet .stat-group-label { color: var(--accent-wallet); }
+    .stat-wallet .stat-chip {
+      background: var(--accent-wallet-bg);
+      color: var(--accent-wallet);
+    }
+    .stat-messenger .stat-group-label { color: var(--accent-messenger); }
+    .stat-messenger .stat-chip {
+      background: var(--accent-messenger-bg);
+      color: var(--accent-messenger);
+    }
+    .stat-communities .stat-group-label { color: var(--accent-communities); }
+    .stat-communities .stat-chip {
+      background: var(--accent-communities-bg);
+      color: var(--accent-communities);
+    }
     .profile-details {
       background: var(--card);
       border: 1px solid var(--border);
@@ -83,13 +142,38 @@
     .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
     .profile-details-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1rem;
     }
-    .profile-details h3 { margin: 0 0 0.35rem; font-size: 0.9rem; }
-    .profile-details dl { margin: 0; }
-    .profile-details dt { color: var(--muted); font-size: 0.78rem; }
-    .profile-details dd { margin: 0 0 0.3rem; font-weight: 500; }
+    .profile-detail-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+    }
+    .profile-detail-section h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .profile-detail-section.stat-wallet {
+      border-color: color-mix(in srgb, var(--accent-wallet) 35%, var(--border));
+    }
+    .profile-detail-section.stat-wallet h3 { color: var(--accent-wallet); }
+    .profile-detail-section.stat-messenger {
+      border-color: color-mix(in srgb, var(--accent-messenger) 35%, var(--border));
+    }
+    .profile-detail-section.stat-messenger h3 { color: var(--accent-messenger); }
+    .profile-detail-section.stat-communities {
+      border-color: color-mix(in srgb, var(--accent-communities) 35%, var(--border));
+    }
+    .profile-detail-section.stat-communities h3 { color: var(--accent-communities); }
+    .profile-detail-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
     .area-group { margin-top: 2rem; }
     .area-group > h2 { margin-bottom: 0.75rem; }
     .area-empty {
@@ -270,6 +354,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Performance metrics from the last 30 days. Each point is one nightly run — x-axis shows build date; hover a point for commit hash. Load-time charts plot the average of runs per build.</p><section class="machine-info"><h2>System info</h2><p class="subtitle">Latest recorded environment · Jul 22, 2026 · commit abe104848</p><dl><div><dt>Host</dt><dd>WINDOWS-NODE-01</dd></div><div><dt>Windows</dt><dd>Windows Server 2022 Standard 21H2</dd></div><div><dt>OS build</dt><dd>20348.1487</dd></div><div><dt>CPU</dt><dd>AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics</dd></div><div><dt>RAM</dt><dd>63 GB</dd></div></dl></section><a class="summary-link" href="summary.html">View scenario summary →</a><h2 style="margin-top:2rem">User profiles</h2><div class="grid"><a class="card" href="wallet-fresh.html"><h2>New user profile</h2><p>Newly created user profile (no-preseeded user data)</p><div class="profile-facts"><span>User data: No pre-seeded data</span><span>Tokens: 0</span><span>NFTs: 0</span><span>Transactions: 0</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 0</span><span>Spectated communities: 0</span></div></a><a class="card" href="wallet-wallet-load.html"><h2>Returning user (heavy wallet account)</h2><p>Returning user with wallet_load profile (~29 MB user data).</p><div class="profile-facts"><span>User data: ~29 MB</span><span>Tokens: TBD</span><span>NFTs: TBD</span><span>Transactions: TBD</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 0</span><span>Spectated communities: 0</span></div></a><a class="card" href="wallet-wallet-load-alex.html"><h2>Returning user (medium heavy wallet account from Alex)</h2><p>Returning user with wallet_load_alex profile (~16 MB user data).</p><div class="profile-facts"><span>User data: ~16 MB</span><span>Tokens: TBD</span><span>NFTs: TBD</span><span>Transactions: TBD</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 0</span><span>Spectated communities: 0</span></div></a><a class="card" href="community-populated.html"><h2>Returning user (Status community member)</h2><p>Returning user with Status community already joined.</p><div class="profile-facts"><span>User data: TBD</span><span>Tokens: 0</span><span>NFTs: 0</span><span>Transactions: 0</span><span>1-on-1 chats: 0</span><span>Group chats: 0</span><span>Joined communities: 1</span><span>Spectated communities: 0</span></div></a></div><p class="note">Raw CSV history lives in the repository <code>data/</code> folder. PNG charts on GitHub: <a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/README.md">docs/desktop/README.md</a>.</p></main>
+  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Performance metrics from the last 30 days. Each point is one nightly run — x-axis shows build date; hover a point for commit hash. Load-time charts plot the average of runs per build.</p><section class="machine-info"><h2>System info</h2><p class="subtitle">Latest recorded environment · Jul 22, 2026 · commit abe104848</p><dl><div><dt>Host</dt><dd>WINDOWS-NODE-01</dd></div><div><dt>Windows</dt><dd>Windows Server 2022 Standard 21H2</dd></div><div><dt>OS build</dt><dd>20348.1487</dd></div><div><dt>CPU</dt><dd>AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics</dd></div><div><dt>RAM</dt><dd>63 GB</dd></div></dl></section><a class="summary-link" href="summary.html">View scenario summary →</a><h2 style="margin-top:2rem">User profiles</h2><div class="grid"><a class="card" href="wallet-fresh.html"><h2>New user profile</h2><p>Newly created user profile (no-preseeded user data)</p><div class="profile-fact-groups"><span class="stat-chip stat-data">No pre-seeded data</span><div class="stat-group stat-wallet"><span class="stat-group-label">Wallet</span><span class="stat-chip stat-wallet"><strong>1</strong> accounts</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> tokens</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> NFTs</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> txs</span></div><div class="stat-group stat-messenger"><span class="stat-group-label">Messenger</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> DMs</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> groups</span></div><div class="stat-group stat-communities"><span class="stat-group-label">Communities</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> joined</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> spectated</span></div></div></a><a class="card" href="wallet-wallet-load.html"><h2>Returning user (heavy wallet account)</h2><p>Returning user with wallet_load profile (~34 MB user data).</p><div class="profile-fact-groups"><span class="stat-chip stat-data">~34 MB user data</span><div class="stat-group stat-wallet"><span class="stat-group-label">Wallet</span><span class="stat-chip stat-wallet"><strong>3</strong> accounts</span><span class="stat-chip stat-wallet"><strong>83</strong> tokens</span><span class="stat-chip stat-wallet"><strong>166</strong> NFTs</span><span class="stat-chip stat-wallet"><strong>736</strong> txs</span></div><div class="stat-group stat-messenger"><span class="stat-group-label">Messenger</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> DMs</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> groups</span></div><div class="stat-group stat-communities"><span class="stat-group-label">Communities</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> joined</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> spectated</span></div></div></a><a class="card" href="wallet-wallet-load-alex.html"><h2>Returning user (medium heavy wallet account from Alex)</h2><p>Returning user with wallet_load_alex profile (~35 MB user data).</p><div class="profile-fact-groups"><span class="stat-chip stat-data">~35 MB user data</span><div class="stat-group stat-wallet"><span class="stat-group-label">Wallet</span><span class="stat-chip stat-wallet"><strong>4</strong> accounts</span><span class="stat-chip stat-wallet"><strong>144</strong> tokens</span><span class="stat-chip stat-wallet"><strong>773</strong> NFTs</span><span class="stat-chip stat-wallet"><strong>5239</strong> txs</span></div><div class="stat-group stat-messenger"><span class="stat-group-label">Messenger</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> DMs</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> groups</span></div><div class="stat-group stat-communities"><span class="stat-group-label">Communities</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> joined</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> spectated</span></div></div></a><a class="card" href="community-populated.html"><h2>Returning user (Status community member)</h2><p>Returning user with Status community already joined.</p><div class="profile-fact-groups"><span class="stat-chip stat-data">TBD user data</span><div class="stat-group stat-wallet"><span class="stat-group-label">Wallet</span><span class="stat-chip stat-wallet"><strong>1</strong> accounts</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> tokens</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> NFTs</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> txs</span></div><div class="stat-group stat-messenger"><span class="stat-group-label">Messenger</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> DMs</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> groups</span></div><div class="stat-group stat-communities"><span class="stat-group-label">Communities</span><span class="stat-chip stat-communities"><strong>1</strong> joined</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> spectated</span></div></div></a></div><p class="note">Raw CSV history lives in the repository <code>data/</code> folder. PNG charts on GitHub: <a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/README.md">docs/desktop/README.md</a>.</p></main>
 </body>
 </html>
