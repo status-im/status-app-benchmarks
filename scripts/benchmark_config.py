@@ -50,6 +50,7 @@ class ChartTest:
     show_speed_zones: bool = False
     show_rolling_average: bool = False
     reference_build: Optional[str] = None
+    inherit_reference_build: bool = True
     baselines: tuple[str, ...] = ()
     historical_patterns: tuple[str, ...] = ()
     historical_attachment_keywords: tuple[str, ...] = ()
@@ -108,6 +109,33 @@ def load_desktop_build_labels(labels_file: Path = DESKTOP_BUILD_LABELS) -> dict[
     return labels
 
 
+def effective_reference_build(
+    chart: ChartTest,
+    defaults: ChartDefaults,
+) -> Optional[str]:
+    """Resolve the reference build for comparisons and chart bands."""
+    if not chart.inherit_reference_build:
+        return chart.reference_build
+    return chart.reference_build or defaults.reference_build
+
+
+def _reference_build_from_entry(
+    entry: dict,
+    defaults: ChartDefaults,
+    *,
+    inherit_baselines: bool,
+) -> tuple[Optional[str], bool]:
+    if 'reference_build' not in entry:
+        return (
+            defaults.reference_build if inherit_baselines else None,
+            inherit_baselines,
+        )
+    raw = entry['reference_build']
+    if raw is False:
+        return None, False
+    return raw, False
+
+
 def _load_defaults(raw: dict) -> ChartDefaults:
     entry = raw.get('defaults', {})
     baselines = entry.get('baselines', [])
@@ -151,9 +179,10 @@ def _load_chart_tests(
             baselines = defaults.baselines
         else:
             baselines = ()
-        reference_build = (
-            entry['reference_build'] if 'reference_build' in entry
-            else (defaults.reference_build if inherit_baselines else None)
+        reference_build, inherit_reference_build = _reference_build_from_entry(
+            entry,
+            defaults,
+            inherit_baselines=inherit_baselines,
         )
         charts.append(ChartTest(
             test_id=entry['test_id'],
@@ -172,6 +201,7 @@ def _load_chart_tests(
             show_speed_zones=entry.get('show_speed_zones', default_show_speed_zones),
             show_rolling_average=entry.get('show_rolling_average', default_show_rolling_average),
             reference_build=reference_build,
+            inherit_reference_build=inherit_reference_build,
             baselines=baselines,
             historical_patterns=tuple(entry.get('historical_patterns', [])),
             historical_attachment_keywords=tuple(
@@ -243,6 +273,8 @@ def _expand_wallet_scenarios(
                 'historical_patterns': historical_patterns,
                 'footnote': footnote,
             }
+            if 'reference_build' in scenario:
+                base_entry['reference_build'] = scenario['reference_build']
             metric_entries = (
                 (
                     performance_entries,

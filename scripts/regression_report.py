@@ -9,7 +9,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from benchmark_config import BenchmarkConfig, ChartDefaults, ChartTest
+from benchmark_config import BenchmarkConfig, ChartDefaults, ChartTest, effective_reference_build
 from chart_builder import series_for_chart, variant_name
 
 
@@ -198,25 +198,32 @@ def collect_scenario_summaries(
             else:
                 speed_status = 'ok'
 
-            reference_build = chart.reference_build or defaults.reference_build
-            reference_rows = (
-                full_series[full_series['commit_hash'].astype(str) == reference_build]
-                if reference_build else pd.DataFrame()
-            )
-            if reference_rows.empty:
+            reference_build = effective_reference_build(chart, defaults)
+            if not chart.inherit_reference_build and reference_build is None:
                 vs_reference = 'no baseline'
-                reference_detail = 'No reference-build result is available.'
-            else:
-                reference_value = float(reference_rows[chart.value_column].iloc[0])
-                delta = value - reference_value
-                if abs(delta) <= reference_value * defaults.regression_pct:
-                    vs_reference = 'parity'
-                else:
-                    vs_reference = f'{delta:+.3f}s'
                 reference_detail = (
-                    f'Latest {value:.3f}s vs reference {reference_value:.3f}s '
-                    f'({delta:+.3f}s); parity is within ±{defaults.regression_pct:.0%}.'
+                    '2.38.0 baseline not comparable for this scenario '
+                    '(test methodology changed Jul 2026).'
                 )
+            else:
+                reference_rows = (
+                    full_series[full_series['commit_hash'].astype(str) == reference_build]
+                    if reference_build else pd.DataFrame()
+                )
+                if reference_rows.empty:
+                    vs_reference = 'no baseline'
+                    reference_detail = 'No reference-build result is available.'
+                else:
+                    reference_value = float(reference_rows[chart.value_column].iloc[0])
+                    delta = value - reference_value
+                    if abs(delta) <= reference_value * defaults.regression_pct:
+                        vs_reference = 'parity'
+                    else:
+                        vs_reference = f'{delta:+.3f}s'
+                    reference_detail = (
+                        f'Latest {value:.3f}s vs reference {reference_value:.3f}s '
+                        f'({delta:+.3f}s); parity is within ±{defaults.regression_pct:.0%}.'
+                    )
             detail = (
                 f'Speed: {speed_status}; fast <{defaults.fast_threshold_s}s, '
                 f'ok {defaults.fast_threshold_s}–{ok_warn_threshold:.1f}s, '

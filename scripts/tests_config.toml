@@ -190,7 +190,8 @@ resource_action = "reopening the Assets tab in the same session"
 test_pattern = "test_wallet_assets_tab_loading_time"
 graph_stem = "wallet_assets_tab"
 attachment_subject = "Wallet Assets tab reopen"
-footnote = "each point = average of 5 runs on that build"
+reference_build = false
+footnote = "each point = average of 5 runs on that build · 2.38.0 baseline not comparable — test waits for tab content since Jul 2026"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_collectibles_tab_first_open"
@@ -200,7 +201,8 @@ test_pattern = "test_wallet_collectibles_tab_loading_time"
 series_test_pattern = "test_wallet_collectibles_tab_first_open_loading_time"
 graph_stem = "wallet_collectibles_tab_first_open"
 attachment_subject = "Wallet Collectibles tab first open"
-footnote = "each point = one first-open sample on that build"
+reference_build = false
+footnote = "each point = one first-open sample on that build · 2.38.0 baseline not comparable — test waits for tab content since Jul 2026"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_collectibles_tab"
@@ -209,7 +211,8 @@ resource_action = "reopening the Collectibles tab in the same session"
 test_pattern = "test_wallet_collectibles_tab_loading_time"
 graph_stem = "wallet_collectibles_tab"
 attachment_subject = "Wallet Collectibles tab reopen"
-footnote = "each point = average of 5 runs on that build"
+reference_build = false
+footnote = "each point = average of 5 runs on that build · 2.38.0 baseline not comparable — test waits for tab content since Jul 2026"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_activity_tab_first_open"
@@ -219,7 +222,8 @@ test_pattern = "test_wallet_activity_tab_loading_time"
 series_test_pattern = "test_wallet_activity_tab_first_open_loading_time"
 graph_stem = "wallet_activity_tab_first_open"
 attachment_subject = "Wallet History tab first open"
-footnote = "each point = one first-open sample on that build"
+reference_build = false
+footnote = "each point = one first-open sample on that build · 2.38.0 baseline not comparable — test waits for tab content since Jul 2026"
 
 [[wallet_scenarios]]
 scenario_id = "wallet_activity_tab"
@@ -228,7 +232,8 @@ resource_action = "reopening the History tab in the same session"
 test_pattern = "test_wallet_activity_tab_loading_time"
 graph_stem = "wallet_activity_tab"
 attachment_subject = "Wallet History tab reopen"
-footnote = "each point = average of 5 runs on that build"
+reference_build = false
+footnote = "each point = average of 5 runs on that build · 2.38.0 baseline not comparable — test waits for tab content since Jul 2026"
 
 # --- Community first open (member only) ---
 

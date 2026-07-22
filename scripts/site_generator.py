@@ -801,7 +801,9 @@ def _summary_page(
         '<span class="speed-ok-warn">0.9–1.0s Ok near slow</span>'
         '<span class="speed-slow">&gt;1.0s Slow</span>'
         '</span><br>'
-        'Reference parity means the latest value is within ±15% of 2.38.0.</p>'
+        'Reference parity (where shown) means the latest value is within ±15% of 2.38.0. '
+        'Wallet tab scenarios omit the 2.38.0 comparison because the e2e methodology '
+        'changed in Jul 2026.</p>'
         f'{"".join(sections)}'
     )
 
@@ -933,8 +935,9 @@ def _github_summary_markdown(
         '',
         '**<0.5s Fast** · **0.5–0.9s Ok** · **0.9–1.0s Ok near slow** · **>1.0s Slow**',
         '',
-        'Reference parity means the latest value '
-        'is within ±15% of 2.38.0.',
+        'Reference parity (where shown) means the latest value '
+        'is within ±15% of 2.38.0. Wallet tab scenarios show **no baseline** '
+        'because the e2e test now waits for tab content (Jul 2026).',
         '',
         '| User profile | Area | Scenario | Load time / Speed | vs 2.38.0 | CPU | RAM | Measured |',
         '|--------------|------|----------|-------------------|-----------|-----|-----|----------|',
@@ -1012,6 +1015,12 @@ def write_github_readme(
         '> [interactive dashboard](https://status-im.github.io/status-app-benchmarks/desktop/) once GitHub Pages is enabled.',
         '',
         f'Full CSV history: [`data/`](../../data/).',
+        '',
+        '> **Baseline note:** A full 2.38.0 (`5f66de`) re-baseline is not available — '
+        'benchmark user profiles are incompatible with the 2.38.0 binary, and wallet tab '
+        'tests now wait for tab content. Nightly trend continues; non-tab scenarios still '
+        'compare to 2.38.0 where valid. When **2.39.0** ships, **2.38.2** becomes the new '
+        'baseline — see [`BASELINE_2.39.md`](./BASELINE_2.39.md).',
         '',
     ]
 
