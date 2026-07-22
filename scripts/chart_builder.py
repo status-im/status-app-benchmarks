@@ -15,6 +15,7 @@ from benchmark_config import (
     ChartDefaults,
     ChartEntry,
     ChartTest,
+    effective_reference_build,
     load_desktop_build_labels,
 )
 
@@ -457,7 +458,7 @@ def _add_normal_range(
 ) -> str:
     if chart.metrics_kind != 'performance':
         return ''
-    reference_build = chart.reference_build or defaults.reference_build
+    reference_build = effective_reference_build(chart, defaults)
     if not reference_build:
         return ''
     reference_rows = points[points['commit_hash'].astype(str) == reference_build]
