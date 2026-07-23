@@ -269,8 +269,11 @@ def write_regression_report(
     metrics: pd.DataFrame,
     config: BenchmarkConfig,
     output_path: Path,
+    *,
+    violations: Optional[List[Violation]] = None,
 ) -> List[Violation]:
-    violations = collect_violations(metrics, config)
+    if violations is None:
+        violations = collect_violations(metrics, config)
     by_rule = {
         'Regression': [v for v in violations if v.rule == '2.1 Regression'],
         'Slow builds': [v for v in violations if v.rule == '2.2 Slow build'],

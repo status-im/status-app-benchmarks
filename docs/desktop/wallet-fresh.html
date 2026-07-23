@@ -182,14 +182,29 @@
       padding: 1rem 1.25rem;
       color: var(--muted);
     }
+    .summary-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
     .summary-link {
       display: inline-block;
-      margin-top: 1rem;
       color: var(--link);
       text-decoration: none;
       font-weight: 600;
     }
     .summary-link:hover { text-decoration: underline; }
+    .summary-badge {
+      display: inline-block;
+      margin-left: 0.35rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #cf222e;
+      color: #fff;
+    }
     .summary-profile { margin: 2rem 0; }
     .summary-profile h2 { margin-bottom: 0.25rem; }
     .summary-table {
@@ -268,6 +283,15 @@
     .speed-ok { color: var(--link); font-weight: 600; }
     .speed-ok-warn { color: #9a6700; font-weight: 600; }
     .speed-slow { color: #cf222e; font-weight: 600; }
+    .regression-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+    .rule-regression { color: #cf222e; font-weight: 600; }
+    .rule-slow { color: #9a6700; font-weight: 600; }
+    .rule-backlog { color: var(--accent-wallet); font-weight: 600; }
     .reference-value { font-weight: 600; white-space: nowrap; }
     .reference-parity,
     .reference-improvement { color: #1a7f37; }

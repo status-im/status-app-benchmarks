@@ -10,7 +10,7 @@ import pandas as pd
 
 from benchmark_config import CHART_WINDOW_DAYS, BenchmarkPage, ChartEntry, ChartTest
 from environment_parser import RUN_ENVIRONMENT_FIELDS
-from regression_report import ScenarioSummary
+from regression_report import ScenarioSummary, Violation
 
 CHARTS_DIR = 'charts'
 SITE_TITLE = 'Status App Benchmarks'
@@ -217,14 +217,29 @@ def _page_styles() -> str:
       padding: 1rem 1.25rem;
       color: var(--muted);
     }
+    .summary-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
     .summary-link {
       display: inline-block;
-      margin-top: 1rem;
       color: var(--link);
       text-decoration: none;
       font-weight: 600;
     }
     .summary-link:hover { text-decoration: underline; }
+    .summary-badge {
+      display: inline-block;
+      margin-left: 0.35rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #cf222e;
+      color: #fff;
+    }
     .summary-profile { margin: 2rem 0; }
     .summary-profile h2 { margin-bottom: 0.25rem; }
     .summary-table {
@@ -303,6 +318,15 @@ def _page_styles() -> str:
     .speed-ok { color: var(--link); font-weight: 600; }
     .speed-ok-warn { color: #9a6700; font-weight: 600; }
     .speed-slow { color: #cf222e; font-weight: 600; }
+    .regression-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+    .rule-regression { color: #cf222e; font-weight: 600; }
+    .rule-slow { color: #9a6700; font-weight: 600; }
+    .rule-backlog { color: var(--accent-wallet); font-weight: 600; }
     .reference-value { font-weight: 600; white-space: nowrap; }
     .reference-parity,
     .reference-improvement { color: #1a7f37; }
@@ -808,6 +832,71 @@ def _summary_page(
     )
 
 
+def _regression_violation_row(item: Violation) -> str:
+    commit = escape(item.commit_hash[:10])
+    return (
+        '<tr>'
+        f'<td data-label="Test">{escape(item.test_id)}</td>'
+        f'<td data-label="Variant">{escape(item.variant)}</td>'
+        f'<td data-label="Value">{item.value:.3f}s</td>'
+        f'<td data-label="Commit"><code>{commit}</code></td>'
+        f'<td data-label="Date">{escape(item.date)}</td>'
+        f'<td data-label="Detail">{escape(item.detail)}</td>'
+        '</tr>'
+    )
+
+
+def _regression_section(title: str, items: list[Violation]) -> str:
+    if not items:
+        return (
+            f'<section class="summary-profile"><h2>{escape(title)}</h2>'
+            '<p class="subtitle">No violations.</p></section>'
+        )
+    rows = ''.join(_regression_violation_row(item) for item in items)
+    return (
+        f'<section class="summary-profile"><h2>{escape(title)}</h2>'
+        '<table class="summary-table"><thead><tr>'
+        '<th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th>'
+        f'</tr></thead><tbody>{rows}</tbody></table></section>'
+    )
+
+
+def _regression_page(violations: list[Violation]) -> str:
+    by_rule = {
+        'Regression': [v for v in violations if v.rule == '2.1 Regression'],
+        'Slow builds': [v for v in violations if v.rule == '2.2 Slow build'],
+        'Backlog candidates': [v for v in violations if v.rule == '2.3 Backlog candidate'],
+    }
+    sections = ''.join(
+        _regression_section(title, items)
+        for title, items in by_rule.items()
+    )
+    return (
+        '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
+        '<h1>Regression report</h1>'
+        '<p class="subtitle">Automated flags from nightly performance data.</p>'
+        '<p class="subtitle regression-legend">'
+        '<span class="rule-regression">Regression: 3 consecutive builds each ≥15% slower than the previous.</span>'
+        '<span class="rule-slow">Slow build: latest value exceeds 1.0s slow threshold.</span>'
+        '<span class="rule-backlog">Backlog candidate: slow in 3 of the last 5 builds.</span>'
+        '</p>'
+        f'<p class="subtitle"><strong>Total flags:</strong> {len(violations)}</p>'
+        f'{sections}'
+    )
+
+
+def _summary_links_html(violations: list[Violation]) -> str:
+    badge = ''
+    if violations:
+        badge = f'<span class="summary-badge">{len(violations)}</span>'
+    return (
+        '<div class="summary-links">'
+        '<a class="summary-link" href="summary.html">View scenario summary →</a>'
+        f'<a class="summary-link" href="regression_report.html">View regression report{badge} →</a>'
+        '</div>'
+    )
+
+
 def write_site(
     output_dir: Path,
     pages: tuple[BenchmarkPage, ...],
@@ -816,12 +905,14 @@ def write_site(
     chart_tests: tuple[ChartTest, ...] = (),
     summaries: dict[str, ScenarioSummary] | None = None,
     run_environment: pd.DataFrame | None = None,
+    violations: list[Violation] | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     env_frame = run_environment if run_environment is not None else pd.DataFrame()
     machine_panel = _machine_info_panel(env_frame)
     charts_by_id = {chart.test_id: chart for chart in chart_tests}
     scenario_summaries = summaries or {}
+    regression_violations = violations or []
 
     cards = ''.join(
         f'<a class="card" href="{escape(page.slug)}.html">'
@@ -836,7 +927,7 @@ def write_site(
         'Each point is one nightly run — x-axis shows build date; hover a point for commit hash. '
         'Load-time charts plot the average of runs per build.</p>'
         f'{machine_panel}'
-        '<a class="summary-link" href="summary.html">View scenario summary →</a>'
+        f'{_summary_links_html(regression_violations)}'
         '<h2 style="margin-top:2rem">User profiles</h2>'
         f'<div class="grid">{cards}</div>'
         '<p class="note">Raw CSV history lives in the repository <code>data/</code> folder. '
@@ -853,7 +944,13 @@ def write_site(
     )
     print('Generated summary.html')
 
-    expected_pages = {f'{page.slug}.html' for page in pages} | {'summary.html'}
+    (output_dir / 'regression_report.html').write_text(
+        _layout('Regression report', _regression_page(regression_violations)),
+        encoding='utf-8',
+    )
+    print('Generated regression_report.html')
+
+    expected_pages = {f'{page.slug}.html' for page in pages} | {'summary.html', 'regression_report.html'}
     for page in pages:
         area_sections = []
         for area, area_label in PRODUCT_AREAS:
