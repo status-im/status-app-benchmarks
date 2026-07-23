@@ -17,7 +17,7 @@ from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
 from chart_builder import cleanup_stale_charts, render_chart
 from environment_parser import load_run_environment, record_run_environment
-from regression_report import collect_scenario_summaries, write_regression_report
+from regression_report import collect_scenario_summaries, collect_violations, write_regression_report
 from site_generator import write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
@@ -207,18 +207,22 @@ def generate_graphs(data_dir: Path, output_dir: Path):
 
     print('\nGenerating GitHub Pages site...')
     summaries = collect_scenario_summaries(metrics, CONFIG)
+    performance = metrics.get('performance')
+    violations = []
+    if performance is not None and not performance.empty:
+        violations = collect_violations(performance, CONFIG)
     write_site(
         output_dir, CONFIG.pages, charts_by_test_id,
         chart_tests=CONFIG.charts,
         summaries=summaries,
         run_environment=run_environment,
+        violations=violations,
     )
     write_docs_root_index(output_dir.parent)
 
     report_path = output_dir / 'regression_report.md'
-    performance = metrics.get('performance')
     if performance is not None and not performance.empty:
-        write_regression_report(performance, CONFIG, report_path)
+        write_regression_report(performance, CONFIG, report_path, violations=violations)
 
     print(f'\nDone: {output_dir.absolute()}')
 
