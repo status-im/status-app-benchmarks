@@ -610,3 +610,14 @@ abe104-n260722,2026-07-22T05:45:14,moto_g55_5G,test_android_resource_pss[status-
 abe104-n260722,2026-07-22T05:45:14,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,1.85,1.85,1.85,1.85,1,1,1.85
 abe104-n260722,2026-07-22T05:45:14,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,30.74,30.74,30.74,30.74,1,1,30.74
 abe104-n260722,2026-07-22T05:45:14,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,13.1,13.1,13.1,13.1,1,1,13.1
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.643,1.136,0.78,0.671,4,4,"0.643,1.136,0.659,0.683"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,1.134,1.25,1.203,1.213,4,4,"1.134,1.228,1.198,1.25"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.09,0.096,0.093,0.093,4,4,"0.096,0.093,0.094,0.09"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,1.077,1.207,1.148,1.154,4,4,"1.077,1.127,1.181,1.207"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,0.082,0.098,0.09,0.091,4,4,"0.092,0.098,0.082,0.09"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.662,0.708,0.687,0.69,4,4,"0.662,0.685,0.694,0.708"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,1.237,1.296,1.265,1.264,4,4,"1.296,1.274,1.254,1.237"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.681,0.72,0.706,0.712,4,4,"0.715,0.681,0.708,0.72"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.664,0.713,0.685,0.682,4,4,"0.681,0.683,0.664,0.713"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.087,0.127,0.102,0.098,4,4,"0.127,0.087,0.103,0.092"
+a6db0b,2026-07-23T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.092,0.111,0.105,0.108,4,4,"0.109,0.092,0.111,0.108"
