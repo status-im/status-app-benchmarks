@@ -25,8 +25,8 @@ communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "wallet-wallet-load"
-title = "Returning user (heavy wallet account)"
-description = "Returning user with wallet_load profile (~34 MB user data)."
+title = "Returning user (semi-heavy wallet account)"
+description = "Returning user with semi-heavy wallet account (~34 MB user data)."
 user_data_size = "~34 MB"
 wallet = { accounts = "3", tokens = "83", nfts = "166", transactions = "736" }
 messenger = { direct_chats = "0", group_chats = "0" }
@@ -34,8 +34,8 @@ communities = { joined = "0", spectated = "0" }
 
 [[pages]]
 slug = "wallet-wallet-load-alex"
-title = "Returning user (medium heavy wallet account from Alex)"
-description = "Returning user with wallet_load_alex profile (~35 MB user data)."
+title = "Returning user (heavy account from Alex)"
+description = "Returning user with heavy account from Alex (~35 MB user data)."
 user_data_size = "~35 MB"
 wallet = { accounts = "4", tokens = "144", nfts = "773", transactions = "5239" }
 messenger = { direct_chats = "0", group_chats = "0" }
@@ -70,13 +70,13 @@ footnote_prefix = "New user profile"
 suffix = "wallet_load"
 param_id = "wallet_load_user"
 page_slug = "wallet-wallet-load"
-footnote_prefix = "wallet_load profile"
+footnote_prefix = "semi-heavy wallet account"
 
 [[wallet_profile_variants]]
 suffix = "wallet_load_alex"
 param_id = "wallet_load_alex_user"
 page_slug = "wallet-wallet-load-alex"
-footnote_prefix = "wallet_load_alex profile"
+footnote_prefix = "heavy account (from Alex)"
 
 # Each declaration expands to load time, CPU, and RAM charts for all profiles.
 
