@@ -1,6 +1,6 @@
 # Desktop benchmark regression report
 
-Generated: 2026-07-28 07:42
+Generated: 2026-07-29 06:53
 
 **Total flags:** 15
 
@@ -12,23 +12,23 @@ _No violations._
 
 | Test | Variant | Value | Commit | Date | Detail |
 |------|---------|-------|--------|------|--------|
-| test_wallet_send_first_open_time_wallet_load | wallet_load_user | 1.821s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.821s exceeds 1.0s slow threshold |
-| test_wallet_send_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.415s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.415s exceeds 1.0s slow threshold |
-| test_wallet_swap_first_open_time_fresh | fresh_user | 1.359s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.359s exceeds 1.0s slow threshold |
-| test_wallet_swap_first_open_time_wallet_load | wallet_load_user | 1.430s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.430s exceeds 1.0s slow threshold |
-| test_wallet_swap_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.249s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.249s exceeds 1.0s slow threshold |
-| test_wallet_assets_tab_time_wallet_load | wallet_load_user | 1.096s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.096s exceeds 1.0s slow threshold |
-| test_wallet_assets_tab_time_wallet_load_alex | wallet_load_alex_user | 1.268s | `cf137ac677` | 2026-07-28 05:35 | Latest value 1.268s exceeds 1.0s slow threshold |
-| test_wallet_collectibles_tab_first_open_time_fresh | fresh_user | 17.456s | `cf137ac677` | 2026-07-28 05:35 | Latest value 17.456s exceeds 1.0s slow threshold |
-| test_wallet_collectibles_tab_first_open_time_wallet_load | wallet_load_user | 41.414s | `cf137ac677` | 2026-07-28 05:35 | Latest value 41.414s exceeds 1.0s slow threshold |
-| test_wallet_collectibles_tab_first_open_time_wallet_load_alex | wallet_load_alex_user | 48.217s | `0b7c6c3241` | 2026-07-27 16:22 | Latest value 48.217s exceeds 1.0s slow threshold |
-| test_wallet_collectibles_tab_time_wallet_load | wallet_load_user | 2.450s | `cf137ac677` | 2026-07-28 05:35 | Latest value 2.450s exceeds 1.0s slow threshold |
-| test_wallet_collectibles_tab_time_wallet_load_alex | wallet_load_alex_user | 6.345s | `0b7c6c3241` | 2026-07-27 16:22 | Latest value 6.345s exceeds 1.0s slow threshold |
-| test_status_community_first_open_loading_time_member | user_data0-user_account0 | 3.251s | `cf137ac677` | 2026-07-28 05:35 | Latest value 3.251s exceeds 1.0s slow threshold |
-| test_status_community_second_open_loading_time_member | user_data0-user_account0 | 2.130s | `cf137ac677` | 2026-07-28 05:35 | Latest value 2.130s exceeds 1.0s slow threshold |
+| test_wallet_send_first_open_time_fresh | fresh_user | 1.157s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.157s exceeds 1.0s slow threshold |
+| test_wallet_send_first_open_time_wallet_load | wallet_load_user | 1.269s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.269s exceeds 1.0s slow threshold |
+| test_wallet_send_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.617s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.617s exceeds 1.0s slow threshold |
+| test_wallet_swap_first_open_time_fresh | fresh_user | 1.442s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.442s exceeds 1.0s slow threshold |
+| test_wallet_assets_tab_time_wallet_load | wallet_load_user | 1.113s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.113s exceeds 1.0s slow threshold |
+| test_wallet_assets_tab_time_wallet_load_alex | wallet_load_alex_user | 1.234s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.234s exceeds 1.0s slow threshold |
+| test_wallet_collectibles_tab_first_open_time_fresh | fresh_user | 16.435s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 16.435s exceeds 1.0s slow threshold |
+| test_wallet_collectibles_tab_first_open_time_wallet_load | wallet_load_user | 40.209s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 40.209s exceeds 1.0s slow threshold |
+| test_wallet_collectibles_tab_first_open_time_wallet_load_alex | wallet_load_alex_user | 56.774s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 56.774s exceeds 1.0s slow threshold |
+| test_wallet_collectibles_tab_time_wallet_load | wallet_load_user | 1.963s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 1.963s exceeds 1.0s slow threshold |
+| test_wallet_collectibles_tab_time_wallet_load_alex | wallet_load_alex_user | 16.857s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 16.857s exceeds 1.0s slow threshold |
+| test_status_community_first_open_loading_time_member | user_data0-user_account0 | 3.531s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 3.531s exceeds 1.0s slow threshold |
+| test_status_community_second_open_loading_time_member | user_data0-user_account0 | 2.130s | `8b23a3fe3d` | 2026-07-29 04:47 | Latest value 2.130s exceeds 1.0s slow threshold |
 
 ## Backlog candidates
 
 | Test | Variant | Value | Commit | Date | Detail |
 |------|---------|-------|--------|------|--------|
-| test_wallet_send_first_open_time_fresh | fresh_user | 0.718s | `cf137ac677` | 2026-07-28 05:35 | Slow (>1.0s) in 3 of last 5 builds — consider a backlog ticket |
+| test_wallet_swap_first_open_time_wallet_load | wallet_load_user | 0.794s | `8b23a3fe3d` | 2026-07-29 04:47 | Slow (>1.0s) in 4 of last 5 builds — consider a backlog ticket |
+| test_wallet_swap_first_open_time_wallet_load_alex | wallet_load_alex_user | 0.729s | `8b23a3fe3d` | 2026-07-29 04:47 | Slow (>1.0s) in 4 of last 5 builds — consider a backlog ticket |
