@@ -136,15 +136,15 @@ def collect_violations(metrics: pd.DataFrame, config: BenchmarkConfig) -> List[V
         regression = _check_regression(series, chart, defaults)
         if regression:
             violations.append(regression)
-        slow = _check_slow_latest(series, chart, defaults)
-        if slow:
-            violations.append(slow)
+        # Escalate: chronic slowdowns go to Backlog only; one-off latest
+        # slowdowns stay under Slow builds.
         backlog = _check_backlog(series, chart, defaults)
-        if backlog and not any(
-            v.rule == '2.2 Slow build' and v.test_id == chart.test_id
-            and v.variant == backlog.variant for v in violations
-        ):
+        if backlog:
             violations.append(backlog)
+        else:
+            slow = _check_slow_latest(series, chart, defaults)
+            if slow:
+                violations.append(slow)
     return violations
 
 
@@ -267,7 +267,7 @@ def _format_section(
         '| Test | Variant | Value | Commit | Date | Detail | Ticket |',
         '|------|---------|-------|--------|------|--------|--------|',
     ])
-    for item in items:
+    for item in sorted(items, key=lambda entry: entry.value, reverse=True):
         lines.append(
             f'| {item.test_id} | {item.variant} | {item.value:.3f}s '
             f'| `{item.commit_hash[:10]}` | {item.date} | {item.detail} '

@@ -43,13 +43,13 @@ STATUS_LABELS = {
     'not-tested': 'Not tested',
 }
 FLAG_BADGE_BY_RULE = {
-    '2.1 Regression': ('slow', 'Regression'),
-    '2.2 Slow build': ('ok-warn', 'Slow'),
+    '2.1 Regression': ('slow', '↗ Regression'),
+    '2.2 Slow build': ('ok-warn', '⏱ Slow'),
     '2.3 Backlog candidate': ('backlog', 'Backlog'),
 }
 FLAG_BADGE_BY_SECTION = {
-    'Regression': ('slow', 'Regression'),
-    'Slow builds': ('ok-warn', 'Slow'),
+    'Regression': ('slow', '↗ Regression'),
+    'Slow builds': ('ok-warn', '⏱ Slow'),
     'Backlog candidates': ('backlog', 'Backlog'),
 }
 
@@ -317,14 +317,44 @@ def _page_styles() -> str:
       font-size: 0.75rem;
       font-weight: 600;
     }
-    .status-fast { color: #1a7f37; border-color: #1a7f37; }
-    .status-ok { color: var(--link); border-color: var(--link); }
-    .status-ok-warn { color: #9a6700; border-color: #9a6700; }
-    .status-slow { color: #cf222e; border-color: #cf222e; }
-    .status-backlog { color: var(--accent-wallet); border-color: var(--accent-wallet); }
+    .status-fast {
+      color: #1a7f37;
+      border-color: #1a7f37;
+      background: #dafbe1;
+    }
+    .status-ok {
+      color: var(--link);
+      border-color: var(--link);
+      background: #ddf4ff;
+    }
+    .status-ok-warn {
+      color: #9a6700;
+      border-color: #9a6700;
+      background: #fff8c5;
+    }
+    .status-slow {
+      color: #cf222e;
+      border-color: #cf222e;
+      background: #ffebe9;
+    }
+    .status-backlog {
+      color: var(--accent-wallet);
+      border-color: var(--accent-wallet);
+      background: var(--accent-wallet-bg);
+    }
     .status-neutral,
     .status-no-data,
-    .status-not-tested { color: var(--muted); }
+    .status-not-tested {
+      color: var(--muted);
+      background: var(--accent-data-bg);
+    }
+    @media (prefers-color-scheme: dark) {
+      .status-fast { background: var(--accent-messenger-bg); }
+      .status-ok { background: #0c2d6b; color: #58a6ff; border-color: #58a6ff; }
+      .status-ok-warn { background: #3d2e00; color: #d4a72c; border-color: #d4a72c; }
+      .status-slow { background: #3d1418; }
+      .status-backlog { background: var(--accent-wallet-bg); }
+    }
     .speed-legend {
       display: inline-flex;
       flex-wrap: wrap;
@@ -806,6 +836,18 @@ def _summary_row(
     )
 
 
+def _summary_sort_key(
+    group: dict[str, ChartTest] | None,
+    summaries: dict[str, ScenarioSummary],
+) -> float:
+    if group is None:
+        return -1.0
+    _chart, performance = _scenario_summary(group, summaries, 'performance')
+    if performance is None or performance.value is None:
+        return -1.0
+    return float(performance.value)
+
+
 def _summary_page(
     pages: tuple[BenchmarkPage, ...],
     charts_by_id: dict[str, ChartTest],
@@ -813,16 +855,22 @@ def _summary_page(
 ) -> str:
     sections = []
     for page in pages:
-        rows = []
+        keyed_rows: list[tuple[float, str]] = []
         for area, area_label in PRODUCT_AREAS:
             groups = _scenario_groups(page, charts_by_id, area)
             if groups:
-                rows.extend(
-                    _summary_row(area_label, group, summaries)
-                    for group in groups
-                )
+                for group in groups:
+                    keyed_rows.append((
+                        _summary_sort_key(group, summaries),
+                        _summary_row(area_label, group, summaries),
+                    ))
             else:
-                rows.append(_summary_row(area_label, None, summaries))
+                keyed_rows.append((
+                    _summary_sort_key(None, summaries),
+                    _summary_row(area_label, None, summaries),
+                ))
+        keyed_rows.sort(key=lambda item: item[0], reverse=True)
+        rows = ''.join(html for _key, html in keyed_rows)
         sections.append(
             '<section class="summary-profile">'
             f'<h2><a href="{escape(page.slug)}.html">{escape(page.title)}</a></h2>'
@@ -838,7 +886,7 @@ def _summary_page(
             '<th title="Average RAM usage during the scenario">RAM</th>'
             '<th class="measured-column" '
             'title="Build and date of the latest scenario result">Measured</th>'
-            f'</tr></thead><tbody>{"".join(rows)}</tbody></table>'
+            f'</tr></thead><tbody>{rows}</tbody></table>'
             '</section>'
         )
     return (
@@ -931,8 +979,9 @@ def _regression_section(
             f'<section class="summary-profile">{heading}'
             '<p class="subtitle">No violations.</p></section>'
         )
+    sorted_items = sorted(items, key=lambda item: item.value, reverse=True)
     rows = ''.join(
-        _regression_violation_row(item, flag_tickets) for item in items
+        _regression_violation_row(item, flag_tickets) for item in sorted_items
     )
     return (
         f'<section class="summary-profile">{heading}'
@@ -963,14 +1012,14 @@ def _regression_page(
         '<p class="subtitle">Automated flags from nightly performance data.</p>'
         '<p class="subtitle regression-legend">'
         '<span class="regression-legend-item">'
-        f'{_flag_badge("slow", "Regression")}'
+        f'{_flag_badge("slow", "↗ Regression")}'
         '3 consecutive builds each ≥15% slower than the previous.</span>'
         '<span class="regression-legend-item">'
-        f'{_flag_badge("ok-warn", "Slow")}'
-        'latest value exceeds 1.0s slow threshold.</span>'
+        f'{_flag_badge("ok-warn", "⏱ Slow")}'
+        'latest value exceeds 1.0s slow threshold (and not yet a backlog candidate).</span>'
         '<span class="regression-legend-item">'
         f'{_flag_badge("backlog", "Backlog")}'
-        'slow in 3 of the last 5 builds.</span>'
+        'slow in 3 of the last 5 builds (listed here instead of Slow).</span>'
         '</p>'
         f'<p class="subtitle"><strong>Total flags:</strong> {len(violations)}</p>'
         f'{sections}'
