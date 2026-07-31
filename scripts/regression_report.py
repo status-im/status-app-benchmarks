@@ -246,20 +246,32 @@ def collect_scenario_summaries(
     return summaries
 
 
-def _format_section(title: str, items: List[Violation]) -> List[str]:
+def _ticket_markdown(item: Violation, config: BenchmarkConfig) -> str:
+    ticket = config.flag_tickets.get(item.test_id)
+    if ticket is None:
+        return '—'
+    return f'[#{ticket.issue}]({ticket.url})'
+
+
+def _format_section(
+    title: str,
+    items: List[Violation],
+    config: BenchmarkConfig,
+) -> List[str]:
     lines = [f'## {title}', '']
     if not items:
         lines.append('_No violations._')
         lines.append('')
         return lines
     lines.extend([
-        '| Test | Variant | Value | Commit | Date | Detail |',
-        '|------|---------|-------|--------|------|--------|',
+        '| Test | Variant | Value | Commit | Date | Detail | Ticket |',
+        '|------|---------|-------|--------|------|--------|--------|',
     ])
     for item in items:
         lines.append(
             f'| {item.test_id} | {item.variant} | {item.value:.3f}s '
-            f'| `{item.commit_hash[:10]}` | {item.date} | {item.detail} |'
+            f'| `{item.commit_hash[:10]}` | {item.date} | {item.detail} '
+            f'| {_ticket_markdown(item, config)} |'
         )
     lines.append('')
     return lines
@@ -281,7 +293,7 @@ def write_regression_report(
     }
 
     lines = [
-        '# Desktop benchmark regression report',
+        '# Desktop benchmark flags',
         '',
         f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}',
         '',
@@ -289,7 +301,7 @@ def write_regression_report(
         '',
     ]
     for rule_title, items in by_rule.items():
-        lines.extend(_format_section(rule_title, items))
+        lines.extend(_format_section(rule_title, items, config))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text('\n'.join(lines), encoding='utf-8')

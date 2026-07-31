@@ -270,6 +270,7 @@
     .status-ok { color: var(--link); border-color: var(--link); }
     .status-ok-warn { color: #9a6700; border-color: #9a6700; }
     .status-slow { color: #cf222e; border-color: #cf222e; }
+    .status-backlog { color: var(--accent-wallet); border-color: var(--accent-wallet); }
     .status-neutral,
     .status-no-data,
     .status-not-tested { color: var(--muted); }
@@ -289,9 +290,19 @@
       gap: 0.35rem;
       margin-top: 0.5rem;
     }
-    .rule-regression { color: #cf222e; font-weight: 600; }
-    .rule-slow { color: #9a6700; font-weight: 600; }
-    .rule-backlog { color: var(--accent-wallet); font-weight: 600; }
+    .regression-legend-item {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .section-heading .summary-badge { margin-left: 0; }
     .reference-value { font-weight: 600; white-space: nowrap; }
     .reference-parity,
     .reference-improvement { color: #1a7f37; }

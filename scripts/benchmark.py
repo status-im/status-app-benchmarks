@@ -217,6 +217,7 @@ def generate_graphs(data_dir: Path, output_dir: Path):
         summaries=summaries,
         run_environment=run_environment,
         violations=violations,
+        flag_tickets=CONFIG.flag_tickets,
     )
     write_docs_root_index(output_dir.parent)
 

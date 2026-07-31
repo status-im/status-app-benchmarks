@@ -81,10 +81,18 @@ class ChartEntry:
 
 
 @dataclass(frozen=True)
+class FlagTicket:
+    test_id: str
+    issue: int
+    url: str
+
+
+@dataclass(frozen=True)
 class BenchmarkConfig:
     pages: tuple[BenchmarkPage, ...]
     charts: tuple[ChartTest, ...]
     defaults: ChartDefaults
+    flag_tickets: dict[str, FlagTicket]
 
 
 def _require_fields(raw: dict, *fields: str, context: str = 'config') -> None:
@@ -436,6 +444,22 @@ def _validate_config(pages: list[BenchmarkPage], charts: list[ChartTest]) -> Non
             )
 
 
+def _load_flag_tickets(raw_entries: list) -> dict[str, FlagTicket]:
+    tickets: dict[str, FlagTicket] = {}
+    for index, entry in enumerate(raw_entries):
+        context = f'flag_tickets[{index}]'
+        _require_fields(entry, 'test_id', 'issue', 'url', context=context)
+        test_id = entry['test_id']
+        if test_id in tickets:
+            raise ValueError(f'Duplicate flag_tickets test_id: {test_id}')
+        tickets[test_id] = FlagTicket(
+            test_id=test_id,
+            issue=int(entry['issue']),
+            url=entry['url'],
+        )
+    return tickets
+
+
 def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
     if not config_file.exists():
         raise FileNotFoundError(f'Config file not found: {config_file}')
@@ -445,6 +469,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
 
     defaults = _load_defaults(raw)
     wallet_charts, generated_page_test_ids = _expand_wallet_scenarios(raw, defaults)
+    flag_tickets = _load_flag_tickets(raw.get('flag_tickets', []))
 
     load_time_tests = _load_chart_tests(
         raw.get('tests', []),
@@ -501,4 +526,5 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
         pages=tuple(pages),
         charts=tuple(charts),
         defaults=defaults,
+        flag_tickets=flag_tickets,
     )

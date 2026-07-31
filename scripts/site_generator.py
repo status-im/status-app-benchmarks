@@ -8,7 +8,13 @@ from typing import Optional
 
 import pandas as pd
 
-from benchmark_config import CHART_WINDOW_DAYS, BenchmarkPage, ChartEntry, ChartTest
+from benchmark_config import (
+    CHART_WINDOW_DAYS,
+    BenchmarkPage,
+    ChartEntry,
+    ChartTest,
+    FlagTicket,
+)
 from environment_parser import RUN_ENVIRONMENT_FIELDS
 from regression_report import ScenarioSummary, Violation
 
@@ -35,6 +41,16 @@ STATUS_LABELS = {
     'neutral': 'No time threshold',
     'no-data': 'No data',
     'not-tested': 'Not tested',
+}
+FLAG_BADGE_BY_RULE = {
+    '2.1 Regression': ('slow', 'Regression'),
+    '2.2 Slow build': ('ok-warn', 'Slow'),
+    '2.3 Backlog candidate': ('backlog', 'Backlog'),
+}
+FLAG_BADGE_BY_SECTION = {
+    'Regression': ('slow', 'Regression'),
+    'Slow builds': ('ok-warn', 'Slow'),
+    'Backlog candidates': ('backlog', 'Backlog'),
 }
 
 
@@ -305,6 +321,7 @@ def _page_styles() -> str:
     .status-ok { color: var(--link); border-color: var(--link); }
     .status-ok-warn { color: #9a6700; border-color: #9a6700; }
     .status-slow { color: #cf222e; border-color: #cf222e; }
+    .status-backlog { color: var(--accent-wallet); border-color: var(--accent-wallet); }
     .status-neutral,
     .status-no-data,
     .status-not-tested { color: var(--muted); }
@@ -324,9 +341,19 @@ def _page_styles() -> str:
       gap: 0.35rem;
       margin-top: 0.5rem;
     }
-    .rule-regression { color: #cf222e; font-weight: 600; }
-    .rule-slow { color: #9a6700; font-weight: 600; }
-    .rule-backlog { color: var(--accent-wallet); font-weight: 600; }
+    .regression-legend-item {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .section-heading .summary-badge { margin-left: 0; }
     .reference-value { font-weight: 600; white-space: nowrap; }
     .reference-parity,
     .reference-improvement { color: #1a7f37; }
@@ -832,53 +859,118 @@ def _summary_page(
     )
 
 
-def _regression_violation_row(item: Violation) -> str:
+def _flag_badge(status: str, label: str) -> str:
+    return (
+        f'<span class="status status-{escape(status)}">'
+        f'{escape(label)}</span>'
+    )
+
+
+def _flag_badge_for_rule(rule: str) -> str:
+    status, label = FLAG_BADGE_BY_RULE.get(rule, ('neutral', rule))
+    return _flag_badge(status, label)
+
+
+def _section_heading(title: str, count: int) -> str:
+    status, label = FLAG_BADGE_BY_SECTION.get(title, ('neutral', title))
+    count_badge = (
+        f'<span class="summary-badge">{count}</span>' if count else ''
+    )
+    return (
+        f'<h2 class="section-heading">{escape(title)}'
+        f'{count_badge}{_flag_badge(status, label)}</h2>'
+    )
+
+
+def _ticket_cell_html(
+    item: Violation,
+    flag_tickets: dict[str, FlagTicket],
+) -> str:
+    ticket = flag_tickets.get(item.test_id)
+    if ticket is None:
+        return '—'
+    return (
+        f'<a href="{escape(ticket.url, quote=True)}" '
+        'target="_blank" rel="noopener">'
+        f'#{ticket.issue}</a>'
+    )
+
+
+def _regression_violation_row(
+    item: Violation,
+    flag_tickets: dict[str, FlagTicket],
+) -> str:
     commit = escape(item.commit_hash[:10])
+    value_cell = (
+        '<div class="load-time-cell">'
+        f'<span class="metric-value">{item.value:.3f}s</span>'
+        f'{_flag_badge_for_rule(item.rule)}'
+        '</div>'
+    )
     return (
         '<tr>'
         f'<td data-label="Test">{escape(item.test_id)}</td>'
         f'<td data-label="Variant">{escape(item.variant)}</td>'
-        f'<td data-label="Value">{item.value:.3f}s</td>'
+        f'<td data-label="Value">{value_cell}</td>'
         f'<td data-label="Commit"><code>{commit}</code></td>'
         f'<td data-label="Date">{escape(item.date)}</td>'
         f'<td data-label="Detail">{escape(item.detail)}</td>'
+        f'<td data-label="Ticket">{_ticket_cell_html(item, flag_tickets)}</td>'
         '</tr>'
     )
 
 
-def _regression_section(title: str, items: list[Violation]) -> str:
+def _regression_section(
+    title: str,
+    items: list[Violation],
+    flag_tickets: dict[str, FlagTicket],
+) -> str:
+    heading = _section_heading(title, len(items))
     if not items:
         return (
-            f'<section class="summary-profile"><h2>{escape(title)}</h2>'
+            f'<section class="summary-profile">{heading}'
             '<p class="subtitle">No violations.</p></section>'
         )
-    rows = ''.join(_regression_violation_row(item) for item in items)
+    rows = ''.join(
+        _regression_violation_row(item, flag_tickets) for item in items
+    )
     return (
-        f'<section class="summary-profile"><h2>{escape(title)}</h2>'
+        f'<section class="summary-profile">{heading}'
         '<table class="summary-table"><thead><tr>'
-        '<th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th>'
+        '<th>Test</th><th>Variant</th><th>Value</th><th>Commit</th>'
+        '<th>Date</th><th>Detail</th><th>Ticket</th>'
         f'</tr></thead><tbody>{rows}</tbody></table></section>'
     )
 
 
-def _regression_page(violations: list[Violation]) -> str:
+def _regression_page(
+    violations: list[Violation],
+    flag_tickets: dict[str, FlagTicket] | None = None,
+) -> str:
+    tickets = flag_tickets or {}
     by_rule = {
         'Regression': [v for v in violations if v.rule == '2.1 Regression'],
         'Slow builds': [v for v in violations if v.rule == '2.2 Slow build'],
         'Backlog candidates': [v for v in violations if v.rule == '2.3 Backlog candidate'],
     }
     sections = ''.join(
-        _regression_section(title, items)
+        _regression_section(title, items, tickets)
         for title, items in by_rule.items()
     )
     return (
         '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-        '<h1>Regression report</h1>'
+        '<h1>Flags</h1>'
         '<p class="subtitle">Automated flags from nightly performance data.</p>'
         '<p class="subtitle regression-legend">'
-        '<span class="rule-regression">Regression: 3 consecutive builds each ≥15% slower than the previous.</span>'
-        '<span class="rule-slow">Slow build: latest value exceeds 1.0s slow threshold.</span>'
-        '<span class="rule-backlog">Backlog candidate: slow in 3 of the last 5 builds.</span>'
+        '<span class="regression-legend-item">'
+        f'{_flag_badge("slow", "Regression")}'
+        '3 consecutive builds each ≥15% slower than the previous.</span>'
+        '<span class="regression-legend-item">'
+        f'{_flag_badge("ok-warn", "Slow")}'
+        'latest value exceeds 1.0s slow threshold.</span>'
+        '<span class="regression-legend-item">'
+        f'{_flag_badge("backlog", "Backlog")}'
+        'slow in 3 of the last 5 builds.</span>'
         '</p>'
         f'<p class="subtitle"><strong>Total flags:</strong> {len(violations)}</p>'
         f'{sections}'
@@ -892,7 +984,7 @@ def _summary_links_html(violations: list[Violation]) -> str:
     return (
         '<div class="summary-links">'
         '<a class="summary-link" href="summary.html">View scenario summary →</a>'
-        f'<a class="summary-link" href="regression_report.html">View regression report{badge} →</a>'
+        f'<a class="summary-link" href="regression_report.html">View flags{badge} →</a>'
         '</div>'
     )
 
@@ -906,6 +998,7 @@ def write_site(
     summaries: dict[str, ScenarioSummary] | None = None,
     run_environment: pd.DataFrame | None = None,
     violations: list[Violation] | None = None,
+    flag_tickets: dict[str, FlagTicket] | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     env_frame = run_environment if run_environment is not None else pd.DataFrame()
@@ -913,6 +1006,7 @@ def write_site(
     charts_by_id = {chart.test_id: chart for chart in chart_tests}
     scenario_summaries = summaries or {}
     regression_violations = violations or []
+    tickets = flag_tickets or {}
 
     cards = ''.join(
         f'<a class="card" href="{escape(page.slug)}.html">'
@@ -945,7 +1039,7 @@ def write_site(
     print('Generated summary.html')
 
     (output_dir / 'regression_report.html').write_text(
-        _layout('Regression report', _regression_page(regression_violations)),
+        _layout('Flags', _regression_page(regression_violations, tickets)),
         encoding='utf-8',
     )
     print('Generated regression_report.html')
