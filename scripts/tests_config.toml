@@ -308,4 +308,16 @@ attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
 footnote = "status_community_member profile · each point = average of 5 runs on that build"
 
+# --- Flag tickets (shown on Flags report when a test_id is flagged) ---
+
+[[flag_tickets]]
+test_id = "test_wallet_collectibles_tab_first_open_time_fresh"
+issue = 21732
+url = "https://github.com/status-im/status-app/issues/21732"
+
+[[flag_tickets]]
+test_id = "test_wallet_assets_tab_first_open_time_fresh"
+issue = 21694
+url = "https://github.com/status-im/status-app/issues/21694"
+
 # Per-chart baselines/reference_build override [defaults] when set.
