@@ -142,7 +142,7 @@ def _fmt(v, unit):
 
 def plot_performance_mobile(performance, test, output_dir):
     """Mobile response chart: seconds axis, build-name x-axis. Android 16 / One UI 8 only.
-    The two release baselines (2.37.1, 2.38.0) are pinned as fixed LEFT columns so every chart
+    The release baselines (2.37.1, 2.38.0, 2.38.2) are pinned as fixed LEFT columns so every chart
     'starts' with them, and a faint dashed line marks the last-release level. For a nav-tab
     surface the FIRST-open series is overlaid as a second (dashed) line, each first-open point
     annotated with how much slower it is than its repeat-open counterpart, e.g. 1.40s (+50%).
@@ -167,9 +167,9 @@ def plot_performance_mobile(performance, test, output_dir):
     scale = 1000.0 if test.unit == 'ms' else 1.0
     labels = _build_labels()
 
-    # Pin the two release baselines as fixed LEFT columns, then up to MAX_RECENT recent builds by
+    # Pin the release baselines as fixed LEFT columns, then up to MAX_RECENT recent builds by
     # date (Volo: 'two baselines should start every chart' + 'keep up to ~30 data points').
-    BASELINES = ["760417N", "5f66deN"]   # 2.37.1 / 2.38.0 re-measured on Android 16 (One UI 8)
+    BASELINES = ["760417N", "5f66deN", "3ef171"]   # 2.37.1 / 2.38.0 (re-measured on Android 16) / 2.38.2
     GA_BUILD = "5f66deN"                  # last release -> the dashed reference level
     MAX_RECENT = 28
     allb = data.drop_duplicates('commit_hash').sort_values('date')
