@@ -170,7 +170,7 @@ def plot_performance_mobile(performance, test, output_dir):
     # Pin the release baselines as fixed LEFT columns, then up to MAX_RECENT recent builds by
     # date (Volo: 'two baselines should start every chart' + 'keep up to ~30 data points').
     BASELINES = ["760417N", "5f66deN", "3ef171"]   # 2.37.1 / 2.38.0 (re-measured on Android 16) / 2.38.2
-    GA_BUILD = "5f66deN"                  # last release -> the dashed reference level
+    GA_BUILD = "3ef171"                   # last release (2.38.2) -> the reference level
     MAX_RECENT = 28
     allb = data.drop_duplicates('commit_hash').sort_values('date')
     present = list(allb['commit_hash'])
@@ -273,7 +273,7 @@ def plot_performance_mobile(performance, test, output_dir):
                 ha='center', va='bottom', fontsize=7, color='#999999')
 
     is_nav = 'navigation' in (test.display_name or '')
-    BAND = 0.15                          # 2.38.0 normal-range half-width (matches the ±15% drift threshold)
+    BAND = 0.15                          # 2.38.2 normal-range half-width (matches the ±15% drift threshold)
     gv = data[(data['commit_hash'] == GA_BUILD) & (data['test_name'] == test.pattern)]
     lvl = float(gv[value_col].iloc[0]) * scale if len(gv) else None
 
@@ -300,7 +300,7 @@ def plot_performance_mobile(performance, test, output_dir):
         ax.axhline(1.0 * scale, ls='--', lw=1, color='#c0392b', alpha=0.5)
         ax.text(len(xt) - 1, 1.0 * scale, ' 1.0s · slow', va='bottom', ha='right', fontsize=8, color='#c0392b')
 
-    if (not is_nav) and lvl is not None:         # normal-range channel = 2.38.0 +/- noise (sub-actions only)
+    if (not is_nav) and lvl is not None:         # normal-range channel = 2.38.2 +/- noise (sub-actions only)
         ax.axhline(lvl * (1 - BAND), ls=':', lw=0.9, color='#555555', alpha=0.55, zorder=1)
         ax.axhline(lvl * (1 + BAND), ls=':', lw=0.9, color='#555555', alpha=0.55, zorder=1)
     elif test.target:
@@ -310,7 +310,7 @@ def plot_performance_mobile(performance, test, output_dir):
 
     if lvl is not None:                          # last-release reference level, over the zones / channel
         ax.axhline(lvl, ls='-', lw=1.1, color='#333333', alpha=0.85, zorder=1)
-        ax.text(len(xt) - 1, lvl, ' 2.38.0', va='bottom', ha='right', fontsize=7.5, color='#333333')
+        ax.text(len(xt) - 1, lvl, ' 2.38.2', va='bottom', ha='right', fontsize=7.5, color='#333333')
     ax.grid(axis='y', alpha=0.3)
     ax.set_axisbelow(True)
     fig.suptitle(test.display_name, fontweight='bold', fontsize=13, y=0.98)
@@ -325,7 +325,7 @@ def plot_performance_mobile(performance, test, output_dir):
     if show_zones:
         parts.append('zones: <0.5s fast · 0.5–1.0s ok · >1.0s slow')
     if (not is_nav) and lvl is not None:
-        parts.append('dotted = 2.38.0 ±15% (normal range)')
+        parts.append('dotted = 2.38.2 ±15% (normal range)')
     if parts:
         fig.text(0.5, 0.05, '   ·   '.join(parts), ha='center', va='bottom', fontsize=7.5, color='gray')
     if test.footnote:
