@@ -65,8 +65,8 @@ def _check_regression(
         commit_hash=commits[end],
         date=dates[end],
         detail=(
-            f'{needed} consecutive builds each ≥{defaults.regression_pct:.0%} above previous '
-            f'({values[end - needed]:.3f}s → {values[end]:.3f}s)'
+            f'{needed} consecutive builds each >={defaults.regression_pct:.0%} above previous '
+            f'({values[end - needed]:.3f}s -> {values[end]:.3f}s)'
         ),
     )
 
@@ -107,7 +107,7 @@ def _check_backlog(series: pd.DataFrame, chart: ChartTest, defaults: ChartDefaul
         commit_hash=str(latest['commit_hash']),
         date=latest['date'].strftime('%Y-%m-%d %H:%M'),
         detail=(
-            f'Slow (>{defaults.slow_threshold_s}s) in {slow_count} of last {len(tail)} builds — '
+            f'Slow (>{defaults.slow_threshold_s}s) in {slow_count} of last {len(tail)} builds -- '
             'consider a backlog ticket'
         ),
     )
