@@ -1,8 +1,8 @@
 # Desktop benchmark flags
 
-Generated: 2026-08-05 12:05
+Generated: 2026-08-06 07:36
 
-**Total flags:** 16
+**Total flags:** 14
 
 ## Regression
 
@@ -10,26 +10,23 @@ _No violations._
 
 ## Slow builds
 
-| Test | Variant | Value | Commit | Date | Detail | Ticket |
-|------|---------|-------|--------|------|--------|--------|
-| test_wallet_receive_first_open_time_fresh | fresh_user | 1.037s | `629daae710` | 2026-08-05 09:58 | Latest value 1.037s exceeds 1.0s slow threshold | — |
+_No violations._
 
 ## Backlog candidates
 
 | Test | Variant | Value | Commit | Date | Detail | Ticket |
 |------|---------|-------|--------|------|--------|--------|
-| test_wallet_collectibles_tab_first_open_time_wallet_load_alex | wallet_load_alex_user | 35.970s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_collectibles_tab_time_wallet_load_alex | wallet_load_alex_user | 23.173s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_collectibles_tab_first_open_time_wallet_load | wallet_load_user | 21.550s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_collectibles_tab_first_open_time_fresh | fresh_user | 15.979s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | [#21732](https://github.com/status-im/status-app/issues/21732) |
-| test_status_community_second_open_loading_time_member | user_data0-user_account0 | 6.079s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_status_community_first_open_loading_time_member | user_data0-user_account0 | 4.115s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_assets_tab_first_open_time_fresh | fresh_user | 3.071s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | [#21694](https://github.com/status-im/status-app/issues/21694) |
-| test_wallet_collectibles_tab_time_wallet_load | wallet_load_user | 1.893s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_send_first_open_time_wallet_load | wallet_load_user | 1.564s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_assets_tab_time_wallet_load_alex | wallet_load_alex_user | 1.334s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_swap_first_open_time_fresh | fresh_user | 1.231s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_send_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.175s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_assets_tab_time_wallet_load | wallet_load_user | 1.165s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_send_first_open_time_fresh | fresh_user | 1.089s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_assets_tab_first_open_time_wallet_load | wallet_load_user | 1.038s | `629daae710` | 2026-08-05 09:58 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_collectibles_tab_time_wallet_load_alex | wallet_load_alex_user | 19.906s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_collectibles_tab_first_open_time_fresh | fresh_user | 16.046s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | [#21732](https://github.com/status-im/status-app/issues/21732) |
+| test_wallet_collectibles_tab_first_open_time_wallet_load | wallet_load_user | 7.264s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_collectibles_tab_first_open_time_wallet_load_alex | wallet_load_alex_user | 7.016s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_collectibles_tab_time_wallet_load | wallet_load_user | 6.592s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_status_community_first_open_loading_time_member | user_data0-user_account0 | 4.028s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_status_community_second_open_loading_time_member | user_data0-user_account0 | 2.232s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_send_first_open_time_wallet_load | wallet_load_user | 1.653s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_assets_tab_time_wallet_load_alex | wallet_load_alex_user | 1.580s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_assets_tab_time_wallet_load | wallet_load_user | 1.567s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_assets_tab_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.321s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_send_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.195s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_swap_first_open_time_fresh | fresh_user | 1.182s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_send_first_open_time_fresh | fresh_user | 1.028s | `403e647e7e` | 2026-08-06 05:29 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | — |
