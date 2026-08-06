@@ -883,3 +883,4 @@ fd90ae,2026-08-06T12:00:00,25028RN03Y,test_android_wallet_send_response_time,pas
 fd90ae,2026-08-06T12:00:00,25028RN03Y,test_android_wallet_swap_response_time,passed,response_time,s,0.619,1.188,0.927,0.963,6,6,"0.658,0.833,0.619,1.092,1.172,1.188"
 fd90ae,2026-08-06T12:00:00,25028RN03Y,test_android_wallet_buy_response_time,passed,response_time,s,0.605,0.834,0.658,0.625,6,6,"0.642,0.605,0.629,0.834,0.621,0.62"
 dde79a,2026-08-06T12:00:00,25028RN03Y,test_android_settings_response_time,passed,response_time,s,1.908,1.936,1.919,1.917,6,6,"1.936,1.908,1.912,1.916,1.918,1.923"
+dde79a,2026-08-06T12:00:00,25028RN03Y,test_android_wallet_response_time,passed,response_time,s,1.934,1.988,1.959,1.963,6,6,"1.936,1.971,1.956,1.934,1.97,1.988"
