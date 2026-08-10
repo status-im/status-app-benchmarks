@@ -129,6 +129,17 @@ unchanged — see the [repository README](../../README.md).
 
 ## Method changes
 
+- **2026-08-10 — the measured screen region is now scaled to the phone.** The regions
+  these timings are read from were defined in Samsung A36 pixels. On a smaller screen a
+  region could run past the screen edge (the overflow was filled with black, diluting the
+  change being detected) and in any case covered a different part of the layout, because
+  the same pixel row sits further down a shorter screen. Regions are now scaled to
+  whichever phone is measured. **The A36 is unaffected — it is the reference, so its
+  regions are unchanged and its trend continues.** On the low-end phone (Redmi A5, charts
+  in [`lowend/`](./lowend/)) this is a re-baseline: readings before and after this date are
+  not directly comparable, and it is what makes the three in-Wallet tabs (Assets,
+  Collectibles, History) measurable there at all — they had failed every run.
+
 - **2026-06-17 — summary statistic switched from mean to median.** Each build is
   now summarised by the median of its runs (floor-limited screens keep
   "fastest of"). Median is robust to one-off slow runs, so the trend reflects the
