@@ -30,6 +30,17 @@ plt.rcParams.update({
 
 PERFORMANCE_COLORS = ['#10AC84', '#2E86DE', '#F79F1F', '#54A0FF']
 
+# The reference phone. A surface that names no device is charted on this one alone — the
+# store is multi-device, and a second phone's rows plotted onto the same line would read as
+# build-to-build movement.
+GATE_DEVICE = "SM-A366B"
+LOWEND_DEVICE = "25028RN03Y"      # Redmi A5 — the low-end baseline, charted separately
+LOWEND_NAME = "Redmi A5"
+
+# OS regime each phone's published series is pinned to, so an OS update cannot silently
+# re-baseline a chart. Unlisted phone = unpinned (all its points chart).
+CHART_REGIME = {GATE_DEVICE: "16", "moto_g55_5G": "16", LOWEND_DEVICE: "15"}
+
 
 @dataclass
 class PerformanceTest:
@@ -95,39 +106,46 @@ def _excluded_builds():
     return out
 
 
-def _run_environments():
+def _env_rows():
+    import csv as _csv
+    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'run_environment.csv'
+    return list(_csv.DictReader(open(p, encoding='utf-8'))) if p.exists() else []
+
+
+def _run_environments(device=GATE_DEVICE):
     """commit_hash -> device OS fingerprint (data/android/run_environment.csv).
     Used to draw a divider where the device software changed, so a baseline step
     that is really an OS/One UI update isn't misread as an app change. Builds with
-    no recorded environment are treated as one earlier 'legacy' regime."""
-    import csv as _csv
-    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'run_environment.csv'
+    no recorded environment are treated as one earlier 'legacy' regime.
+
+    The file is keyed by (build, device), so a caller MUST scope to one phone: when a
+    second phone measures the same build its row overwrites the first's, and every
+    same-OS baseline lookup for that build then misses. Pass device=None only to read
+    the raw last-wins map."""
     out = {}
-    if p.exists():
-        for row in _csv.DictReader(open(p, encoding='utf-8')):
-            out[row['commit_hash']] = row.get('fingerprint') or row.get('oneui') or 'recorded'
+    for row in _env_rows():
+        if device and row.get('device') != device:
+            continue
+        out[row['commit_hash']] = row.get('fingerprint') or row.get('oneui') or 'recorded'
     return out
 
 
-def _android16_builds():
-    """Build hashes measured on the gate OS regime — Android 16 (One UI 8). Volo asked to
-    'stick with Android 16 One UI 8', so the trend charts show only this regime: it drops the
-    pre-update legacy points and the OS-divider clutter, and keeps one comparable timeline. A
-    build with no recorded environment is treated as pre-regime and left off."""
-    import csv as _csv
-    p = Path(__file__).resolve().parent.parent / 'data' / 'android' / 'run_environment.csv'
-    out = set()
-    if p.exists():
-        for row in _csv.DictReader(open(p, encoding='utf-8')):
-            if str(row.get('android', '')).strip() == '16':
-                out.add(row['commit_hash'])
-    return out
+def _regime_builds(device):
+    """Build hashes measured on `device` in the OS regime its published series is pinned to
+    (CHART_REGIME). Volo asked the gate charts to 'stick with Android 16 One UI 8', so points
+    from an older OS are dropped rather than plotted as an app change. An unpinned phone
+    returns the empty set, which callers read as 'chart everything it has'."""
+    want = CHART_REGIME.get(device)
+    if not want:
+        return set()
+    return {r['commit_hash'] for r in _env_rows()
+            if r.get('device') == device and str(r.get('android', '')).strip() == want}
 
 
-def _os_boundary_indices(order):
+def _os_boundary_indices(order, device=GATE_DEVICE):
     """Indices i (in the date-ordered build list) where the device OS regime changes
     from build i-1 to build i — i.e. where to draw a 'device OS update' divider."""
-    env = _run_environments()
+    env = _run_environments(device)
     regimes = [env.get(h, 'legacy') for h in order['commit_hash']]
     return [i for i in range(1, len(regimes)) if regimes[i] != regimes[i - 1]]
 
@@ -152,14 +170,15 @@ def plot_performance_mobile(performance, test, output_dir):
     data = performance[name_match].copy()
     if 'metric' in data.columns:
         data = data[data['metric'] == test.series]
-    if test.device and 'device' in data.columns:
-        data = data[data['device'] == test.device]
+    device = test.device or GATE_DEVICE
+    if 'device' in data.columns:
+        data = data[data['device'] == device]
     excluded = _excluded_builds()
     if excluded:
         data = data[~data['commit_hash'].isin(excluded)]
-    a16 = _android16_builds()          # Volo: Android 16 / One UI 8 only — drop legacy-OS points
-    if a16:
-        data = data[data['commit_hash'].isin(a16)]
+    regime = _regime_builds(device)
+    if regime:
+        data = data[data['commit_hash'].isin(regime)]
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
@@ -188,6 +207,8 @@ def plot_performance_mobile(performance, test, output_dir):
     fo = performance[performance['test_name'] == test.pattern.replace('_response_time', '_first_open')].copy()
     if 'metric' in fo.columns:
         fo = fo[fo['metric'] == 'response_time']
+    if 'device' in fo.columns:
+        fo = fo[fo['device'] == device]
     fo = fo[fo['commit_hash'].isin(order_hashes)].copy()
     fo['_pos'] = fo['commit_hash'].map(build_index)
     fo = fo.sort_values('_pos')
