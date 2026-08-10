@@ -227,6 +227,50 @@ def _page_styles() -> str:
     }
     .area-group { margin-top: 2rem; }
     .area-group > h2 { margin-bottom: 0.75rem; }
+    .scenario-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    details.scenario-charts {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    details.scenario-charts[open] { border-color: var(--link); }
+    details.scenario-charts > summary {
+      cursor: pointer;
+      padding: 0.9rem 1.1rem;
+      font-weight: 600;
+    }
+    details.scenario-charts > summary:hover {
+      background: var(--accent-data-bg);
+    }
+    details.scenario-charts > summary:focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: -2px;
+    }
+    .scenario-summary-content {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      width: calc(100% - 1.5rem);
+      margin-left: 0.25rem;
+      vertical-align: middle;
+    }
+    .scenario-chart-count {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .scenario-charts-body {
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .scenario-charts-body section.chart:last-child { margin-bottom: 0; }
     .area-empty {
       border: 1px dashed var(--border);
       border-radius: 8px;
@@ -395,7 +439,19 @@ def _page_styles() -> str:
       border-radius: 8px;
       padding: 1rem 1.25rem 1.25rem;
       margin-bottom: 1.5rem;
+      scroll-margin-top: 1rem;
     }
+    .chart-permalink {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .chart-permalink a {
+      color: var(--link);
+      text-decoration: none;
+    }
+    .chart-permalink a:hover { text-decoration: underline; }
     section.chart iframe {
       width: 100%;
       height: 600px;
@@ -571,9 +627,20 @@ def _machine_info_markdown(run_environment: pd.DataFrame) -> list[str]:
     return ['## System info', '', ' · '.join(parts), '']
 
 
-def _placeholder_section(title: str) -> str:
+def _chart_permalink(test_id: str) -> str:
+    anchor = escape(test_id, quote=True)
     return (
-        '<section class="chart chart-placeholder">'
+        '<div class="chart-permalink">'
+        f'<a href="#{anchor}" aria-label="Permalink to this chart">Permalink</a>'
+        '</div>'
+    )
+
+
+def _placeholder_section(test_id: str, title: str) -> str:
+    anchor = escape(test_id, quote=True)
+    return (
+        f'<section class="chart chart-placeholder" id="{anchor}">'
+        f'{_chart_permalink(test_id)}'
         f'<h2>{escape(title)}</h2>'
         '<p class="placeholder-note">'
         'No data yet — chart will appear after the next nightly benchmark run.'
@@ -582,13 +649,70 @@ def _placeholder_section(title: str) -> str:
     )
 
 
-def _chart_section(chart: ChartEntry) -> str:
+def _chart_section(test_id: str, chart: ChartEntry) -> str:
+    anchor = escape(test_id, quote=True)
     chart_path = f'{CHARTS_DIR}/{chart.html_filename}'
     return (
-        '<section class="chart">'
+        f'<section class="chart" id="{anchor}">'
+        f'{_chart_permalink(test_id)}'
         f'{_chart_iframe(chart_path, chart.display_name)}'
         '</section>'
     )
+
+
+def _scenario_charts_section(
+    group: dict[str, ChartTest],
+    charts_by_test_id: dict[str, ChartEntry],
+) -> str:
+    scenario = _scenario_chart(group)
+    sections = []
+    for metrics_kind in ('performance', 'cpu', 'ram'):
+        chart_test = group.get(metrics_kind)
+        if chart_test is None:
+            continue
+        chart = charts_by_test_id.get(chart_test.test_id)
+        if chart is not None:
+            sections.append(_chart_section(chart_test.test_id, chart))
+        else:
+            sections.append(_placeholder_section(
+                chart_test.test_id, chart_test.display_name,
+            ))
+
+    chart_count = len(sections)
+    chart_label = 'chart' if chart_count == 1 else 'charts'
+    return (
+        '<details class="scenario-charts">'
+        '<summary><span class="scenario-summary-content">'
+        f'<span>{escape(scenario.display_name)}</span>'
+        f'<span class="scenario-chart-count">{chart_count} {chart_label}</span>'
+        '</span></summary>'
+        f'<div class="scenario-charts-body">{"".join(sections)}</div>'
+        '</details>'
+    )
+
+
+def _chart_hash_script() -> str:
+    return """
+<script>
+  (() => {
+    const revealChart = () => {
+      const anchor = window.location.hash.slice(1);
+      if (!anchor) return;
+      const target = document.getElementById(anchor);
+      if (!target) return;
+      const group = target.closest('details.scenario-charts');
+      if (group) group.open = true;
+      window.requestAnimationFrame(() => target.scrollIntoView({block: 'start'}));
+    };
+    window.addEventListener('hashchange', revealChart);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', revealChart);
+    } else {
+      revealChart();
+    }
+  })();
+</script>
+"""
 
 
 def _is_zero_stat(value: str) -> bool:
@@ -719,6 +843,20 @@ def _scenario_chart(group: dict[str, ChartTest]) -> ChartTest:
     return group.get('performance') or next(iter(group.values()))
 
 
+def _page_slugs_by_test_id(
+    pages: tuple[BenchmarkPage, ...],
+) -> dict[str, str]:
+    return {
+        test_id: page.slug
+        for page in pages
+        for test_id in page.test_ids
+    }
+
+
+def _chart_href(page_slug: str, test_id: str) -> str:
+    return escape(f'{page_slug}.html#{test_id}', quote=True)
+
+
 def _scenario_summary(
     group: dict[str, ChartTest],
     summaries: dict[str, ScenarioSummary],
@@ -782,6 +920,7 @@ def _summary_row(
     area_label: str,
     group: dict[str, ChartTest] | None,
     summaries: dict[str, ScenarioSummary],
+    page_slug: str,
 ) -> str:
     if group is None:
         not_tested = _status_badges(None).replace(
@@ -820,11 +959,15 @@ def _summary_row(
     ram_value = _metric_value(ram_chart, ram) if ram_chart is not None else '—'
     build = measured.commit_hash[:9] if measured is not None and measured.commit_hash else '—'
     date = measured.date if measured is not None and measured.date else '—'
+    scenario_link = (
+        f'<a href="{_chart_href(page_slug, scenario.test_id)}">'
+        f'{escape(scenario.display_name)}</a>'
+    )
 
     return (
         '<tr>'
         f'<td data-label="Area">{escape(area_label)}</td>'
-        f'<td data-label="Scenario">{escape(scenario.display_name)}</td>'
+        f'<td data-label="Scenario">{scenario_link}</td>'
         f'<td data-label="Load time / Speed">{load_time}</td>'
         f'<td class="reference-column" data-label="vs 2.38.0">'
         f'{_reference_html(vs_reference)}</td>'
@@ -862,12 +1005,12 @@ def _summary_page(
                 for group in groups:
                     keyed_rows.append((
                         _summary_sort_key(group, summaries),
-                        _summary_row(area_label, group, summaries),
+                        _summary_row(area_label, group, summaries, page.slug),
                     ))
             else:
                 keyed_rows.append((
                     _summary_sort_key(None, summaries),
-                    _summary_row(area_label, None, summaries),
+                    _summary_row(area_label, None, summaries, page.slug),
                 ))
         keyed_rows.sort(key=lambda item: item[0], reverse=True)
         rows = ''.join(html for _key, html in keyed_rows)
@@ -947,8 +1090,16 @@ def _ticket_cell_html(
 def _regression_violation_row(
     item: Violation,
     flag_tickets: dict[str, FlagTicket],
+    page_slugs_by_test_id: dict[str, str],
 ) -> str:
     commit = escape(item.commit_hash[:10])
+    page_slug = page_slugs_by_test_id.get(item.test_id)
+    test_cell = escape(item.test_id)
+    if page_slug is not None:
+        test_cell = (
+            f'<a href="{_chart_href(page_slug, item.test_id)}">'
+            f'{test_cell}</a>'
+        )
     value_cell = (
         '<div class="load-time-cell">'
         f'<span class="metric-value">{item.value:.3f}s</span>'
@@ -957,7 +1108,7 @@ def _regression_violation_row(
     )
     return (
         '<tr>'
-        f'<td data-label="Test">{escape(item.test_id)}</td>'
+        f'<td data-label="Test">{test_cell}</td>'
         f'<td data-label="Variant">{escape(item.variant)}</td>'
         f'<td data-label="Value">{value_cell}</td>'
         f'<td data-label="Commit"><code>{commit}</code></td>'
@@ -972,6 +1123,7 @@ def _regression_section(
     title: str,
     items: list[Violation],
     flag_tickets: dict[str, FlagTicket],
+    page_slugs_by_test_id: dict[str, str],
 ) -> str:
     heading = _section_heading(title, len(items))
     if not items:
@@ -981,7 +1133,8 @@ def _regression_section(
         )
     sorted_items = sorted(items, key=lambda item: item.value, reverse=True)
     rows = ''.join(
-        _regression_violation_row(item, flag_tickets) for item in sorted_items
+        _regression_violation_row(item, flag_tickets, page_slugs_by_test_id)
+        for item in sorted_items
     )
     return (
         f'<section class="summary-profile">{heading}'
@@ -995,15 +1148,17 @@ def _regression_section(
 def _regression_page(
     violations: list[Violation],
     flag_tickets: dict[str, FlagTicket] | None = None,
+    page_slugs_by_test_id: dict[str, str] | None = None,
 ) -> str:
     tickets = flag_tickets or {}
+    page_slugs = page_slugs_by_test_id or {}
     by_rule = {
         'Regression': [v for v in violations if v.rule == '2.1 Regression'],
         'Slow builds': [v for v in violations if v.rule == '2.2 Slow build'],
         'Backlog candidates': [v for v in violations if v.rule == '2.3 Backlog candidate'],
     }
     sections = ''.join(
-        _regression_section(title, items, tickets)
+        _regression_section(title, items, tickets, page_slugs)
         for title, items in by_rule.items()
     )
     return (
@@ -1056,6 +1211,7 @@ def write_site(
     scenario_summaries = summaries or {}
     regression_violations = violations or []
     tickets = flag_tickets or {}
+    page_slugs_by_test_id = _page_slugs_by_test_id(pages)
 
     cards = ''.join(
         f'<a class="card" href="{escape(page.slug)}.html">'
@@ -1088,7 +1244,10 @@ def write_site(
     print('Generated summary.html')
 
     (output_dir / 'regression_report.html').write_text(
-        _layout('Flags', _regression_page(regression_violations, tickets)),
+        _layout(
+            'Flags',
+            _regression_page(regression_violations, tickets, page_slugs_by_test_id),
+        ),
         encoding='utf-8',
     )
     print('Generated regression_report.html')
@@ -1097,21 +1256,15 @@ def write_site(
     for page in pages:
         area_sections = []
         for area, area_label in PRODUCT_AREAS:
-            test_ids = [
-                test_id for test_id in page.test_ids
-                if test_id in charts_by_id and charts_by_id[test_id].area == area
-            ]
-            if not test_ids:
+            groups = _scenario_groups(page, charts_by_id, area)
+            if not groups:
                 content = '<div class="area-empty">Not tested for this user profile.</div>'
             else:
-                sections = []
-                for test_id in test_ids:
-                    chart = charts_by_test_id.get(test_id)
-                    if chart is not None:
-                        sections.append(_chart_section(chart))
-                    else:
-                        sections.append(_placeholder_section(charts_by_id[test_id].display_name))
-                content = ''.join(sections)
+                sections = ''.join(
+                    _scenario_charts_section(group, charts_by_test_id)
+                    for group in groups
+                )
+                content = f'<div class="scenario-list">{sections}</div>'
             area_sections.append(
                 f'<section class="area-group"><h2>{escape(area_label)}</h2>{content}</section>'
             )
@@ -1121,6 +1274,7 @@ def write_site(
             f'<p class="subtitle">{escape(page.description)}</p>'
             f'{_profile_details(page)}'
             f'{"".join(area_sections)}'
+            f'{_chart_hash_script()}'
         )
         (output_dir / f'{page.slug}.html').write_text(
             _layout(page.title, page_body),
