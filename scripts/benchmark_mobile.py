@@ -178,7 +178,15 @@ def plot_performance_mobile(performance, test, output_dir):
         data = data[~data['commit_hash'].isin(excluded)]
     regime = _regime_builds(device)
     if regime:
+        dropped = data[~data['commit_hash'].isin(regime)]
         data = data[data['commit_hash'].isin(regime)]
+        # An OS update on this phone makes every NEW point fail the pin — the chart would
+        # freeze at the last old-regime build with nothing saying so. Shout when newer
+        # points are being dropped so the pin gets rolled forward instead.
+        if len(data) and len(dropped) and dropped['date'].max() > data['date'].max():
+            print(f"WARNING: {test.pattern} [{device}]: {len(dropped)} point(s) NEWER than the "
+                  f"newest charted build dropped by the OS-regime pin (CHART_REGIME) — "
+                  f"device OS changed? Roll the pin forward.")
     if data.empty:
         print(f"Warning: No data for {test.pattern}")
         return
