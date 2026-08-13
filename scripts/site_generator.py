@@ -1203,6 +1203,8 @@ def write_site(
     run_environment: pd.DataFrame | None = None,
     violations: list[Violation] | None = None,
     flag_tickets: dict[str, FlagTicket] | None = None,
+    channel: str = 'nightly',
+    release_series: str = '',
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     env_frame = run_environment if run_environment is not None else pd.DataFrame()
@@ -1220,19 +1222,36 @@ def write_site(
         f'{_profile_facts(page)}</a>'
         for page in pages
     )
+    if channel == 'release':
+        heading = f'Windows {release_series} Release Benchmarks'
+        subtitle = (
+            f'Performance history for {release_series} release candidates through the final build. '
+            'Each point is one RC or final benchmark run; the complete release series stays visible.'
+        )
+    elif channel == 'pr':
+        heading = 'Windows Pull Request Benchmarks'
+        subtitle = (
+            'Performance history for this pull request. Each point is one requested benchmark run; '
+            'release baselines are pinned separately for comparison.'
+        )
+    else:
+        heading = 'Windows Nightly Benchmark Dashboard'
+        subtitle = (
+            f'Performance metrics from the last {CHART_WINDOW_DAYS} days. '
+            'Each point is one nightly run; release baselines are pinned separately.'
+        )
     index_body = (
-        '<h1>Windows Benchmark Dashboard</h1>'
-        f'<p class="subtitle">Performance metrics from the last {CHART_WINDOW_DAYS} days. '
-        'Each point is one nightly run — x-axis shows build date; hover a point for commit hash. '
-        'Load-time charts plot the average of runs per build.</p>'
+        f'<nav class="back"><a href="{_channel_root_href(channel)}">← All Windows benchmarks</a></nav>'
+        f'<h1>{escape(heading)}</h1>'
+        f'<p class="subtitle">{escape(subtitle)} '
+        'Load-time charts plot the average of samples per run.</p>'
         f'{machine_panel}'
         f'{_summary_links_html(regression_violations)}'
         '<h2 style="margin-top:2rem">User profiles</h2>'
         f'<div class="grid">{cards}</div>'
         '<p class="note">Raw CSV history lives in the repository <code>data/</code> folder. '
         'PNG charts on GitHub: '
-        '<a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/README.md">'
-        'docs/desktop/README.md</a>.</p>'
+        f'<a href="{_github_readme_href(output_dir)}">{escape(_github_readme_rel(output_dir))}</a>.</p>'
     )
     (output_dir / 'index.html').write_text(_layout('Dashboard', index_body), encoding='utf-8')
     print('Generated index.html')
@@ -1292,7 +1311,116 @@ def write_site(
         chart_tests=chart_tests,
         summaries=scenario_summaries,
         run_environment=env_frame,
+        channel=channel,
     )
+
+
+def _channel_root_href(channel: str) -> str:
+    if channel in {'release', 'pr'}:
+        return '../../'
+    return '../'
+
+
+def _github_readme_rel(output_dir: Path) -> str:
+    parts = output_dir.as_posix().replace('\\', '/')
+    if 'docs/' in parts:
+        return f'{parts[parts.index("docs/"):].rstrip("/")}/README.md'
+    return f'docs/desktop/{output_dir.name}/README.md'
+
+
+def _github_readme_href(output_dir: Path) -> str:
+    return (
+        'https://github.com/status-im/status-app-benchmarks/blob/master/'
+        f'{_github_readme_rel(output_dir)}'
+    )
+
+
+def channel_listing_sort_key(name: str) -> tuple:
+    """Sort PR numbers and dotted versions numerically, newest first when reversed."""
+    if name.isdigit():
+        return (0, int(name))
+    parts = name.split('.')
+    if parts and all(part.isdigit() for part in parts):
+        return (1, tuple(int(part) for part in parts))
+    return (2, name)
+
+
+def write_desktop_landing(desktop_dir: Path) -> None:
+    """Write the channel picker and discovered PR/release-series links."""
+    desktop_dir.mkdir(parents=True, exist_ok=True)
+
+    def directory_links(parent: Path, prefix: str = '') -> str:
+        if not parent.exists():
+            return '<p class="note">No published runs yet.</p>'
+        entries = [
+            path for path in parent.iterdir()
+            if path.is_dir() and (path / 'index.html').exists()
+        ]
+        entries.sort(key=lambda item: channel_listing_sort_key(item.name), reverse=True)
+        links = [
+            f'<li><a href="{prefix}{escape(path.name)}/">{escape(path.name)}</a></li>'
+            for path in entries
+        ]
+        return f'<ul>{"".join(links)}</ul>' if links else '<p class="note">No published runs yet.</p>'
+
+    releases_dir = desktop_dir / 'releases'
+    prs_dir = desktop_dir / 'pr'
+    releases_dir.mkdir(parents=True, exist_ok=True)
+    prs_dir.mkdir(parents=True, exist_ok=True)
+    (releases_dir / 'index.html').write_text(
+        _layout(
+            'Release benchmarks',
+            '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
+            '<h1>Release benchmarks</h1>'
+            '<p class="subtitle">RC-to-final performance history, isolated by release series.</p>'
+            f'{directory_links(releases_dir)}',
+        ),
+        encoding='utf-8',
+    )
+    (prs_dir / 'index.html').write_text(
+        _layout(
+            'Pull request benchmarks',
+            '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
+            '<h1>Pull request benchmarks</h1>'
+            '<p class="subtitle">Persistent benchmark history for explicitly tested pull requests.</p>'
+            f'{directory_links(prs_dir)}',
+        ),
+        encoding='utf-8',
+    )
+
+    body = (
+        '<h1>Windows Benchmark Dashboard</h1>'
+        '<p class="subtitle">Nightly, pull request, and release results are stored '
+        'and charted independently.</p>'
+        '<div class="grid">'
+        '<a class="card" href="nightly/"><h2>Nightly</h2>'
+        '<p>Rolling master performance trend and promoted release baselines.</p></a>'
+        '<a class="card" href="releases/"><h2>Releases</h2>'
+        '<p>RC-to-final trend charts, with a separate page for every release.</p></a>'
+        '<a class="card" href="pr/"><h2>Pull requests</h2>'
+        '<p>On-demand PR benchmark runs and comparisons with release baselines.</p></a>'
+        '</div>'
+    )
+    (desktop_dir / 'index.html').write_text(
+        _layout('Windows benchmarks', body), encoding='utf-8',
+    )
+    (desktop_dir / 'README.md').write_text(
+        '\n'.join([
+            '# Windows benchmarks',
+            '',
+            'Nightly, pull request, and release charts are stored separately:',
+            '',
+            '- [Nightly](nightly/README.md)',
+            '- [Releases](releases/)',
+            '- [Pull requests](pr/)',
+            '',
+            'Interactive dashboard: '
+            '[docs/desktop/](https://status-im.github.io/status-app-benchmarks/desktop/).',
+            '',
+        ]),
+        encoding='utf-8',
+    )
+    print(f'Generated {desktop_dir / "index.html"}')
 
 
 def _profile_data_markdown(page: BenchmarkPage) -> list[str]:
@@ -1395,13 +1523,29 @@ def write_github_readme(
     chart_tests: tuple[ChartTest, ...] = (),
     summaries: dict[str, ScenarioSummary] | None = None,
     run_environment: pd.DataFrame | None = None,
+    channel: str = 'nightly',
 ) -> None:
     """GitHub-rendered fallback dashboard (PNG embeds) until GitHub Pages is enabled."""
+    if channel == 'release':
+        window_line = (
+            'Charts show the full RC-to-final history for this release. '
+            'Each point is one requested benchmark run.'
+        )
+    elif channel == 'pr':
+        window_line = (
+            'Charts show every requested run for this pull request. '
+            'Each point is one benchmark run.'
+        )
+    else:
+        window_line = (
+            f'Charts show data from the last {CHART_WINDOW_DAYS} days — '
+            'each point is one nightly run.'
+        )
     lines = [
         '# Windows — performance benchmarks',
         '',
         'Automated test suite performance tracking for the Windows desktop app.',
-        f'Charts show data from the last {CHART_WINDOW_DAYS} days — each point is one nightly run.',
+        window_line,
         'Load-time charts plot the average of runs per build. Lower is better.',
         '',
         '> **Viewing charts:** This README renders inline PNG images on GitHub — works without',

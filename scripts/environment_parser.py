@@ -47,6 +47,8 @@ def record_run_environment(
     commit_hash: str,
     date: str,
     *,
+    run_id: str = '',
+    build_label: str = '',
     machine_info_file: Optional[Path] = None,
 ) -> bool:
     """Append one row to data/run_environment.csv when machine info is available."""
@@ -56,11 +58,26 @@ def record_run_environment(
 
     data_dir.mkdir(parents=True, exist_ok=True)
     csv_path = data_dir / RUN_ENVIRONMENT_CSV
+    fieldnames = ['run_id', 'commit_hash', 'date', 'build_label', *RUN_ENVIRONMENT_FIELDS]
+    if csv_path.exists():
+        with open(csv_path, newline='', encoding='utf-8') as handle:
+            reader = csv.DictReader(handle)
+            current = list(reader.fieldnames or [])
+            rows = list(reader)
+        if current != fieldnames:
+            unknown = [field for field in current if field not in fieldnames]
+            if unknown:
+                raise ValueError(f'Cannot migrate {csv_path}: unexpected columns {unknown}')
+            with open(csv_path, 'w', newline='', encoding='utf-8') as handle:
+                writer = csv.DictWriter(handle, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
     file_exists = csv_path.exists()
-    fieldnames = ['commit_hash', 'date', *RUN_ENVIRONMENT_FIELDS]
     row = {
+        'run_id': run_id or commit_hash,
         'commit_hash': commit_hash,
         'date': date,
+        'build_label': build_label,
         **{field: machine_info.get(field, '') for field in RUN_ENVIRONMENT_FIELDS},
     }
 

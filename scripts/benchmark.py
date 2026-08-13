@@ -3,6 +3,7 @@
 import argparse
 import csv
 import sys
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -33,7 +34,16 @@ from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_b
 from chart_builder import cleanup_stale_charts, render_chart
 from environment_parser import load_run_environment, record_run_environment
 from regression_report import collect_scenario_summaries, collect_violations, write_regression_report
-from site_generator import write_docs_root_index, write_site
+from raw_result_parser import parse_raw_result_json
+from run_context import (
+    RunContext,
+    append_run_manifest,
+    channel_data_dir,
+    ensure_new_run,
+    load_baseline_registry,
+    promote_release_baseline,
+)
+from site_generator import write_desktop_landing, write_docs_root_index, write_site
 
 CONFIG: BenchmarkConfig
 
@@ -50,10 +60,31 @@ METRICS_CSV = {
 }
 
 
+def _ensure_csv_schema(csv_path: Path, fieldnames: List[str]) -> None:
+    if not csv_path.exists():
+        return
+    with open(csv_path, newline='', encoding='utf-8') as handle:
+        reader = csv.DictReader(handle)
+        current = list(reader.fieldnames or [])
+        if current == fieldnames:
+            return
+        rows = list(reader)
+    unknown = [field for field in current if field not in fieldnames]
+    if unknown:
+        raise ValueError(f'Cannot migrate {csv_path}: unexpected columns {unknown}')
+    temp_path = csv_path.with_suffix(f'{csv_path.suffix}.tmp')
+    with open(temp_path, 'w', newline='', encoding='utf-8') as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    temp_path.replace(csv_path)
+
+
 def _append_csv_rows(data_dir: Path, filename: str, fieldnames: List[str], rows: List[Dict]) -> None:
     if not rows:
         return
     csv_path = data_dir / filename
+    _ensure_csv_schema(csv_path, fieldnames)
     file_exists = csv_path.exists()
     with open(csv_path, 'a', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -66,7 +97,18 @@ def _read_metrics_csv(data_dir: Path, filename: str) -> Optional[pd.DataFrame]:
     path = data_dir / filename
     if not path.exists():
         return None
-    return pd.read_csv(path, parse_dates=['date']).sort_values('date')
+    frame = pd.read_csv(path, parse_dates=['date']).sort_values('date')
+    if 'run_id' not in frame:
+        frame['run_id'] = frame['commit_hash'].astype(str)
+    else:
+        frame['run_id'] = frame['run_id'].fillna('').astype(str)
+        missing_run_id = frame['run_id'].str.strip() == ''
+        frame.loc[missing_run_id, 'run_id'] = frame.loc[missing_run_id, 'commit_hash'].astype(str)
+    if 'build_label' not in frame:
+        frame['build_label'] = ''
+    else:
+        frame['build_label'] = frame['build_label'].fillna('')
+    return frame
 
 
 def load_metrics(data_dir: Path) -> Dict[str, Optional[pd.DataFrame]]:
@@ -79,30 +121,32 @@ def load_metrics(data_dir: Path) -> Dict[str, Optional[pd.DataFrame]]:
 def process_benchmark_run(
     benchmark_dir: Path,
     data_dir: Path,
-    commit_hash: str,
-    date: str,
+    context: RunContext,
     *,
     machine_info_file: Optional[Path] = None,
 ):
+    context.validate()
+    ensure_new_run(data_dir, context.run_id)
     print(f'\nProcessing benchmark: {benchmark_dir}')
 
     test_cases_dir = benchmark_dir / 'test-cases'
     if not test_cases_dir.exists():
         test_cases_dir = benchmark_dir / 'data' / 'test-cases'
-    if not test_cases_dir.exists():
-        print('Error: test-cases directory not found')
-        return
-
-    json_files = list(test_cases_dir.glob('*.json'))
+    if test_cases_dir.exists():
+        json_files = list(test_cases_dir.glob('*.json'))
+        result_format = 'Allure'
+    else:
+        json_files = list(benchmark_dir.glob('*.json'))
+        result_format = 'raw benchmark JSON'
     if not json_files:
-        print(f'Error: No JSON files found in {test_cases_dir}')
-        return
+        raise ValueError(f'No supported JSON files found in {benchmark_dir}')
 
-    print(f'Found {len(json_files)} test case files')
+    print(f'Found {len(json_files)} {result_format} test case files')
 
     performance_results: List[Dict] = []
     cpu_results: List[Dict] = []
     ram_results: List[Dict] = []
+    parse_errors: List[str] = []
     aggregate = {
         'total_tests': 0, 'passed': 0, 'failed': 0, 'broken': 0,
         'skipped': 0, 'unknown': 0, 'total_duration_ms': 0,
@@ -112,9 +156,11 @@ def process_benchmark_run(
 
     for json_file in json_files:
         try:
-            test_result, performance_metrics, cpu_metrics, ram_metrics = parse_test_case_json(
-                json_file, benchmark_dir, CONFIG,
-            )
+            if result_format == 'Allure':
+                parsed = parse_test_case_json(json_file, benchmark_dir, CONFIG)
+            else:
+                parsed = parse_raw_result_json(json_file, CONFIG)
+            test_result, performance_metrics, cpu_metrics, ram_metrics = parsed
             aggregate['total_tests'] += 1
             aggregate[test_result['status']] = aggregate.get(test_result['status'], 0) + 1
             aggregate['total_duration_ms'] += test_result['duration_ms']
@@ -128,10 +174,14 @@ def process_benchmark_run(
             ram_results.extend(ram_metrics)
         except Exception as error:
             print(f'Error parsing {json_file.name}: {error}')
+            parse_errors.append(f'{json_file.name}: {error}')
 
+    if parse_errors:
+        raise ValueError(
+            f'Failed to parse {len(parse_errors)} result file(s): {"; ".join(parse_errors[:3])}',
+        )
     if aggregate['total_tests'] == 0:
-        print('Error: No test results found')
-        return
+        raise ValueError('No test results found')
 
     aggregate['pass_rate'] = round((aggregate.get('passed', 0) / aggregate['total_tests']) * 100, 2)
     aggregate['avg_duration_ms'] = round(aggregate['total_duration_ms'] / aggregate['total_tests'], 2)
@@ -143,24 +193,34 @@ def process_benchmark_run(
     data_dir.mkdir(parents=True, exist_ok=True)
 
     summary_csv = data_dir / 'summary_metrics.csv'
+    summary_fields = [
+        'run_id', 'commit_hash', 'date', 'build_label',
+        'total_tests', 'passed', 'failed', 'broken',
+        'skipped', 'unknown', 'pass_rate', 'total_duration_ms', 'avg_duration_ms',
+        'min_duration_ms', 'max_duration_ms', 'total_retries', 'flaky_tests',
+    ]
+    _ensure_csv_schema(summary_csv, summary_fields)
     file_exists = summary_csv.exists()
     with open(summary_csv, 'a', newline='', encoding='utf-8') as handle:
-        fieldnames = [
-            'commit_hash', 'date', 'total_tests', 'passed', 'failed', 'broken',
-            'skipped', 'unknown', 'pass_rate', 'total_duration_ms', 'avg_duration_ms',
-            'min_duration_ms', 'max_duration_ms', 'total_retries', 'flaky_tests',
-        ]
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=summary_fields)
         if not file_exists:
             writer.writeheader()
-        writer.writerow({'commit_hash': commit_hash, 'date': date, **aggregate})
+        writer.writerow({
+            'run_id': context.run_id,
+            'commit_hash': context.commit_hash,
+            'date': context.date,
+            'build_label': context.build_label,
+            **aggregate,
+        })
 
     _append_csv_rows(data_dir, 'performance_metrics.csv', [
-        'commit_hash', 'date', 'test_name', 'status',
+        'run_id', 'commit_hash', 'date', 'build_label', 'test_name', 'status',
         'min_time', 'max_time', 'avg_time', 'run_count', 'all_runs',
     ], [{
-        'commit_hash': commit_hash,
-        'date': date,
+        'run_id': context.run_id,
+        'commit_hash': context.commit_hash,
+        'date': context.date,
+        'build_label': context.build_label,
         **{key: row[key] for key in (
             'test_name', 'status', 'min_time', 'max_time', 'avg_time', 'run_count', 'all_runs',
         )},
@@ -169,11 +229,13 @@ def process_benchmark_run(
     for results, kind in ((cpu_results, 'cpu'), (ram_results, 'ram')):
         csv_name, column_map = METRICS_CSV[kind]
         _append_csv_rows(data_dir, csv_name, [
-            'commit_hash', 'date', 'test_name', 'metric_id', 'status',
+            'run_id', 'commit_hash', 'date', 'build_label', 'test_name', 'metric_id', 'status',
             *column_map.keys(), 'run_count', 'all_runs',
         ], [{
-            'commit_hash': commit_hash,
-            'date': date,
+            'run_id': context.run_id,
+            'commit_hash': context.commit_hash,
+            'date': context.date,
+            'build_label': context.build_label,
             'test_name': row['test_name'],
             'metric_id': row['metric_id'],
             'status': row['status'],
@@ -183,8 +245,11 @@ def process_benchmark_run(
         } for row in results])
 
     record_run_environment(
-        data_dir, commit_hash, date, machine_info_file=machine_info_file,
+        data_dir, context.commit_hash, context.date,
+        run_id=context.run_id, build_label=context.build_label,
+        machine_info_file=machine_info_file,
     )
+    append_run_manifest(data_dir, context)
 
     print(f"Processed {aggregate['total_tests']} tests")
     if performance_results:
@@ -197,13 +262,85 @@ def process_benchmark_run(
     print(f"Total duration: {aggregate['total_duration_ms']}ms")
 
 
-def generate_graphs(data_dir: Path, output_dir: Path):
+def _config_with_promoted_baselines(
+    config: BenchmarkConfig,
+    registry: list[dict[str, str]],
+) -> BenchmarkConfig:
+    promoted = [row.get('commit_hash', '') for row in registry if row.get('commit_hash')]
+    if not promoted:
+        return config
+    baseline_hashes = tuple(dict.fromkeys([*config.defaults.baselines, *promoted]))
+    reference = promoted[-1]
+    defaults = replace(
+        config.defaults, baselines=baseline_hashes, reference_build=reference,
+    )
+    charts = tuple(
+        replace(
+            chart,
+            baselines=tuple(dict.fromkeys([*chart.baselines, *promoted])),
+            reference_build=reference,
+        )
+        if chart.inherit_reference_build else chart
+        for chart in config.charts
+    )
+    return replace(config, defaults=defaults, charts=charts)
+
+
+def _merge_baseline_metrics(
+    metrics: Dict[str, Optional[pd.DataFrame]],
+    baseline_dir: Optional[Path],
+    registry: list[dict[str, str]],
+) -> Dict[str, Optional[pd.DataFrame]]:
+    if baseline_dir is None or not baseline_dir.exists() or not registry:
+        return metrics
+    baseline_metrics = load_metrics(baseline_dir)
+    allowed_run_ids = {row.get('run_id', '') for row in registry}
+    merged = dict(metrics)
+    for kind, baseline_frame in baseline_metrics.items():
+        if baseline_frame is None or baseline_frame.empty:
+            continue
+        baseline_frame = baseline_frame[
+            baseline_frame['run_id'].astype(str).isin(allowed_run_ids)
+        ]
+        if baseline_frame.empty:
+            continue
+        current = merged.get(kind)
+        merged[kind] = (
+            baseline_frame.copy()
+            if current is None or current.empty
+            else pd.concat([current, baseline_frame], ignore_index=True).sort_values('date')
+        )
+    return merged
+
+
+def generate_graphs(
+    data_dir: Path,
+    output_dir: Path,
+    *,
+    channel: str = 'nightly',
+    baseline_dir: Optional[Path] = None,
+):
+    global CONFIG
+    registry = load_baseline_registry(baseline_dir) if baseline_dir else []
+    if channel == 'release':
+        # Keep this release's final build in its RC -> final trend. It becomes a
+        # pinned baseline only for nightly and subsequent release series.
+        registry = [
+            row for row in registry
+            if row.get('release_series') != output_dir.name
+        ]
+    CONFIG = _config_with_promoted_baselines(CONFIG, registry)
+    build_labels = {
+        row['commit_hash']: row.get('label', '')
+        for row in registry if row.get('commit_hash')
+    }
+    window_days = None if channel in {'release', 'pr'} else 30
     graph_filenames = [chart.graph_filename for chart in CONFIG.charts]
     output_dir.mkdir(parents=True, exist_ok=True)
     cleanup_stale_charts(output_dir, graph_filenames)
 
     print(f'\nLoading data from {data_dir}...')
-    metrics = load_metrics(data_dir)
+    metrics = _merge_baseline_metrics(load_metrics(data_dir), baseline_dir, registry)
     run_environment = load_run_environment(data_dir)
 
     charts_by_test_id: Dict[str, ChartEntry] = {}
@@ -214,18 +351,21 @@ def generate_graphs(data_dir: Path, output_dir: Path):
         if frame is None or frame.empty:
             continue
         try:
-            entry = render_chart(chart, frame, output_dir, CONFIG.defaults)
+            entry = render_chart(
+                chart, frame, output_dir, CONFIG.defaults,
+                window_days=window_days, build_labels=build_labels,
+            )
             if entry is not None:
                 charts_by_test_id[chart.test_id] = entry
         except Exception as error:
             print(f'Error generating chart for {chart.test_id}: {error}')
 
     print('\nGenerating GitHub Pages site...')
-    summaries = collect_scenario_summaries(metrics, CONFIG)
+    summaries = collect_scenario_summaries(metrics, CONFIG, window_days=window_days)
     performance = metrics.get('performance')
     violations = []
     if performance is not None and not performance.empty:
-        violations = collect_violations(performance, CONFIG)
+        violations = collect_violations(performance, CONFIG, window_days=window_days)
     write_site(
         output_dir, CONFIG.pages, charts_by_test_id,
         chart_tests=CONFIG.charts,
@@ -233,8 +373,15 @@ def generate_graphs(data_dir: Path, output_dir: Path):
         run_environment=run_environment,
         violations=violations,
         flag_tickets=CONFIG.flag_tickets,
+        channel=channel,
+        release_series=output_dir.name if channel == 'release' else '',
     )
-    write_docs_root_index(output_dir.parent)
+    if channel in {'pr', 'release'}:
+        desktop_dir = output_dir.parent.parent
+    else:
+        desktop_dir = output_dir.parent
+    write_desktop_landing(desktop_dir)
+    write_docs_root_index(desktop_dir.parent)
 
     report_path = output_dir / 'regression_report.md'
     if performance is not None and not performance.empty:
@@ -249,15 +396,48 @@ def cmd_parse(args):
     except ValueError:
         print(f'Error: Date must be YYYY-MM-DDTHH:MM:SS, got: {args.date}')
         sys.exit(1)
-    process_benchmark_run(
-        args.benchmark_dir, args.data_dir, args.commit_hash, args.date,
-        machine_info_file=args.machine_info,
-    )
-    print(f'\nCSV files updated in {args.data_dir.absolute()}')
+    try:
+        context = RunContext(
+            run_id=args.run_id,
+            channel=args.channel,
+            commit_hash=args.commit_hash,
+            date=args.date,
+            build_label=args.build_label,
+            source_ref=args.source_ref,
+            build_source=args.build_source,
+            pr_number=args.pr_number,
+            release_series=args.release_series,
+            release_version=args.release_version,
+        ).with_defaults()
+        data_dir = channel_data_dir(args.data_dir, context)
+        process_benchmark_run(
+            args.benchmark_dir, data_dir, context,
+            machine_info_file=args.machine_info,
+        )
+    except ValueError as error:
+        print(f'Error: {error}')
+        sys.exit(1)
+    print(f'\nCSV files updated in {data_dir.absolute()}')
 
 
 def cmd_graphs(args):
-    generate_graphs(args.data_dir, args.output_dir)
+    generate_graphs(
+        args.data_dir, args.output_dir,
+        channel=args.channel, baseline_dir=args.baseline_dir,
+    )
+
+
+def cmd_promote_baseline(args):
+    try:
+        commit_hash = promote_release_baseline(
+            args.release_data_dir,
+            args.baseline_dir,
+            run_id=args.run_id,
+        )
+    except ValueError as error:
+        print(f'Error: {error}')
+        sys.exit(1)
+    print(f'Promoted final build {commit_hash} as a baseline')
 
 
 def cmd_report(args):
@@ -280,14 +460,26 @@ def cmd_list_tests(_args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Parse Allure benchmark results and publish charts to GitHub Pages')
+    parser = argparse.ArgumentParser(
+        description='Parse structured or Allure benchmark results and publish GitHub Pages charts',
+    )
     parser.add_argument('--config', type=Path, default=DEFAULT_CONFIG, help=f'Config file (default: {DEFAULT_CONFIG})')
     subparsers = parser.add_subparsers(dest='command')
 
-    parse_parser = subparsers.add_parser('parse', help='Parse Allure results into CSV')
+    parse_parser = subparsers.add_parser(
+        'parse', help='Parse structured benchmark JSON (or legacy Allure results) into CSV',
+    )
     parse_parser.add_argument('benchmark_dir', type=Path)
+    parse_parser.add_argument('--run-id', required=True)
+    parse_parser.add_argument('--channel', choices=('nightly', 'pr', 'release'), default='nightly')
     parse_parser.add_argument('--commit-hash', required=True)
     parse_parser.add_argument('--date', required=True)
+    parse_parser.add_argument('--build-label', default='')
+    parse_parser.add_argument('--source-ref', default='')
+    parse_parser.add_argument('--build-source', default='')
+    parse_parser.add_argument('--pr-number', default='')
+    parse_parser.add_argument('--release-series', default='')
+    parse_parser.add_argument('--release-version', default='')
     parse_parser.add_argument('--data-dir', type=Path, default=Path('data'))
     parse_parser.add_argument(
         '--machine-info', type=Path,
@@ -297,13 +489,23 @@ def main():
 
     graphs_parser = subparsers.add_parser('graphs', help='Generate charts and GitHub Pages site')
     graphs_parser.add_argument('--data-dir', type=Path, default=Path('data'))
-    graphs_parser.add_argument('--output-dir', type=Path, default=Path('docs/desktop'))
+    graphs_parser.add_argument('--output-dir', type=Path, default=Path('docs/desktop/nightly'))
+    graphs_parser.add_argument('--channel', choices=('nightly', 'pr', 'release'), default='nightly')
+    graphs_parser.add_argument('--baseline-dir', type=Path)
     graphs_parser.set_defaults(func=cmd_graphs)
 
     report_parser = subparsers.add_parser('report', help='Write regression report from CSV data')
     report_parser.add_argument('--data-dir', type=Path, default=Path('data'))
     report_parser.add_argument('--output', type=Path, default=Path('docs/desktop/regression_report.md'))
     report_parser.set_defaults(func=cmd_report)
+
+    promote_parser = subparsers.add_parser(
+        'promote-baseline', help='Promote a final release run into the shared baseline store',
+    )
+    promote_parser.add_argument('--release-data-dir', type=Path, required=True)
+    promote_parser.add_argument('--baseline-dir', type=Path, default=Path('data/desktop/baselines'))
+    promote_parser.add_argument('--run-id', required=True)
+    promote_parser.set_defaults(func=cmd_promote_baseline)
 
     subparsers.add_parser('list-tests', help='List configured charts and pages').set_defaults(func=cmd_list_tests)
 
