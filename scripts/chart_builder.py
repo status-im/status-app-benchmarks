@@ -50,10 +50,10 @@ def filter_recent(df: pd.DataFrame, days: int = CHART_WINDOW_DAYS) -> pd.DataFra
 def metrics_in_chart_window(
     metrics: pd.DataFrame,
     baselines: Optional[Iterable[str]] = None,
-    days: int = CHART_WINDOW_DAYS,
+    days: Optional[int] = CHART_WINDOW_DAYS,
 ) -> pd.DataFrame:
     """Recent window plus pinned baseline rows so reference builds never age out."""
-    recent = filter_recent(metrics, days=days)
+    recent = metrics.copy() if days is None else filter_recent(metrics, days=days)
     if not baselines:
         return recent
     baseline_hashes = {str(commit_hash) for commit_hash in baselines if commit_hash}
@@ -74,17 +74,31 @@ def aggregate_by_build(
     value_col: str,
     group_cols: Optional[List[str]] = None,
 ) -> pd.DataFrame:
-    """One point per commit_hash (latest run), ordered by date — avoids same-day overlap."""
-    keys = ['commit_hash', *(group_cols or [])]
+    """One point per run, ordered by date; repeated runs of one build stay visible."""
+    frame = df.copy()
+    if 'run_id' not in frame:
+        frame['run_id'] = frame['commit_hash'].astype(str)
+    if 'build_label' not in frame:
+        frame['build_label'] = ''
+    keys = ['run_id', *(group_cols or [])]
     aggregated = (
-        df.groupby(keys, as_index=False)
-        .agg(**{value_col: (value_col, 'mean'), 'date': ('date', 'max')})
+        frame.groupby(keys, as_index=False)
+        .agg(**{
+            value_col: (value_col, 'mean'),
+            'date': ('date', 'max'),
+            'commit_hash': ('commit_hash', 'first'),
+            'build_label': ('build_label', 'first'),
+        })
         .sort_values('date')
         .reset_index(drop=True)
     )
     aggregated['x_index'] = range(len(aggregated))
     aggregated['tick_label'] = aggregated.apply(
-        lambda row: f"{row['date'].strftime('%b %d')}\n{str(row['commit_hash'])[:7]}",
+        lambda row: (
+            str(row['build_label']).replace('|', '\n')
+            if str(row['build_label']).strip() and str(row['build_label']) != 'nan'
+            else f"{row['date'].strftime('%b %d')}\n{str(row['commit_hash'])[:7]}"
+        ),
         axis=1,
     )
     return aggregated
@@ -183,12 +197,13 @@ def series_for_chart(
     metrics: pd.DataFrame,
     chart: ChartTest,
     build_labels: Optional[dict[str, str]] = None,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
 ) -> Optional[tuple[pd.DataFrame, int]]:
     """Filter metrics to one chart pattern and aggregate to one point per build.
 
     Returns (series, n_baselines). n_baselines is 0 when pinning is inactive.
     """
-    filtered = metrics_in_chart_window(metrics, chart.baselines)
+    filtered = metrics_in_chart_window(metrics, chart.baselines, days=window_days)
     test_data = filtered[match_chart_patterns(filtered['test_name'], chart)].copy()
     if test_data.empty:
         return None
@@ -225,6 +240,9 @@ def series_for_chart(
                 commit_hash = str(row['commit_hash'])
                 if int(row['x_index']) < n_baselines:
                     return _baseline_tick_label(labels, commit_hash)
+                run_label = str(row.get('build_label', '')).strip()
+                if run_label and run_label != 'nan':
+                    return run_label.replace('|', '\n')
                 return f"{row['date'].strftime('%b %d')}\n{commit_hash[:7]}"
 
             aggregated['tick_label'] = aggregated.apply(tick_label, axis=1)
@@ -763,9 +781,10 @@ def build_chart_figure(
     *,
     footnote: str = '',
     build_labels: Optional[dict[str, str]] = None,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
 ) -> Optional[go.Figure]:
     labels = build_labels if build_labels is not None else load_desktop_build_labels()
-    result = series_for_chart(metrics, chart, labels)
+    result = series_for_chart(metrics, chart, labels, window_days=window_days)
     if result is None:
         print(f'Warning: No data for {chart.test_id} in the last {CHART_WINDOW_DAYS} days')
         return None
@@ -836,9 +855,15 @@ def render_chart(
     metrics: pd.DataFrame,
     output_dir: Path,
     defaults: ChartDefaults,
+    *,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
+    build_labels: Optional[dict[str, str]] = None,
 ) -> Optional[ChartEntry]:
     footnote = compose_chart_footnote(chart)
-    fig = build_chart_figure(chart, metrics, defaults, footnote=footnote)
+    fig = build_chart_figure(
+        chart, metrics, defaults, footnote=footnote,
+        window_days=window_days, build_labels=build_labels,
+    )
     if fig is None:
         return None
     html_filename = save_chart_assets(fig, output_dir, chart.graph_filename)

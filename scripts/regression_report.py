@@ -9,7 +9,13 @@ from typing import List, Optional
 
 import pandas as pd
 
-from benchmark_config import BenchmarkConfig, ChartDefaults, ChartTest, effective_reference_build
+from benchmark_config import (
+    CHART_WINDOW_DAYS,
+    BenchmarkConfig,
+    ChartDefaults,
+    ChartTest,
+    effective_reference_build,
+)
 from chart_builder import series_for_chart, variant_name
 
 
@@ -120,13 +126,18 @@ def _trend_only(series: pd.DataFrame, chart: ChartTest) -> pd.DataFrame:
     return filtered.reset_index(drop=True)
 
 
-def collect_violations(metrics: pd.DataFrame, config: BenchmarkConfig) -> List[Violation]:
+def collect_violations(
+    metrics: pd.DataFrame,
+    config: BenchmarkConfig,
+    *,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
+) -> List[Violation]:
     violations: List[Violation] = []
     defaults = config.defaults
     performance_charts = [c for c in config.charts if c.metrics_kind == 'performance']
 
     for chart in performance_charts:
-        result = series_for_chart(metrics, chart)
+        result = series_for_chart(metrics, chart, window_days=window_days)
         if result is None:
             continue
         series, _n_baselines = result
@@ -151,12 +162,17 @@ def collect_violations(metrics: pd.DataFrame, config: BenchmarkConfig) -> List[V
 def collect_scenario_summaries(
     metrics: dict[str, pd.DataFrame],
     config: BenchmarkConfig,
+    *,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
 ) -> dict[str, ScenarioSummary]:
     summaries: dict[str, ScenarioSummary] = {}
     defaults = config.defaults
     for chart in config.charts:
         frame = metrics.get(chart.metrics_kind)
-        result = series_for_chart(frame, chart) if frame is not None and not frame.empty else None
+        result = (
+            series_for_chart(frame, chart, window_days=window_days)
+            if frame is not None and not frame.empty else None
+        )
         if result is None:
             summaries[chart.test_id] = ScenarioSummary(
                 test_id=chart.test_id,
