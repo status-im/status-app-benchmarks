@@ -62,6 +62,51 @@
     main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
     h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
     .subtitle { color: var(--muted); margin: 0; }
+    .page-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 0.85rem;
+      margin: 0 0 0.25rem;
+    }
+    .page-heading h1 { margin: 0; }
+    .channel-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.22rem 0.6rem;
+      border-radius: 999px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .channel-badge-nightly {
+      background: #ddf4ff;
+      color: #0969da;
+    }
+    .channel-badge-pr {
+      background: #dafbe1;
+      color: #1a7f37;
+    }
+    .channel-badge-release {
+      background: #fff1e5;
+      color: #bc4c00;
+    }
+    @media (prefers-color-scheme: dark) {
+      .channel-badge-nightly {
+        background: #12263a;
+        color: #58a6ff;
+      }
+      .channel-badge-pr {
+        background: #12261e;
+        color: #3fb950;
+      }
+      .channel-badge-release {
+        background: #2d1f14;
+        color: #f0883e;
+      }
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -80,6 +125,50 @@
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .listing-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .listing-card:hover { border-color: var(--link); }
+    .listing-card .listing-main {
+      text-decoration: none;
+      color: inherit;
+      flex: 1;
+    }
+    .listing-card .listing-main h2 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .listing-card .listing-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .listing-card .listing-meta + .listing-meta { margin-top: 0.2rem; }
+    .listing-card .listing-extra {
+      font-size: 0.85rem;
+      color: var(--link);
+      text-decoration: none;
+    }
+    .listing-card .listing-extra:hover { text-decoration: underline; }
+    .listing-history {
+      list-style: none;
+      margin: 0.65rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .listing-history li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .listing-history .commit {
+      color: var(--text);
+      font-weight: 600;
+    }
     .profile-fact-groups {
       display: flex;
       flex-direction: column;
@@ -475,6 +564,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Flags</h1><p class="subtitle">Automated flags from nightly performance data.</p><p class="subtitle regression-legend"><span class="regression-legend-item"><span class="status status-slow">↗ Regression</span>3 consecutive builds each ≥15% slower than the previous.</span><span class="regression-legend-item"><span class="status status-ok-warn">⏱ Slow</span>latest value exceeds 1.0s slow threshold (and not yet a backlog candidate).</span><span class="regression-legend-item"><span class="status status-backlog">Backlog</span>slow in 3 of the last 5 builds (listed here instead of Slow).</span></p><p class="subtitle"><strong>Total flags:</strong> 11</p><section class="summary-profile"><h2 class="section-heading">Regression<span class="status status-slow">↗ Regression</span></h2><p class="subtitle">No violations.</p></section><section class="summary-profile"><h2 class="section-heading">Slow builds<span class="summary-badge">1</span><span class="status status-ok-warn">⏱ Slow</span></h2><table class="summary-table"><thead><tr><th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th><th>Ticket</th></tr></thead><tbody><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_swap_first_open_time_wallet_load_alex">test_wallet_swap_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.198s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Latest value 1.198s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr></tbody></table></section><section class="summary-profile"><h2 class="section-heading">Backlog candidates<span class="summary-badge">10</span><span class="status status-backlog">Backlog</span></h2><table class="summary-table"><thead><tr><th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th><th>Ticket</th></tr></thead><tbody><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_first_open_time_wallet_load_alex">test_wallet_collectibles_tab_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">78.863s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_collectibles_tab_first_open_time_wallet_load">test_wallet_collectibles_tab_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">44.293s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_collectibles_tab_first_open_time_fresh">test_wallet_collectibles_tab_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">16.228s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket"><a href="https://github.com/status-im/status-app/issues/21732" target="_blank" rel="noopener">#21732</a></td></tr><tr><td data-label="Test"><a href="community-populated.html#test_status_community_first_open_loading_time_member">test_status_community_first_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">3.486s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_time_wallet_load_alex">test_wallet_collectibles_tab_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">2.395s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="community-populated.html#test_status_community_second_open_loading_time_member">test_status_community_second_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">2.200s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_send_first_open_time_wallet_load_alex">test_wallet_send_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.771s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_send_first_open_time_wallet_load">test_wallet_send_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.626s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_send_first_open_time_fresh">test_wallet_send_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.292s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_swap_first_open_time_fresh">test_wallet_swap_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.036s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>d99550</code></td><td data-label="Date">2026-08-14 18:11</td><td data-label="Detail">Slow (&gt;1.0s) in 3 of last 3 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr></tbody></table></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><div class="page-heading"><span class="channel-badge channel-badge-pr">Pull request</span><h1>Flags</h1></div><p class="subtitle">Automated flags from nightly performance data.</p><p class="subtitle regression-legend"><span class="regression-legend-item"><span class="status status-slow">↗ Regression</span>3 consecutive builds each ≥15% slower than the previous.</span><span class="regression-legend-item"><span class="status status-ok-warn">⏱ Slow</span>latest value exceeds 1.0s slow threshold (and not yet a backlog candidate).</span><span class="regression-legend-item"><span class="status status-backlog">Backlog</span>slow in 3 of the last 5 builds (listed here instead of Slow).</span></p><p class="subtitle"><strong>Total flags:</strong> 12</p><section class="summary-profile"><h2 class="section-heading">Regression<span class="status status-slow">↗ Regression</span></h2><p class="subtitle">No violations.</p></section><section class="summary-profile"><h2 class="section-heading">Slow builds<span class="summary-badge">2</span><span class="status status-ok-warn">⏱ Slow</span></h2><table class="summary-table"><thead><tr><th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th><th>Ticket</th></tr></thead><tbody><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_assets_tab_first_open_time_fresh">test_wallet_assets_tab_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">125.504s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Latest value 125.504s exceeds 1.0s slow threshold</td><td data-label="Ticket"><a href="https://github.com/status-im/status-app/issues/21694" target="_blank" rel="noopener">#21694</a></td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_swap_first_open_time_wallet_load_alex">test_wallet_swap_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.037s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Latest value 1.037s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr></tbody></table></section><section class="summary-profile"><h2 class="section-heading">Backlog candidates<span class="summary-badge">10</span><span class="status status-backlog">Backlog</span></h2><table class="summary-table"><thead><tr><th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th><th>Ticket</th></tr></thead><tbody><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_first_open_time_wallet_load_alex">test_wallet_collectibles_tab_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">68.192s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_collectibles_tab_first_open_time_wallet_load">test_wallet_collectibles_tab_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">44.457s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_collectibles_tab_first_open_time_fresh">test_wallet_collectibles_tab_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">15.856s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket"><a href="https://github.com/status-im/status-app/issues/21732" target="_blank" rel="noopener">#21732</a></td></tr><tr><td data-label="Test"><a href="community-populated.html#test_status_community_first_open_loading_time_member">test_status_community_first_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">4.929s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_time_wallet_load_alex">test_wallet_collectibles_tab_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">2.361s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="community-populated.html#test_status_community_second_open_loading_time_member">test_status_community_second_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">2.225s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_send_first_open_time_wallet_load">test_wallet_send_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.720s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_send_first_open_time_wallet_load_alex">test_wallet_send_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.171s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_send_first_open_time_fresh">test_wallet_send_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.075s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_swap_first_open_time_fresh">test_wallet_swap_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.034s</span><span class="status status-backlog">Backlog</span></div></td><td data-label="Commit"><code>cb2ed9</code></td><td data-label="Date">2026-08-14 20:19</td><td data-label="Detail">Slow (&gt;1.0s) in 4 of last 4 builds -- consider a backlog ticket</td><td data-label="Ticket">—</td></tr></tbody></table></section></main>
 </body>
 </html>

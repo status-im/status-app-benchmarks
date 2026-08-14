@@ -2,3 +2,4 @@ run_id,channel,commit_hash,date,build_label,source_ref,build_source,pr_number,re
 pr-21980-d99550-4,pr,d99550,2026-08-14T16:23:41,PR 21980,tests/add-on-demand-benchmarks-job,https://status-im-desktop-prs.ams3.digitaloceanspaces.com/StatusIm-Desktop-260814-133117-d99550-pr21980-x86_64.7z,21980,,
 pr-21980-d99550-5,pr,d99550,2026-08-14T17:44:15,PR 21980,tests/add-on-demand-benchmarks-job,https://status-im-desktop-prs.ams3.digitaloceanspaces.com/StatusIm-Desktop-260814-133117-d99550-pr21980-x86_64.7z,21980,,
 pr-21980-d99550-6,pr,d99550,2026-08-14T18:11:05,PR 21980,tests/add-on-demand-benchmarks-job,https://status-im-desktop-prs.ams3.digitaloceanspaces.com/StatusIm-Desktop-260814-133117-d99550-pr21980-x86_64.7z,21980,,
+pr-21980-cb2ed9-7,pr,cb2ed9,2026-08-14T20:19:08,PR 21980,tests/add-on-demand-benchmarks-job,https://status-im-desktop-prs.ams3.digitaloceanspaces.com/StatusIm-Desktop-260814-175358-cb2ed9-pr21980-x86_64.7z,21980,,
