@@ -20,6 +20,12 @@ from regression_report import ScenarioSummary, Violation
 
 CHARTS_DIR = 'charts'
 SITE_TITLE = 'Status App Benchmarks'
+STATUS_APP_REPO = 'https://github.com/status-im/status-app'
+CHANNEL_BADGE = {
+    'nightly': ('Nightly', 'channel-badge-nightly'),
+    'pr': ('Pull request', 'channel-badge-pr'),
+    'release': ('Release', 'channel-badge-release'),
+}
 MACHINE_FIELD_LABELS = {
     'hostname': 'Host',
     'windows_version': 'Windows',
@@ -113,6 +119,51 @@ def _page_styles() -> str:
     main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
     h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
     .subtitle { color: var(--muted); margin: 0; }
+    .page-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 0.85rem;
+      margin: 0 0 0.25rem;
+    }
+    .page-heading h1 { margin: 0; }
+    .channel-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.22rem 0.6rem;
+      border-radius: 999px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .channel-badge-nightly {
+      background: #ddf4ff;
+      color: #0969da;
+    }
+    .channel-badge-pr {
+      background: #dafbe1;
+      color: #1a7f37;
+    }
+    .channel-badge-release {
+      background: #fff1e5;
+      color: #bc4c00;
+    }
+    @media (prefers-color-scheme: dark) {
+      .channel-badge-nightly {
+        background: #12263a;
+        color: #58a6ff;
+      }
+      .channel-badge-pr {
+        background: #12261e;
+        color: #3fb950;
+      }
+      .channel-badge-release {
+        background: #2d1f14;
+        color: #f0883e;
+      }
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -131,6 +182,50 @@ def _page_styles() -> str:
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .listing-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .listing-card:hover { border-color: var(--link); }
+    .listing-card .listing-main {
+      text-decoration: none;
+      color: inherit;
+      flex: 1;
+    }
+    .listing-card .listing-main h2 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .listing-card .listing-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .listing-card .listing-meta + .listing-meta { margin-top: 0.2rem; }
+    .listing-card .listing-extra {
+      font-size: 0.85rem;
+      color: var(--link);
+      text-decoration: none;
+    }
+    .listing-card .listing-extra:hover { text-decoration: underline; }
+    .listing-history {
+      list-style: none;
+      margin: 0.65rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .listing-history li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .listing-history .commit {
+      color: var(--text);
+      font-weight: 600;
+    }
     .profile-fact-groups {
       display: flex;
       flex-direction: column;
@@ -540,6 +635,18 @@ def _layout(title: str, body: str) -> str:
 </body>
 </html>
 """
+
+
+def _channel_badge_html(channel: str) -> str:
+    label, css_class = CHANNEL_BADGE.get(channel, (channel.title(), 'channel-badge-nightly'))
+    return f'<span class="channel-badge {css_class}">{escape(label)}</span>'
+
+
+def _heading_with_badge(heading: str, channel: str) -> str:
+    return (
+        f'<div class="page-heading">{_channel_badge_html(channel)}'
+        f'<h1>{escape(heading)}</h1></div>'
+    )
 
 
 def _chart_iframe(chart_path: str, title: str) -> str:
@@ -995,6 +1102,8 @@ def _summary_page(
     pages: tuple[BenchmarkPage, ...],
     charts_by_id: dict[str, ChartTest],
     summaries: dict[str, ScenarioSummary],
+    *,
+    channel: str = 'nightly',
 ) -> str:
     sections = []
     for page in pages:
@@ -1034,7 +1143,7 @@ def _summary_page(
         )
     return (
         '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-        '<h1>Scenario summary</h1>'
+        f'{_heading_with_badge("Scenario summary", channel)}'
         '<p class="subtitle">Latest result for every tested scenario. '
         'Speed categories:<br>'
         '<span class="speed-legend">'
@@ -1149,6 +1258,8 @@ def _regression_page(
     violations: list[Violation],
     flag_tickets: dict[str, FlagTicket] | None = None,
     page_slugs_by_test_id: dict[str, str] | None = None,
+    *,
+    channel: str = 'nightly',
 ) -> str:
     tickets = flag_tickets or {}
     page_slugs = page_slugs_by_test_id or {}
@@ -1163,7 +1274,7 @@ def _regression_page(
     )
     return (
         '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-        '<h1>Flags</h1>'
+        f'{_heading_with_badge("Flags", channel)}'
         '<p class="subtitle">Automated flags from nightly performance data.</p>'
         '<p class="subtitle regression-legend">'
         '<span class="regression-legend-item">'
@@ -1242,7 +1353,7 @@ def write_site(
         )
     index_body = (
         f'<nav class="back"><a href="{_channel_root_href(channel)}">← All Windows benchmarks</a></nav>'
-        f'<h1>{escape(heading)}</h1>'
+        f'{_heading_with_badge(heading, channel)}'
         f'<p class="subtitle">{escape(subtitle)} '
         'Load-time charts plot the average of samples per run.</p>'
         f'{machine_panel}'
@@ -1257,7 +1368,10 @@ def write_site(
     print('Generated index.html')
 
     (output_dir / 'summary.html').write_text(
-        _layout('Scenario summary', _summary_page(pages, charts_by_id, scenario_summaries)),
+        _layout(
+            'Scenario summary',
+            _summary_page(pages, charts_by_id, scenario_summaries, channel=channel),
+        ),
         encoding='utf-8',
     )
     print('Generated summary.html')
@@ -1265,7 +1379,12 @@ def write_site(
     (output_dir / 'regression_report.html').write_text(
         _layout(
             'Flags',
-            _regression_page(regression_violations, tickets, page_slugs_by_test_id),
+            _regression_page(
+                regression_violations,
+                tickets,
+                page_slugs_by_test_id,
+                channel=channel,
+            ),
         ),
         encoding='utf-8',
     )
@@ -1289,7 +1408,7 @@ def write_site(
             )
         page_body = (
             '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-            f'<h1>{escape(page.title)}</h1>'
+            f'{_heading_with_badge(page.title, channel)}'
             f'<p class="subtitle">{escape(page.description)}</p>'
             f'{_profile_details(page)}'
             f'{"".join(area_sections)}'
@@ -1345,35 +1464,243 @@ def channel_listing_sort_key(name: str) -> tuple:
     return (2, name)
 
 
+MANIFEST_CSV_NAME = 'runs.csv'
+
+
+def _desktop_data_dir(desktop_dir: Path) -> Path:
+    """Map docs/desktop -> <repo>/data/desktop."""
+    return desktop_dir.parent.parent / 'data' / 'desktop'
+
+
+def _format_run_date(value: object) -> str:
+    text = _field_text(value)
+    if not text:
+        return ''
+    try:
+        parsed = pd.to_datetime(text, utc=True)
+    except (TypeError, ValueError):
+        return text
+    if pd.isna(parsed):
+        return text
+    return parsed.strftime('%Y-%m-%d %H:%M UTC')
+
+
+LISTING_HISTORY_LIMIT = 8
+
+
+def _load_runs_frame(runs_csv: Path) -> pd.DataFrame | None:
+    if not runs_csv.exists():
+        return None
+    try:
+        frame = pd.read_csv(runs_csv)
+    except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError):
+        return None
+    if frame.empty:
+        return None
+    ordered = frame.copy()
+    ordered['_sort_date'] = pd.to_datetime(
+        ordered['date'] if 'date' in ordered.columns else pd.NaT,
+        errors='coerce',
+        utc=True,
+    )
+    return ordered.sort_values('_sort_date', ascending=False, na_position='last')
+
+
+def _run_history_entries(frame: pd.DataFrame) -> list[dict[str, object]]:
+    """Newest-first run rows for listing cards (commit + date per publish)."""
+    entries: list[dict[str, object]] = []
+    for _, row in frame.head(LISTING_HISTORY_LIMIT).iterrows():
+        entries.append({
+            'commit': _field_text(row.get('commit_hash')) or 'unknown',
+            'date': _format_run_date(row.get('date')),
+            'version': _field_text(row.get('release_version')),
+        })
+    return entries
+
+
+def _unique_commit_count(frame: pd.DataFrame) -> int:
+    if 'commit_hash' not in frame.columns:
+        return 0
+    commits = {_field_text(value) for value in frame['commit_hash'] if _field_text(value)}
+    return len(commits)
+
+
+def _history_list_html(entries: list[dict[str, object]]) -> str:
+    if not entries:
+        return ''
+    items = []
+    for entry in entries:
+        commit = str(entry.get('commit') or '')
+        date_text = str(entry.get('date') or '')
+        version = str(entry.get('version') or '')
+        left = escape(commit)
+        if version:
+            left = f'{escape(version)} · {escape(commit)}'
+        items.append(
+            '<li>'
+            f'<span class="commit">{left}</span>'
+            f'<span>{escape(date_text)}</span>'
+            '</li>'
+        )
+    return f'<ul class="listing-history">{"".join(items)}</ul>'
+
+
+def _listing_card(
+    *,
+    href: str,
+    title: str,
+    meta_lines: list[str],
+    history_html: str = '',
+    extra_href: str = '',
+    extra_label: str = '',
+) -> str:
+    meta_html = ''.join(
+        f'<p class="listing-meta">{escape(line)}</p>' for line in meta_lines if line
+    )
+    extra = ''
+    if extra_href and extra_label:
+        extra = (
+            f'<a class="listing-extra" href="{escape(extra_href, quote=True)}" '
+            f'target="_blank" rel="noopener">{escape(extra_label)}</a>'
+        )
+    return (
+        f'<article class="card listing-card">'
+        f'<a class="listing-main" href="{escape(href, quote=True)}">'
+        f'<h2>{escape(title)}</h2>{meta_html}{history_html}</a>{extra}</article>'
+    )
+
+
+def _pr_listing_card(path: Path, data_root: Path) -> str:
+    runs_csv = data_root / 'pr' / path.name / MANIFEST_CSV_NAME
+    frame = _load_runs_frame(runs_csv)
+    title = f'PR #{path.name}'
+    meta_lines: list[str] = []
+    history_html = ''
+    if frame is None or frame.empty:
+        meta_lines.append('No run metadata yet.')
+    else:
+        run_count = len(frame)
+        commit_count = _unique_commit_count(frame)
+        latest_date = _format_run_date(frame.iloc[0].get('date'))
+        parts = []
+        if run_count:
+            parts.append(f'{run_count} run{"s" if run_count != 1 else ""}')
+        if commit_count:
+            parts.append(f'{commit_count} commit{"s" if commit_count != 1 else ""}')
+        if latest_date:
+            parts.append(f'last {latest_date}')
+        if parts:
+            meta_lines.append(' · '.join(parts))
+        history_html = _history_list_html(_run_history_entries(frame))
+        remaining = run_count - min(run_count, LISTING_HISTORY_LIMIT)
+        if remaining > 0:
+            history_html += (
+                f'<p class="listing-meta">+{remaining} earlier run'
+                f'{"s" if remaining != 1 else ""}</p>'
+            )
+    return _listing_card(
+        href=f'{path.name}/',
+        title=title,
+        meta_lines=meta_lines,
+        history_html=history_html,
+        extra_href=f'{STATUS_APP_REPO}/pull/{path.name}',
+        extra_label='View on GitHub →',
+    )
+
+
+def _release_listing_card(path: Path, data_root: Path) -> str:
+    runs_csv = data_root / 'releases' / path.name / MANIFEST_CSV_NAME
+    frame = _load_runs_frame(runs_csv)
+    title = f'Release {path.name}'
+    meta_lines: list[str] = []
+    history_html = ''
+    if frame is None or frame.empty:
+        meta_lines.append('No run metadata yet.')
+    else:
+        run_count = len(frame)
+        latest_date = _format_run_date(frame.iloc[0].get('date'))
+        parts = []
+        if run_count:
+            parts.append(f'{run_count} run{"s" if run_count != 1 else ""}')
+        if latest_date:
+            parts.append(f'last {latest_date}')
+        if parts:
+            meta_lines.append(' · '.join(parts))
+        history_html = _history_list_html(_run_history_entries(frame))
+        remaining = run_count - min(run_count, LISTING_HISTORY_LIMIT)
+        if remaining > 0:
+            history_html += (
+                f'<p class="listing-meta">+{remaining} earlier run'
+                f'{"s" if remaining != 1 else ""}</p>'
+            )
+    return _listing_card(
+        href=f'{path.name}/',
+        title=title,
+        meta_lines=meta_lines,
+        history_html=history_html,
+    )
+
+
+def _channel_directory_cards(
+    parent: Path,
+    data_root: Path,
+    *,
+    kind: str,
+) -> str:
+    if not parent.exists():
+        return '<p class="note">No published runs yet.</p>'
+    entries = [
+        path for path in parent.iterdir()
+        if path.is_dir() and (path / 'index.html').exists()
+    ]
+    entries.sort(key=lambda item: channel_listing_sort_key(item.name), reverse=True)
+    if not entries:
+        return '<p class="note">No published runs yet.</p>'
+    if kind == 'pr':
+        cards = ''.join(_pr_listing_card(path, data_root) for path in entries)
+    else:
+        cards = ''.join(_release_listing_card(path, data_root) for path in entries)
+    return f'<div class="grid">{cards}</div>'
+
+
+def _write_nightly_stub(nightly_dir: Path) -> None:
+    """Placeholder until the first nightly graphs publish lands in docs/desktop/nightly/."""
+    if (nightly_dir / 'index.html').exists():
+        return
+    nightly_dir.mkdir(parents=True, exist_ok=True)
+    body = (
+        '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
+        f'{_heading_with_badge("Windows Nightly Benchmark Dashboard", "nightly")}'
+        '<p class="subtitle">Nightly charts have not been published to this path yet.</p>'
+        '<p class="note">After the next successful nightly publish, this page is replaced '
+        'with the full rolling dashboard. Older charts may still appear under '
+        '<a href="../">docs/desktop/</a> until that cleanup.</p>'
+    )
+    (nightly_dir / 'index.html').write_text(
+        _layout('Nightly benchmarks', body), encoding='utf-8',
+    )
+    print(f'Generated nightly stub {nightly_dir / "index.html"}')
+
+
 def write_desktop_landing(desktop_dir: Path) -> None:
     """Write the channel picker and discovered PR/release-series links."""
     desktop_dir.mkdir(parents=True, exist_ok=True)
-
-    def directory_links(parent: Path, prefix: str = '') -> str:
-        if not parent.exists():
-            return '<p class="note">No published runs yet.</p>'
-        entries = [
-            path for path in parent.iterdir()
-            if path.is_dir() and (path / 'index.html').exists()
-        ]
-        entries.sort(key=lambda item: channel_listing_sort_key(item.name), reverse=True)
-        links = [
-            f'<li><a href="{prefix}{escape(path.name)}/">{escape(path.name)}</a></li>'
-            for path in entries
-        ]
-        return f'<ul>{"".join(links)}</ul>' if links else '<p class="note">No published runs yet.</p>'
+    data_root = _desktop_data_dir(desktop_dir)
 
     releases_dir = desktop_dir / 'releases'
     prs_dir = desktop_dir / 'pr'
+    nightly_dir = desktop_dir / 'nightly'
     releases_dir.mkdir(parents=True, exist_ok=True)
     prs_dir.mkdir(parents=True, exist_ok=True)
+    _write_nightly_stub(nightly_dir)
+
     (releases_dir / 'index.html').write_text(
         _layout(
             'Release benchmarks',
             '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
-            '<h1>Release benchmarks</h1>'
+            f'{_heading_with_badge("Release benchmarks", "release")}'
             '<p class="subtitle">RC-to-final performance history, isolated by release series.</p>'
-            f'{directory_links(releases_dir)}',
+            f'{_channel_directory_cards(releases_dir, data_root, kind="release")}',
         ),
         encoding='utf-8',
     )
@@ -1381,9 +1708,9 @@ def write_desktop_landing(desktop_dir: Path) -> None:
         _layout(
             'Pull request benchmarks',
             '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
-            '<h1>Pull request benchmarks</h1>'
+            f'{_heading_with_badge("Pull request benchmarks", "pr")}'
             '<p class="subtitle">Persistent benchmark history for explicitly tested pull requests.</p>'
-            f'{directory_links(prs_dir)}',
+            f'{_channel_directory_cards(prs_dir, data_root, kind="pr")}',
         ),
         encoding='utf-8',
     )
