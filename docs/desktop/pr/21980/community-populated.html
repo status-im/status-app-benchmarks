@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Windows benchmarks — Status App Benchmarks</title>
+  <title>Returning user (Status community member) — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -475,6 +475,26 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Nightly, pull request, and release results are stored and charted independently.</p><div class="grid"><a class="card" href="nightly/"><h2>Nightly</h2><p>Rolling master performance trend and promoted release baselines.</p></a><a class="card" href="releases/"><h2>Releases</h2><p>RC-to-final trend charts, with a separate page for every release.</p></a><a class="card" href="pr/"><h2>Pull requests</h2><p>On-demand PR benchmark runs and comparisons with release baselines.</p></a></div></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Returning user (Status community member)</h1><p class="subtitle">Returning user with Status community already joined.</p><section class="profile-details"><h2>User data profile</h2><p class="subtitle">Stored data: TBD</p><div class="profile-details-grid"><div class="profile-detail-section stat-wallet"><h3>Wallet</h3><div class="profile-detail-chips"><span class="stat-chip stat-wallet"><strong>1</strong> accounts</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> tokens with balance &gt; 0</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> NFTs</span><span class="stat-chip stat-wallet stat-zero"><strong>0</strong> transactions</span></div></div><div class="profile-detail-section stat-messenger"><h3>Messenger</h3><div class="profile-detail-chips"><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> 1-on-1 chats</span><span class="stat-chip stat-messenger stat-zero"><strong>0</strong> group chats</span></div></div><div class="profile-detail-section stat-communities"><h3>Communities</h3><div class="profile-detail-chips"><span class="stat-chip stat-communities"><strong>1</strong> joined</span><span class="stat-chip stat-communities stat-zero"><strong>0</strong> spectated</span></div></div></div></section><section class="area-group"><h2>Wallet</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Messenger</h2><div class="area-empty">Not tested for this user profile.</div></section><section class="area-group"><h2>Communities</h2><div class="scenario-list"><details class="scenario-charts"><summary><span class="scenario-summary-content"><span>Time to open Status community for the first time after login</span><span class="scenario-chart-count">3 charts</span></span></summary><div class="scenario-charts-body"><section class="chart" id="test_status_community_first_open_loading_time_member"><div class="chart-permalink"><a href="#test_status_community_first_open_loading_time_member" aria-label="Permalink to this chart">Permalink</a></div><iframe src="charts/community_first_open_loading_time_member.html" title="Time to open Status community for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart" id="test_status_community_first_open_cpu_member"><div class="chart-permalink"><a href="#test_status_community_first_open_cpu_member" aria-label="Permalink to this chart">Permalink</a></div><iframe src="charts/community_first_open_cpu_member.html" title="CPU usage while opening Status community for the first time after login" loading="lazy" scrolling="no"></iframe></section><section class="chart" id="test_status_community_first_open_ram_member"><div class="chart-permalink"><a href="#test_status_community_first_open_ram_member" aria-label="Permalink to this chart">Permalink</a></div><iframe src="charts/community_first_open_ram_member.html" title="RAM usage while opening Status community for the first time after login" loading="lazy" scrolling="no"></iframe></section></div></details><details class="scenario-charts"><summary><span class="scenario-summary-content"><span>Time to reopen Status community in the same session</span><span class="scenario-chart-count">3 charts</span></span></summary><div class="scenario-charts-body"><section class="chart" id="test_status_community_second_open_loading_time_member"><div class="chart-permalink"><a href="#test_status_community_second_open_loading_time_member" aria-label="Permalink to this chart">Permalink</a></div><iframe src="charts/community_second_open_loading_time_member.html" title="Time to reopen Status community in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart" id="test_status_community_second_open_cpu_member"><div class="chart-permalink"><a href="#test_status_community_second_open_cpu_member" aria-label="Permalink to this chart">Permalink</a></div><iframe src="charts/community_second_open_cpu_member.html" title="CPU usage while reopening Status community in the same session" loading="lazy" scrolling="no"></iframe></section><section class="chart" id="test_status_community_second_open_ram_member"><div class="chart-permalink"><a href="#test_status_community_second_open_ram_member" aria-label="Permalink to this chart">Permalink</a></div><iframe src="charts/community_second_open_ram_member.html" title="RAM usage while reopening Status community in the same session" loading="lazy" scrolling="no"></iframe></section></div></details></div></section><section class="area-group"><h2>Browser</h2><div class="area-empty">Not tested for this user profile.</div></section>
+<script>
+  (() => {
+    const revealChart = () => {
+      const anchor = window.location.hash.slice(1);
+      if (!anchor) return;
+      const target = document.getElementById(anchor);
+      if (!target) return;
+      const group = target.closest('details.scenario-charts');
+      if (group) group.open = true;
+      window.requestAnimationFrame(() => target.scrollIntoView({block: 'start'}));
+    };
+    window.addEventListener('hashchange', revealChart);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', revealChart);
+    } else {
+      revealChart();
+    }
+  })();
+</script>
+</main>
 </body>
 </html>

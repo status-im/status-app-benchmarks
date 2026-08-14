@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scenario summary — Status App Benchmarks</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #1f2328;
+      --muted: #656d76;
+      --border: #d0d7de;
+      --link: #0969da;
+      --header-bg: #24292f;
+      --header-text: #ffffff;
+      --accent-data: #57606a;
+      --accent-data-bg: #eaeef2;
+      --accent-wallet: #6e40c9;
+      --accent-wallet-bg: #f3f0ff;
+      --accent-messenger: #1a7f37;
+      --accent-messenger-bg: #dafbe1;
+      --accent-communities: #bc4c00;
+      --accent-communities-bg: #fff1e5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --border: #30363d;
+        --link: #58a6ff;
+        --header-bg: #010409;
+        --header-text: #e6edf3;
+        --accent-data: #8b949e;
+        --accent-data-bg: #21262d;
+        --accent-wallet: #a371f7;
+        --accent-wallet-bg: #2b1f47;
+        --accent-messenger: #3fb950;
+        --accent-messenger-bg: #12261e;
+        --accent-communities: #f0883e;
+        --accent-communities-bg: #2d1f14;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1.25rem 1.5rem;
+    }
+    header a { color: var(--header-text); text-decoration: none; }
+    header a:hover { text-decoration: underline; }
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: var(--link); }
+    .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .profile-fact-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+    }
+    .stat-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .stat-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 5.5rem;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.2rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .stat-chip strong { font-weight: 700; }
+    .stat-chip.stat-zero { opacity: 0.55; }
+    .stat-data {
+      align-self: flex-start;
+      background: var(--accent-data-bg);
+      color: var(--accent-data);
+      font-weight: 600;
+    }
+    .stat-wallet .stat-group-label { color: var(--accent-wallet); }
+    .stat-wallet .stat-chip {
+      background: var(--accent-wallet-bg);
+      color: var(--accent-wallet);
+    }
+    .stat-messenger .stat-group-label { color: var(--accent-messenger); }
+    .stat-messenger .stat-chip {
+      background: var(--accent-messenger-bg);
+      color: var(--accent-messenger);
+    }
+    .stat-communities .stat-group-label { color: var(--accent-communities); }
+    .stat-communities .stat-chip {
+      background: var(--accent-communities-bg);
+      color: var(--accent-communities);
+    }
+    .profile-details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    .profile-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .profile-detail-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+    }
+    .profile-detail-section h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .profile-detail-section.stat-wallet {
+      border-color: color-mix(in srgb, var(--accent-wallet) 35%, var(--border));
+    }
+    .profile-detail-section.stat-wallet h3 { color: var(--accent-wallet); }
+    .profile-detail-section.stat-messenger {
+      border-color: color-mix(in srgb, var(--accent-messenger) 35%, var(--border));
+    }
+    .profile-detail-section.stat-messenger h3 { color: var(--accent-messenger); }
+    .profile-detail-section.stat-communities {
+      border-color: color-mix(in srgb, var(--accent-communities) 35%, var(--border));
+    }
+    .profile-detail-section.stat-communities h3 { color: var(--accent-communities); }
+    .profile-detail-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .area-group { margin-top: 2rem; }
+    .area-group > h2 { margin-bottom: 0.75rem; }
+    .scenario-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    details.scenario-charts {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    details.scenario-charts[open] { border-color: var(--link); }
+    details.scenario-charts > summary {
+      cursor: pointer;
+      padding: 0.9rem 1.1rem;
+      font-weight: 600;
+    }
+    details.scenario-charts > summary:hover {
+      background: var(--accent-data-bg);
+    }
+    details.scenario-charts > summary:focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: -2px;
+    }
+    .scenario-summary-content {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      width: calc(100% - 1.5rem);
+      margin-left: 0.25rem;
+      vertical-align: middle;
+    }
+    .scenario-chart-count {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .scenario-charts-body {
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .scenario-charts-body section.chart:last-child { margin-bottom: 0; }
+    .area-empty {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      color: var(--muted);
+    }
+    .summary-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    .summary-link {
+      display: inline-block;
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .summary-link:hover { text-decoration: underline; }
+    .summary-badge {
+      display: inline-block;
+      margin-left: 0.35rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #cf222e;
+      color: #fff;
+    }
+    .summary-profile { margin: 2rem 0; }
+    .summary-profile h2 { margin-bottom: 0.25rem; }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .summary-table th,
+    .summary-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .summary-table th { color: var(--muted); font-size: 0.78rem; }
+    .summary-table .load-time-column {
+      min-width: 145px;
+      white-space: nowrap;
+    }
+    .summary-table .reference-column {
+      min-width: 105px;
+      white-space: nowrap;
+    }
+    .summary-table .measured-column {
+      min-width: 6.5rem;
+    }
+    .measured-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      line-height: 1.2;
+    }
+    .measured-build {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+    }
+    .measured-date {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .summary-table tr:last-child td { border-bottom: 0; }
+    .load-time-cell {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .metric-value { white-space: nowrap; font-weight: 600; }
+    .status {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      margin: 0 0.2rem 0.2rem 0;
+      white-space: nowrap;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-fast {
+      color: #1a7f37;
+      border-color: #1a7f37;
+      background: #dafbe1;
+    }
+    .status-ok {
+      color: var(--link);
+      border-color: var(--link);
+      background: #ddf4ff;
+    }
+    .status-ok-warn {
+      color: #9a6700;
+      border-color: #9a6700;
+      background: #fff8c5;
+    }
+    .status-slow {
+      color: #cf222e;
+      border-color: #cf222e;
+      background: #ffebe9;
+    }
+    .status-backlog {
+      color: var(--accent-wallet);
+      border-color: var(--accent-wallet);
+      background: var(--accent-wallet-bg);
+    }
+    .status-neutral,
+    .status-no-data,
+    .status-not-tested {
+      color: var(--muted);
+      background: var(--accent-data-bg);
+    }
+    @media (prefers-color-scheme: dark) {
+      .status-fast { background: var(--accent-messenger-bg); }
+      .status-ok { background: #0c2d6b; color: #58a6ff; border-color: #58a6ff; }
+      .status-ok-warn { background: #3d2e00; color: #d4a72c; border-color: #d4a72c; }
+      .status-slow { background: #3d1418; }
+      .status-backlog { background: var(--accent-wallet-bg); }
+    }
+    .speed-legend {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      margin-top: 0.2rem;
+    }
+    .speed-fast { color: #1a7f37; font-weight: 600; }
+    .speed-ok { color: var(--link); font-weight: 600; }
+    .speed-ok-warn { color: #9a6700; font-weight: 600; }
+    .speed-slow { color: #cf222e; font-weight: 600; }
+    .regression-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+    .regression-legend-item {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .section-heading .summary-badge { margin-left: 0; }
+    .reference-value { font-weight: 600; white-space: nowrap; }
+    .reference-parity,
+    .reference-improvement { color: #1a7f37; }
+    .reference-regression { color: #cf222e; }
+    .reference-neutral { color: var(--muted); }
+    section.chart {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem 1.25rem;
+      margin-bottom: 1.5rem;
+      scroll-margin-top: 1rem;
+    }
+    .chart-permalink {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .chart-permalink a {
+      color: var(--link);
+      text-decoration: none;
+    }
+    .chart-permalink a:hover { text-decoration: underline; }
+    section.chart iframe {
+      width: 100%;
+      height: 600px;
+      border: 0;
+      border-radius: 4px;
+      background: #fff;
+      display: block;
+    }
+    .chart-footnote {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 0;
+    }
+    section.chart-placeholder {
+      border-style: dashed;
+      background: transparent;
+    }
+    .placeholder-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+      font-style: italic;
+    }
+    .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
+    nav.back { margin-bottom: 1rem; }
+    nav.back a { color: var(--link); text-decoration: none; }
+    nav.back a:hover { text-decoration: underline; }
+    section.machine-info {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    section.machine-info h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+    section.machine-info dl {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem 1.5rem;
+      margin: 0;
+    }
+    section.machine-info dt {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    section.machine-info dd {
+      margin: 0.1rem 0 0;
+      font-weight: 500;
+    }
+    @media (max-width: 700px) {
+      main { padding: 1rem; }
+      .summary-table,
+      .summary-table tbody,
+      .summary-table tr,
+      .summary-table td { display: block; width: 100%; }
+      .summary-table thead { display: none; }
+      .summary-table tr { padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+      .summary-table tr:last-child { border-bottom: 0; }
+      .summary-table td { border: 0; padding: 0.25rem 0.75rem; }
+      .summary-table td::before {
+        content: attr(data-label) ": ";
+        color: var(--muted);
+        font-weight: 600;
+      }
+    }
+    </style>
+</head>
+<body>
+  <header><a href="index.html">Status App Benchmarks</a></header>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><h1>Scenario summary</h1><p class="subtitle">Latest result for every tested scenario. Speed categories:<br><span class="speed-legend"><span class="speed-fast">&lt;0.5s Fast</span><span class="speed-ok">0.5–0.9s Ok</span><span class="speed-ok-warn">0.9–1.0s Ok near slow</span><span class="speed-slow">&gt;1.0s Slow</span></span><br>Reference parity (where shown) means the latest value is within ±15% of 2.38.0. Wallet tab scenarios omit the 2.38.0 comparison because the e2e methodology changed in Jul 2026.</p><section class="summary-profile"><h2><a href="wallet-fresh.html">New user profile</a></h2><p class="subtitle">Newly created user profile (no-preseeded user data)</p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_collectibles_tab_first_open_time_fresh">Time to open the Collectibles tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">15.917s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">37.4%</td><td data-label="RAM">839.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_swap_first_open_time_fresh">Time to open the Swap modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.053s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">28.7%</td><td data-label="RAM">667.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_send_first_open_time_fresh">Time to open the Send modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.033s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">50.7%</td><td data-label="RAM">721.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_repeat_open_time_fresh">Time to reopen Wallet in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.508s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">36.3%</td><td data-label="RAM">772.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_add_account_first_open_time_fresh">Time to open the Add account modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.497s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">16.3%</td><td data-label="RAM">732.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_receive_first_open_time_fresh">Time to open the Receive modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.418s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">32.5%</td><td data-label="RAM">662.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_add_account_time_fresh">Time to reopen the Add account modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.404s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">13.6%</td><td data-label="RAM">730.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_first_open_time_fresh">Time to open Wallet for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.378s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">35.6%</td><td data-label="RAM">663.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_assets_tab_time_fresh">Time to reopen the Assets tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.366s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">39.3%</td><td data-label="RAM">811.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_swap_time_fresh">Time to reopen the Swap modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.339s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">28.7%</td><td data-label="RAM">735.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_send_time_fresh">Time to reopen the Send modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.320s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">21.7%</td><td data-label="RAM">745.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_receive_time_fresh">Time to reopen the Receive modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.255s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">37.7%</td><td data-label="RAM">674.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_activity_tab_time_fresh">Time to reopen the History tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.227s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">30.8%</td><td data-label="RAM">659.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_activity_tab_first_open_time_fresh">Time to open the History tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.218s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">22.7%</td><td data-label="RAM">658.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_assets_tab_first_open_time_fresh">Time to open the Assets tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.201s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">36.7%</td><td data-label="RAM">748.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_collectibles_tab_time_fresh">Time to reopen the Collectibles tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.197s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">38.1%</td><td data-label="RAM">772.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_account_first_open_time_fresh">Time to open a Wallet account for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.174s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">59.4%</td><td data-label="RAM">756.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Browser</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr></tbody></table></section><section class="summary-profile"><h2><a href="wallet-wallet-load.html">Returning user (semi-heavy wallet account)</a></h2><p class="subtitle">Returning user with semi-heavy wallet account (~34 MB user data).</p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_collectibles_tab_first_open_time_wallet_load">Time to open the Collectibles tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">44.531s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">39.2%</td><td data-label="RAM">764.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_assets_tab_first_open_time_wallet_load">Time to open the Assets tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.147s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">70.4%</td><td data-label="RAM">769.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_send_first_open_time_wallet_load">Time to open the Send modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.304s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">44.2%</td><td data-label="RAM">742.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_activity_tab_first_open_time_wallet_load">Time to open the History tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.224s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">56.2%</td><td data-label="RAM">759.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_swap_first_open_time_wallet_load">Time to open the Swap modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.031s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">62.5%</td><td data-label="RAM">756.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_assets_tab_time_wallet_load">Time to reopen the Assets tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.826s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">45.7%</td><td data-label="RAM">771.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_activity_tab_time_wallet_load">Time to reopen the History tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.632s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">26.8%</td><td data-label="RAM">794.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_repeat_open_time_wallet_load">Time to reopen Wallet in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.613s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">46.1%</td><td data-label="RAM">904.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_send_time_wallet_load">Time to reopen the Send modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.607s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">33.1%</td><td data-label="RAM">755.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_add_account_first_open_time_wallet_load">Time to open the Add account modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.566s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">55.4%</td><td data-label="RAM">797.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_swap_time_wallet_load">Time to reopen the Swap modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.522s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">26.7%</td><td data-label="RAM">787.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_receive_first_open_time_wallet_load">Time to open the Receive modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.519s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">57.0%</td><td data-label="RAM">733.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_account_first_open_time_wallet_load">Time to open a Wallet account for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.495s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">28.8%</td><td data-label="RAM">803.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_add_account_time_wallet_load">Time to reopen the Add account modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.476s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">54.1%</td><td data-label="RAM">777.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_first_open_time_wallet_load">Time to open Wallet for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.415s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">66.5%</td><td data-label="RAM">741.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_receive_time_wallet_load">Time to reopen the Receive modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.324s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">43.0%</td><td data-label="RAM">725.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_collectibles_tab_time_wallet_load">Time to reopen the Collectibles tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.196s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">38.2%</td><td data-label="RAM">773.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Browser</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr></tbody></table></section><section class="summary-profile"><h2><a href="wallet-wallet-load-alex.html">Returning user (heavy account from Alex)</a></h2><p class="subtitle">Returning user with heavy account from Alex (~35 MB user data).</p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_first_open_time_wallet_load_alex">Time to open the Collectibles tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">65.337s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">40.1%</td><td data-label="RAM">823.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_time_wallet_load_alex">Time to reopen the Collectibles tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.049s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">59.6%</td><td data-label="RAM">1090.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_send_first_open_time_wallet_load_alex">Time to open the Send modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.612s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">56.2%</td><td data-label="RAM">801.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_assets_tab_first_open_time_wallet_load_alex">Time to open the Assets tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.505s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">50.1%</td><td data-label="RAM">839.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_assets_tab_time_wallet_load_alex">Time to reopen the Assets tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.847s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">55.7%</td><td data-label="RAM">808.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_activity_tab_time_wallet_load_alex">Time to reopen the History tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.834s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">60.2%</td><td data-label="RAM">829.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_activity_tab_first_open_time_wallet_load_alex">Time to open the History tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.725s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">51.6%</td><td data-label="RAM">791.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_repeat_open_time_wallet_load_alex">Time to reopen Wallet in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.638s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">50.8%</td><td data-label="RAM">911.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_add_account_first_open_time_wallet_load_alex">Time to open the Add account modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.600s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">48.6%</td><td data-label="RAM">778.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_swap_time_wallet_load_alex">Time to reopen the Swap modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.591s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">49.4%</td><td data-label="RAM">822.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_swap_first_open_time_wallet_load_alex">Time to open the Swap modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.559s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">34.3%</td><td data-label="RAM">767.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_add_account_time_wallet_load_alex">Time to reopen the Add account modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.510s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">64.8%</td><td data-label="RAM">801.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_receive_first_open_time_wallet_load_alex">Time to open the Receive modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.503s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">34.3%</td><td data-label="RAM">768.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_first_open_time_wallet_load_alex">Time to open Wallet for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.500s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">51.8%</td><td data-label="RAM">810.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_send_time_wallet_load_alex">Time to reopen the Send modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.453s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">47.5%</td><td data-label="RAM">797.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_account_first_open_time_wallet_load_alex">Time to open a Wallet account for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.413s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">33.7%</td><td data-label="RAM">775.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_receive_time_wallet_load_alex">Time to reopen the Receive modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.346s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">60.7%</td><td data-label="RAM">763.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Browser</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr></tbody></table></section><section class="summary-profile"><h2><a href="community-populated.html">Returning user (Status community member)</a></h2><p class="subtitle">Returning user with Status community already joined.</p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="community-populated.html#test_status_community_first_open_loading_time_member">Time to open Status community for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.749s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">24.1%</td><td data-label="RAM">759.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="community-populated.html#test_status_community_second_open_loading_time_member">Time to reopen Status community in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.160s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. No reference-build result is available.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td data-label="CPU">28.2%</td><td data-label="RAM">892.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">d99550</span><span class="measured-date">2026-08-14</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr><tr><td data-label="Area">Browser</td><td data-label="Scenario">Not tested</td><td data-label="Load time / Speed"><span class="status status-not-tested" title="">Not tested</span></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">—</td><td data-label="RAM">—</td><td data-label="Measured">—</td></tr></tbody></table></section></main>
+</body>
+</html>
