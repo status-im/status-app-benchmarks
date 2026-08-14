@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Windows benchmarks — Status App Benchmarks</title>
+  <title>Nightly benchmarks — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -149,26 +149,6 @@
       text-decoration: none;
     }
     .listing-card .listing-extra:hover { text-decoration: underline; }
-    .listing-history {
-      list-style: none;
-      margin: 0.65rem 0 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-    .listing-history li {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem 0.75rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-    .listing-history .commit {
-      color: var(--text);
-      font-weight: 600;
-    }
     .profile-fact-groups {
       display: flex;
       flex-direction: column;
@@ -564,6 +544,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Nightly, pull request, and release results are stored and charted independently.</p><div class="grid"><a class="card" href="nightly/"><h2>Nightly</h2><p>Rolling master performance trend and promoted release baselines.</p></a><a class="card" href="releases/"><h2>Releases</h2><p>RC-to-final trend charts, with a separate page for every release.</p></a><a class="card" href="pr/"><h2>Pull requests</h2><p>On-demand PR benchmark runs and comparisons with release baselines.</p></a></div></main>
+  <main><nav class="back"><a href="../">← All Windows benchmarks</a></nav><div class="page-heading"><span class="channel-badge channel-badge-nightly">Nightly</span><h1>Windows Nightly Benchmark Dashboard</h1></div><p class="subtitle">Nightly charts have not been published to this path yet.</p><p class="note">After the next successful nightly publish, this page is replaced with the full rolling dashboard. Older charts may still appear under <a href="../">docs/desktop/</a> until that cleanup.</p></main>
 </body>
 </html>

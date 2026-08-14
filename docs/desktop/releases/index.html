@@ -62,6 +62,51 @@
     main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
     h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
     .subtitle { color: var(--muted); margin: 0; }
+    .page-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 0.85rem;
+      margin: 0 0 0.25rem;
+    }
+    .page-heading h1 { margin: 0; }
+    .channel-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.22rem 0.6rem;
+      border-radius: 999px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .channel-badge-nightly {
+      background: #ddf4ff;
+      color: #0969da;
+    }
+    .channel-badge-pr {
+      background: #dafbe1;
+      color: #1a7f37;
+    }
+    .channel-badge-release {
+      background: #fff1e5;
+      color: #bc4c00;
+    }
+    @media (prefers-color-scheme: dark) {
+      .channel-badge-nightly {
+        background: #12263a;
+        color: #58a6ff;
+      }
+      .channel-badge-pr {
+        background: #12261e;
+        color: #3fb950;
+      }
+      .channel-badge-release {
+        background: #2d1f14;
+        color: #f0883e;
+      }
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -80,6 +125,50 @@
     .card:hover { border-color: var(--link); }
     .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .listing-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .listing-card:hover { border-color: var(--link); }
+    .listing-card .listing-main {
+      text-decoration: none;
+      color: inherit;
+      flex: 1;
+    }
+    .listing-card .listing-main h2 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .listing-card .listing-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .listing-card .listing-meta + .listing-meta { margin-top: 0.2rem; }
+    .listing-card .listing-extra {
+      font-size: 0.85rem;
+      color: var(--link);
+      text-decoration: none;
+    }
+    .listing-card .listing-extra:hover { text-decoration: underline; }
+    .listing-history {
+      list-style: none;
+      margin: 0.65rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .listing-history li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .listing-history .commit {
+      color: var(--text);
+      font-weight: 600;
+    }
     .profile-fact-groups {
       display: flex;
       flex-direction: column;
@@ -475,6 +564,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="../">← All Windows benchmarks</a></nav><h1>Release benchmarks</h1><p class="subtitle">RC-to-final performance history, isolated by release series.</p><p class="note">No published runs yet.</p></main>
+  <main><nav class="back"><a href="../">← All Windows benchmarks</a></nav><div class="page-heading"><span class="channel-badge channel-badge-release">Release</span><h1>Release benchmarks</h1></div><p class="subtitle">RC-to-final performance history, isolated by release series.</p><p class="note">No published runs yet.</p></main>
 </body>
 </html>
