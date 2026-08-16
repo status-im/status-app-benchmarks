@@ -555,3 +555,63 @@ unit = "mAh"
 x_axis = "build"
 description = "Moto G55 · pinned settled account · Android-modeled per-app battery use over a 10-min at-rest window · lower is better"
 footnote = "MODELED estimate from Android batterystats — a rough attribution, not measured energy; read as a per-build trend only · screen share dominates and is constant for this regime · provisional until a night-to-night spread exists"
+
+# --- #21753 low-end resource lane (Redmi A5, weekly) ---
+# Same series as the Moto lane, measured by resource-redmi.sh on the Redmi A5.
+# Regime: at rest on the post-login landing screen, but the account is the fresh
+# profile left by the Saturday launch-latency run (recreated weekly) — NOT a
+# pinned settled account. Charted into docs/android/lowend/ beside the other
+# low-end trends.
+
+[[tests]]
+test_id = "android_lowend_resource_ram"
+display_name = "Android (Redmi A5) — RAM at rest, by process (PSS)"
+graph_filename = "lowend/android_lowend_resource_ram.png"
+pattern = "test_android_resource_pss"
+series = "pss_mb"
+device = "25028RN03Y"
+ylabel = "MB"
+unit = "MB"
+x_axis = "build"
+description = "Redmi A5 · Android 15 Go edition · committed memory per process (incl. swapped pages) · lower is better"
+footnote = "At rest on the post-login landing screen · weekly-fresh account (profile recreated by the Saturday launch-latency run — not the Moto lane's settled account) · committed PSS via dumpsys meminfo, median of 3 reads · provisional until a week-to-week spread exists"
+
+[[tests]]
+test_id = "android_lowend_resource_cpu"
+display_name = "Android (Redmi A5) — CPU at rest, by process"
+graph_filename = "lowend/android_lowend_resource_cpu.png"
+pattern = "test_android_resource_cpu"
+series = "cpu_pct"
+device = "25028RN03Y"
+metric = "mean"
+ylabel = "CPU %"
+unit = "%"
+x_axis = "build"
+description = "Redmi A5 · Android 15 Go edition · mean CPU over a 5-min idle foreground window · lower is better"
+footnote = "At rest on the post-login landing screen · weekly-fresh account · /proc tick deltas, nominal 3 s interval (CPU deltas use measured dt) · device CLK_TCK · window mean · provisional until a week-to-week spread exists"
+
+[[tests]]
+test_id = "android_lowend_resource_net"
+display_name = "Android (Redmi A5) — network at rest (app, per 10-min window)"
+graph_filename = "lowend/android_lowend_resource_net.png"
+pattern = "test_android_resource_net"
+series = "net_mb"
+device = "25028RN03Y"
+ylabel = "MB per window"
+unit = "MB"
+x_axis = "build"
+description = "Redmi A5 · Android 15 Go edition · per-app Wi-Fi bytes over a 10-min at-rest window · lower is better"
+footnote = "Measured in a separate window right after the CPU/RAM measure (device reports itself on battery so per-app counters accrue) · weekly-fresh account · treat single-week moves as noise · provisional until a week-to-week spread exists"
+
+[[tests]]
+test_id = "android_lowend_resource_power"
+display_name = "Android (Redmi A5) — modeled battery use at rest (app, per 10-min window)"
+graph_filename = "lowend/android_lowend_resource_power.png"
+pattern = "test_android_resource_power"
+series = "power_mah"
+device = "25028RN03Y"
+ylabel = "mAh per window"
+unit = "mAh"
+x_axis = "build"
+description = "Redmi A5 · Android 15 Go edition · Android-modeled per-app battery use over a 10-min at-rest window · lower is better"
+footnote = "MODELED estimate from Android batterystats — a rough attribution, not measured energy; read as a per-build trend only · weekly-fresh account · screen share dominates and is constant for this regime · provisional until a week-to-week spread exists"
