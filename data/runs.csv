@@ -1,3 +1,4 @@
 run_id,channel,commit_hash,date,build_label,source_ref,build_source,pr_number,release_series,release_version
 nightly-0f49c7a9da-362,nightly,0f49c7a9da,2026-08-15T08:40:54,2026-08-15T08:40:54|0f49c7a9da,master,status-app/systems/windows/x86_64/package,,,
 nightly-27614460fb-363,nightly,27614460fb,2026-08-16T05:28:42,2026-08-16T05:28:42|27614460fb,master,status-app/systems/windows/x86_64/package,,,
+nightly-27614460fb-364,nightly,27614460fb,2026-08-17T05:27:56,2026-08-17T05:27:56|27614460fb,master,status-app/systems/windows/x86_64/package,,,
