@@ -1,0 +1,2 @@
+run_id,channel,commit_hash,date,build_label,source_ref,build_source,pr_number,release_series,release_version
+pr-21890-6d95be-13,pr,6d95be,2026-08-17T10:47:31,PR 21890,perf/loading-skeletons,https://status-im-desktop-prs.ams3.digitaloceanspaces.com/StatusIm-Desktop-260817-094909-6d95be-pr21890-x86_64.7z,21890,,
