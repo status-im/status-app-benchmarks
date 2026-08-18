@@ -59,3 +59,4 @@ run_id,commit_hash,date,build_label,hostname,windows_version,os_build,cpu,ram_gb
 nightly-0f49c7a9da-362,0f49c7a9da,2026-08-15T08:40:54,2026-08-15T08:40:54|0f49c7a9da,WINDOWS-NODE-01,Windows Server 2022 Standard 21H2,20348.1487,AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics,63
 nightly-27614460fb-363,27614460fb,2026-08-16T05:28:42,2026-08-16T05:28:42|27614460fb,WINDOWS-NODE-01,Windows Server 2022 Standard 21H2,20348.1487,AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics,63
 nightly-27614460fb-364,27614460fb,2026-08-17T05:27:56,2026-08-17T05:27:56|27614460fb,WINDOWS-NODE-01,Windows Server 2022 Standard 21H2,20348.1487,AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics,63
+nightly-e348b4caa8-365,e348b4caa8,2026-08-18T05:30:17,2026-08-18T05:30:17|e348b4caa8,WINDOWS-NODE-01,Windows Server 2022 Standard 21H2,20348.1487,AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics,63
