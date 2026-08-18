@@ -32,8 +32,15 @@ _configure_stdio()
 from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
 from chart_builder import cleanup_stale_charts, render_chart
-from environment_parser import load_run_environment, record_run_environment
-from regression_report import collect_scenario_summaries, collect_violations, write_regression_report
+from environment_parser import record_run_environment
+from regression_report import (
+    collect_scenario_summaries,
+    collect_violations,
+    filter_metrics_to_stamp,
+    resolve_nightly_baseline,
+    with_nightly_comparisons,
+    write_regression_report,
+)
 from raw_result_parser import parse_raw_result_json
 from run_context import (
     RunContext,
@@ -41,9 +48,19 @@ from run_context import (
     channel_data_dir,
     ensure_new_run,
     load_baseline_registry,
+    load_nightly_baseline,
+    load_run_manifest,
     promote_release_baseline,
+    save_nightly_baseline,
 )
-from site_generator import write_desktop_landing, write_docs_root_index, write_site
+from site_generator import (
+    NightlyBaseline,
+    nightly_comparison_header,
+    resolve_pr_title,
+    write_desktop_landing,
+    write_docs_root_index,
+    write_site,
+)
 
 CONFIG: BenchmarkConfig
 
@@ -313,12 +330,21 @@ def _merge_baseline_metrics(
     return merged
 
 
+def _nightly_data_dir(data_dir: Path, channel: str) -> Path:
+    if channel == 'nightly':
+        return data_dir
+    if channel == 'pr':
+        return data_dir.parent.parent.parent
+    return data_dir
+
+
 def generate_graphs(
     data_dir: Path,
     output_dir: Path,
     *,
     channel: str = 'nightly',
     baseline_dir: Optional[Path] = None,
+    pr_title: str = '',
 ):
     global CONFIG
     registry = load_baseline_registry(baseline_dir) if baseline_dir else []
@@ -341,7 +367,7 @@ def generate_graphs(
 
     print(f'\nLoading data from {data_dir}...')
     metrics = _merge_baseline_metrics(load_metrics(data_dir), baseline_dir, registry)
-    run_environment = load_run_environment(data_dir)
+    runs = load_run_manifest(data_dir)
 
     charts_by_test_id: Dict[str, ChartEntry] = {}
 
@@ -362,6 +388,33 @@ def generate_graphs(
 
     print('\nGenerating GitHub Pages site...')
     summaries = collect_scenario_summaries(metrics, CONFIG, window_days=window_days)
+    nightly = NightlyBaseline()
+    resolved_pr_title = ''
+    if channel == 'pr':
+        nightly_dir = _nightly_data_dir(data_dir, channel)
+        if nightly_dir.exists():
+            nightly_metrics = load_metrics(nightly_dir)
+            stamp = resolve_nightly_baseline(
+                cached=load_nightly_baseline(data_dir),
+                nightly_runs=load_run_manifest(nightly_dir),
+                pr_runs=runs,
+                nightly_metrics=nightly_metrics,
+                pr_metrics=metrics,
+            )
+            if stamp:
+                save_nightly_baseline(data_dir, stamp)
+                nightly_metrics = filter_metrics_to_stamp(nightly_metrics, stamp)
+                summaries = with_nightly_comparisons(
+                    summaries, nightly_metrics, CONFIG, window_days=None,
+                )
+                nightly = NightlyBaseline.for_pr(*nightly_comparison_header(
+                    pd.DataFrame([stamp]),
+                    nightly_metrics,
+                ))
+        pr_number = output_dir.name if output_dir.name.isdigit() else ''
+        resolved_pr_title = resolve_pr_title(
+            pr_number, data_dir=data_dir, pr_title=pr_title,
+        )
     performance = metrics.get('performance')
     violations = []
     if performance is not None and not performance.empty:
@@ -370,11 +423,15 @@ def generate_graphs(
         output_dir, CONFIG.pages, charts_by_test_id,
         chart_tests=CONFIG.charts,
         summaries=summaries,
-        run_environment=run_environment,
+        runs=runs,
         violations=violations,
         flag_tickets=CONFIG.flag_tickets,
         channel=channel,
         release_series=output_dir.name if channel == 'release' else '',
+        nightly_baseline_label=nightly.label,
+        nightly_baseline_title=nightly.title,
+        nightly_baseline_name=nightly.name,
+        pr_title=resolved_pr_title,
     )
     if channel in {'pr', 'release'}:
         desktop_dir = output_dir.parent.parent
@@ -424,6 +481,7 @@ def cmd_graphs(args):
     generate_graphs(
         args.data_dir, args.output_dir,
         channel=args.channel, baseline_dir=args.baseline_dir,
+        pr_title=args.pr_title,
     )
 
 
@@ -492,6 +550,7 @@ def main():
     graphs_parser.add_argument('--output-dir', type=Path, default=Path('docs/desktop/nightly'))
     graphs_parser.add_argument('--channel', choices=('nightly', 'pr', 'release'), default='nightly')
     graphs_parser.add_argument('--baseline-dir', type=Path)
+    graphs_parser.add_argument('--pr-title', default='', help='PR title to show on the dashboard heading')
     graphs_parser.set_defaults(func=cmd_graphs)
 
     report_parser = subparsers.add_parser('report', help='Write regression report from CSV data')
