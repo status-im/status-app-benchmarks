@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -17,6 +17,7 @@ from benchmark_config import (
     effective_reference_build,
 )
 from chart_builder import series_for_chart, variant_name
+from run_context import latest_run_row, run_stamp, utc_dates
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,7 @@ class ScenarioSummary:
     speed_status: str
     vs_reference: str
     detail: str
+    vs_nightly: str = '—'
 
 
 def _check_regression(
@@ -159,6 +161,144 @@ def collect_violations(
     return violations
 
 
+def comparison_label(
+    value: float,
+    reference_value: float,
+    regression_pct: float,
+) -> str:
+    """Return 'parity' when the delta is within ±regression_pct, else +0.123s / -0.123s."""
+    delta = value - reference_value
+    if abs(delta) <= abs(reference_value) * regression_pct:
+        return 'parity'
+    return f'{delta:+.3f}s'
+
+
+def latest_trend_value(
+    metrics: dict[str, pd.DataFrame],
+    chart: ChartTest,
+    *,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
+) -> Optional[float]:
+    frame = metrics.get(chart.metrics_kind)
+    if frame is None or frame.empty:
+        return None
+    result = series_for_chart(frame, chart, window_days=window_days)
+    if result is None:
+        return None
+    series, _n_baselines = result
+    trend = _trend_only(series, chart)
+    if trend.empty:
+        return None
+    return float(trend.iloc[-1][chart.value_column])
+
+
+def with_nightly_comparisons(
+    summaries: dict[str, ScenarioSummary],
+    nightly_metrics: dict[str, pd.DataFrame],
+    config: BenchmarkConfig,
+    *,
+    window_days: Optional[int] = CHART_WINDOW_DAYS,
+) -> dict[str, ScenarioSummary]:
+    """Attach vs-latest-nightly deltas. Does not change vs_reference (release)."""
+    nightly_values = {
+        chart.test_id: latest_trend_value(
+            nightly_metrics, chart, window_days=window_days,
+        )
+        for chart in config.charts
+        if chart.metrics_kind == 'performance'
+    }
+    pct = config.defaults.regression_pct
+    updated: dict[str, ScenarioSummary] = {}
+    for test_id, summary in summaries.items():
+        nightly_value = nightly_values.get(test_id)
+        if summary.value is None or nightly_value is None:
+            updated[test_id] = replace(summary, vs_nightly='—')
+            continue
+        updated[test_id] = replace(
+            summary,
+            vs_nightly=comparison_label(summary.value, nightly_value, pct),
+        )
+    return updated
+
+
+def _stamp_on_or_before(frame: pd.DataFrame, cutoff: pd.Timestamp) -> dict[str, str]:
+    return run_stamp(latest_run_row(frame, until=cutoff))
+
+
+def resolve_nightly_baseline(
+    *,
+    cached: dict[str, str] | None,
+    nightly_runs: pd.DataFrame,
+    pr_runs: pd.DataFrame,
+    nightly_metrics: dict[str, pd.DataFrame] | None = None,
+    pr_metrics: dict[str, pd.DataFrame] | None = None,
+) -> dict[str, str]:
+    """Pick the newest nightly at or before the latest PR run, and reuse a cache
+    while that PR run stays the newest.
+    """
+    pr_row = latest_run_row(pr_runs)
+    if pr_row is None and pr_metrics:
+        pr_row = latest_run_row(pr_metrics.get('performance'))
+    pr_run_id = str(pr_row.get('run_id') or '').strip() if pr_row is not None else ''
+    cached = cached or {}
+    if (
+        pr_run_id
+        and cached.get('pr_run_id') == pr_run_id
+        and (cached.get('commit_hash') or cached.get('date'))
+    ):
+        return cached
+    cutoff = (
+        pd.to_datetime(pr_row.get('date'), utc=True, errors='coerce')
+        if pr_row is not None else pd.NaT
+    )
+    if pd.isna(cutoff):
+        return {}
+    stamp = _stamp_on_or_before(nightly_runs, cutoff)
+    if not stamp.get('commit_hash') and nightly_metrics:
+        performance = nightly_metrics.get('performance')
+        stamp = _stamp_on_or_before(
+            performance if performance is not None else pd.DataFrame(), cutoff,
+        )
+    if stamp:
+        stamp['pr_run_id'] = pr_run_id
+    return stamp
+
+
+def _commits_match(left: str, right: str) -> bool:
+    if not left or not right:
+        return False
+    size = min(len(left), len(right))
+    return size >= 6 and left[:size] == right[:size]
+
+
+def filter_metrics_to_stamp(
+    metrics: dict[str, pd.DataFrame],
+    stamp: dict[str, str],
+) -> dict[str, pd.DataFrame]:
+    run_id = (stamp.get('run_id') or '').strip()
+    commit = (stamp.get('commit_hash') or '').strip()
+    date = (stamp.get('date') or '').strip()
+    target_date = pd.to_datetime(date, utc=True, errors='coerce') if date else pd.NaT
+    filtered: dict[str, pd.DataFrame] = {}
+    for kind, frame in metrics.items():
+        if frame is None or frame.empty:
+            continue
+        subset = frame
+        if run_id and 'run_id' in subset.columns:
+            by_id = subset[subset['run_id'].astype(str) == run_id]
+            if not by_id.empty:
+                filtered[kind] = by_id
+                continue
+        mask = pd.Series(True, index=subset.index)
+        if commit and 'commit_hash' in subset.columns:
+            hashes = subset['commit_hash'].astype(str)
+            mask &= hashes.map(lambda value: _commits_match(str(value), commit))
+        if not pd.isna(target_date) and 'date' in subset.columns:
+            mask &= utc_dates(subset) == target_date
+        filtered[kind] = subset[mask]
+    return filtered
+
+
 def collect_scenario_summaries(
     metrics: dict[str, pd.DataFrame],
     config: BenchmarkConfig,
@@ -232,10 +372,9 @@ def collect_scenario_summaries(
                 else:
                     reference_value = float(reference_rows[chart.value_column].iloc[0])
                     delta = value - reference_value
-                    if abs(delta) <= reference_value * defaults.regression_pct:
-                        vs_reference = 'parity'
-                    else:
-                        vs_reference = f'{delta:+.3f}s'
+                    vs_reference = comparison_label(
+                        value, reference_value, defaults.regression_pct,
+                    )
                     reference_detail = (
                         f'Latest {value:.3f}s vs reference {reference_value:.3f}s '
                         f'({delta:+.3f}s); parity is within ±{defaults.regression_pct:.0%}.'

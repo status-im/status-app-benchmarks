@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from html import escape
 from pathlib import Path
 from typing import Optional
@@ -15,8 +16,9 @@ from benchmark_config import (
     ChartTest,
     FlagTicket,
 )
-from environment_parser import RUN_ENVIRONMENT_FIELDS
+from environment_parser import RUN_ENVIRONMENT_FIELDS, load_run_environment
 from regression_report import ScenarioSummary, Violation
+from run_context import latest_run_row, load_run_manifest, utc_dates
 
 CHARTS_DIR = 'charts'
 SITE_TITLE = 'Status App Benchmarks'
@@ -42,7 +44,7 @@ PRODUCT_AREAS = (
 STATUS_LABELS = {
     'fast': 'Fast',
     'ok': 'Ok',
-    'ok-warn': 'Ok',
+    'ok-warn': 'Near ok',
     'slow': 'Slow',
     'neutral': 'No time threshold',
     'no-data': 'No data',
@@ -58,6 +60,42 @@ FLAG_BADGE_BY_SECTION = {
     'Slow builds': ('ok-warn', '⏱ Slow'),
     'Backlog candidates': ('backlog', 'Backlog'),
 }
+
+
+@dataclass(frozen=True)
+class NightlyBaseline:
+    label: str = ''
+    title: str = ''
+    name: str = ''
+
+    @classmethod
+    def for_pr(
+        cls,
+        label: str = '',
+        title: str = '',
+        name: str = '',
+    ) -> 'NightlyBaseline':
+        return cls(
+            label=label or 'vs nightly',
+            title=title or (
+                'Difference from the latest nightly at the time this PR was measured'
+            ),
+            name=name or 'latest nightly',
+        )
+
+
+@dataclass(frozen=True)
+class _ScenarioSnapshot:
+    scenario: ChartTest
+    performance_chart: ChartTest | None
+    performance: ScenarioSummary | None
+    cpu_chart: ChartTest | None
+    cpu: ScenarioSummary | None
+    ram_chart: ChartTest | None
+    ram: ScenarioSummary | None
+    measured: ScenarioSummary | None
+    vs_reference: str
+    vs_nightly: str
 
 
 def _page_styles() -> str:
@@ -127,6 +165,13 @@ def _page_styles() -> str:
       margin: 0 0 0.25rem;
     }
     .page-heading h1 { margin: 0; }
+    .page-heading h1 a { color: inherit; text-decoration: none; }
+    .page-heading h1 a:hover { text-decoration: underline; }
+    .page-heading h1 .pr-title { font-weight: 600; }
+    .profile-page-name {
+      margin: 0.85rem 0 0.25rem;
+      font-size: 1.2rem;
+    }
     .channel-badge {
       display: inline-block;
       font-size: 0.72rem;
@@ -395,8 +440,49 @@ def _page_styles() -> str:
       background: #cf222e;
       color: #fff;
     }
-    .summary-profile { margin: 2rem 0; }
-    .summary-profile h2 { margin-bottom: 0.25rem; }
+    .summary-heading {
+      margin: 2rem 0 0.55rem;
+      font-size: 1.35rem;
+      text-align: center;
+    }
+    .summary-legend {
+      margin: 0 0 1.5rem;
+      text-align: center;
+    }
+    .summary-legend-note {
+      margin: 0.7rem auto 0;
+      max-width: 38rem;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    details.summary-profile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+    details.summary-profile[open] { border-color: var(--link); }
+    details.summary-profile > summary {
+      cursor: pointer;
+      padding: 0.9rem 1.1rem;
+      font-weight: 600;
+    }
+    details.summary-profile > summary:hover {
+      background: var(--accent-data-bg);
+    }
+    details.summary-profile > summary:focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: -2px;
+    }
+    .summary-profile-body {
+      border-top: 1px solid var(--border);
+      padding: 0.25rem 1rem 1rem;
+    }
+    .summary-profile-body .subtitle { margin: 0.75rem 0 0; }
+    section.summary-profile { margin: 2rem 0; }
+    section.summary-profile h2 { margin-bottom: 0.25rem; }
     .summary-table {
       width: 100%;
       border-collapse: collapse;
@@ -420,6 +506,16 @@ def _page_styles() -> str:
     .summary-table .reference-column {
       min-width: 105px;
       white-space: nowrap;
+    }
+    .summary-table th.nightly-column {
+      white-space: normal;
+      min-width: 6.75rem;
+    }
+    .summary-table th .column-date {
+      display: block;
+      margin-top: 0.12rem;
+      font-weight: 500;
+      font-size: 0.72rem;
     }
     .summary-table .measured-column {
       min-width: 6.5rem;
@@ -495,15 +591,12 @@ def _page_styles() -> str:
       .status-backlog { background: var(--accent-wallet-bg); }
     }
     .speed-legend {
-      display: inline-flex;
+      display: flex;
       flex-wrap: wrap;
-      gap: 0.25rem 0.75rem;
-      margin-top: 0.2rem;
+      justify-content: center;
+      gap: 0.45rem 0.6rem;
     }
-    .speed-fast { color: #1a7f37; font-weight: 600; }
-    .speed-ok { color: var(--link); font-weight: 600; }
-    .speed-ok-warn { color: #9a6700; font-weight: 600; }
-    .speed-slow { color: #cf222e; font-weight: 600; }
+    .speed-legend .status { margin: 0; }
     .regression-legend {
       display: flex;
       flex-direction: column;
@@ -597,9 +690,45 @@ def _page_styles() -> str:
       color: var(--muted);
       font-size: 0.85rem;
     }
-    section.machine-info dd {
-      margin: 0.1rem 0 0;
-      font-weight: 500;
+    section.last-run {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem 0.9rem;
+      background: var(--accent-data-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1.15rem;
+      margin: 1rem 0;
+    }
+    .last-run-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .last-run-date {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    a.last-run-commit {
+      display: inline-flex;
+      align-items: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--link);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      text-decoration: none;
+    }
+    a.last-run-commit:hover {
+      border-color: var(--link);
+      text-decoration: underline;
     }
     @media (max-width: 700px) {
       main { padding: 1rem; }
@@ -626,6 +755,7 @@ def _layout(title: str, body: str) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store">
   <title>{escape(title)} — {SITE_TITLE}</title>
   <style>{_page_styles()}</style>
 </head>
@@ -642,11 +772,46 @@ def _channel_badge_html(channel: str) -> str:
     return f'<span class="channel-badge {css_class}">{escape(label)}</span>'
 
 
-def _heading_with_badge(heading: str, channel: str) -> str:
+def _heading_with_badge(heading: str, channel: str, *, heading_html: str = '') -> str:
+    title_html = heading_html or f'<h1>{escape(heading)}</h1>'
     return (
         f'<div class="page-heading">{_channel_badge_html(channel)}'
-        f'<h1>{escape(heading)}</h1></div>'
+        f'{title_html}</div>'
     )
+
+
+def _back_nav(href: str, label: str) -> str:
+    return f'<nav class="back"><a href="{escape(href)}">← {escape(label)}</a></nav>'
+
+
+def _channel_subheading(channel: str, text: str) -> str:
+    if channel != 'pr':
+        return ''
+    return f'<h2 class="profile-page-name">{escape(text)}</h2>'
+
+
+def _count_label(count: int, singular: str) -> str:
+    return f'{count} {singular}' if count == 1 else f'{count} {singular}s'
+
+
+def _pr_url(pr_number: str) -> str:
+    return f'{STATUS_APP_REPO}/pull/{pr_number}'
+
+
+def _channel_page_title(
+    channel: str,
+    heading: str,
+    heading_html: str,
+    fallback: str,
+) -> tuple[str, str]:
+    if channel == 'pr':
+        return heading, heading_html
+    return fallback, ''
+
+
+def _write_page(output_dir: Path, filename: str, title: str, body: str) -> None:
+    (output_dir / filename).write_text(_layout(title, body), encoding='utf-8')
+    print(f'Generated {filename}')
 
 
 def _chart_iframe(chart_path: str, title: str) -> str:
@@ -685,12 +850,241 @@ def _machine_info_rows(latest: dict) -> list[tuple[str, str]]:
 
 
 def _latest_run_environment(run_environment: pd.DataFrame) -> Optional[dict]:
-    if run_environment.empty:
+    row = latest_run_row(run_environment)
+    if row is None:
         return None
-    latest = run_environment.iloc[-1]
+    latest = row.to_dict()
     if not any(_field_text(latest.get(field)) for field in RUN_ENVIRONMENT_FIELDS):
         return None
-    return latest.to_dict()
+    return latest
+
+
+def _run_date_label(value: object) -> str:
+    if hasattr(value, 'strftime'):
+        try:
+            if pd.isna(value):
+                return ''
+        except (TypeError, ValueError):
+            pass
+        return value.strftime('%b %d, %Y')
+    text = _field_text(value)
+    if not text:
+        return ''
+    try:
+        parsed = pd.to_datetime(text)
+    except (TypeError, ValueError):
+        return text
+    if pd.isna(parsed):
+        return text
+    return parsed.strftime('%b %d, %Y')
+
+
+def _sha_from_local_git(commit: str) -> str:
+    """Resolve a prefix to a full SHA from a local status-app checkout, if present."""
+    import os
+    import subprocess
+
+    candidates: list[Path] = []
+    env_dir = os.environ.get('STATUS_APP_GIT_DIR', '').strip()
+    if env_dir:
+        candidates.append(Path(env_dir))
+    candidates.append(Path(__file__).resolve().parents[1].parent / 'status-app')
+    for git_dir in candidates:
+        git_meta = git_dir / '.git'
+        if not git_dir.exists() or not (git_meta.exists() or git_dir.is_dir()):
+            continue
+        try:
+            result = subprocess.run(
+                ['git', '-C', str(git_dir), 'rev-parse', '--verify', f'{commit}^{{commit}}'],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        sha = (result.stdout or '').strip()
+        if result.returncode == 0 and len(sha) >= 40:
+            return sha
+    return ''
+
+
+def _github_api_json(resource: str) -> dict:
+    import json
+    import os
+    from urllib.error import URLError
+    from urllib.request import Request, urlopen
+
+    repo = STATUS_APP_REPO.removeprefix('https://github.com/')
+    headers = {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'status-app-benchmarks',
+    }
+    token = os.environ.get('GITHUB_TOKEN') or os.environ.get('GH_TOKEN')
+    if token:
+        headers['Authorization'] = f'Bearer {token}'
+    request = Request(
+        f'https://api.github.com/repos/{repo}/{resource}',
+        headers=headers,
+    )
+    try:
+        with urlopen(request, timeout=8) as response:
+            payload = json.loads(response.read().decode('utf-8'))
+    except (URLError, TimeoutError, ValueError, OSError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _fetch_full_commit_sha(commit: str) -> str:
+    """Resolve a short prefix to the full 40-char SHA."""
+    local = _sha_from_local_git(commit)
+    if local:
+        return local
+    sha = str(_github_api_json(f'commits/{commit}').get('sha') or '').strip()
+    return sha if len(sha) >= 40 else ''
+
+
+_pr_titles: dict[str, str] = {}
+PR_TITLE_FILENAME = 'pr_title.txt'
+
+
+def _pr_title_cache_path(data_dir: Path) -> Path:
+    return data_dir / PR_TITLE_FILENAME
+
+
+def load_pr_title(data_dir: Path) -> str:
+    path = _pr_title_cache_path(data_dir)
+    if not path.exists():
+        return ''
+    return path.read_text(encoding='utf-8').strip()
+
+
+def save_pr_title(data_dir: Path, title: str) -> None:
+    title = title.strip()
+    if not title:
+        return
+    data_dir.mkdir(parents=True, exist_ok=True)
+    path = _pr_title_cache_path(data_dir)
+    current = load_pr_title(data_dir)
+    if current == title:
+        return
+    path.write_text(title + '\n', encoding='utf-8')
+
+
+def _pr_title_from_runs(data_dir: Path) -> str:
+    row = latest_run_row(load_run_manifest(data_dir))
+    if row is None:
+        return ''
+    ref = _field_text(row.get('source_ref'))
+    return ref.replace('-', ' ') if ref else ''
+
+
+def _inferred_pr_data_dir(output_dir: Path) -> Path | None:
+    if not output_dir.name.isdigit() or output_dir.parent.name != 'pr':
+        return None
+    data_dir = _desktop_data_dir(output_dir.parent.parent) / 'pr' / output_dir.name
+    return data_dir if data_dir.exists() else None
+
+
+def _fetch_pr_title(pr_number: str) -> str:
+    if not pr_number.isdigit():
+        return ''
+    cached = _pr_titles.get(pr_number)
+    if cached:
+        return cached
+    title = str(_github_api_json(f'pulls/{pr_number}').get('title') or '').strip()
+    if title:
+        _pr_titles[pr_number] = title
+    return title
+
+
+def resolve_pr_title(
+    pr_number: str,
+    *,
+    data_dir: Path | None = None,
+    pr_title: str = '',
+) -> str:
+    title = pr_title.strip()
+    if not title and data_dir is not None:
+        title = load_pr_title(data_dir)
+    if not title and pr_number:
+        title = _fetch_pr_title(pr_number)
+    if not title and data_dir is not None:
+        title = _pr_title_from_runs(data_dir)
+    if title and data_dir is not None:
+        save_pr_title(data_dir, title)
+    return title
+
+
+def pr_page_heading(pr_number: str, pr_title: str = '') -> str:
+    if pr_number and pr_title:
+        return f'#{pr_number} {pr_title}'
+    if pr_number:
+        return f'#{pr_number}'
+    return 'Windows Pull Request Benchmarks'
+
+
+def _pr_heading_html(pr_number: str, pr_title: str) -> str:
+    if not pr_number:
+        return f'<h1>{escape(pr_page_heading(pr_number, pr_title))}</h1>'
+    href = _pr_url(pr_number)
+    number = (
+        f'<a href="{href}" title="{href}" target="_blank">'
+        f'#{escape(pr_number)}</a>'
+    )
+    title = (
+        f'<span class="pr-title"> {escape(pr_title)}</span>' if pr_title else ''
+    )
+    return f'<h1>{number}{title}</h1>'
+
+
+def _pr_heading_markdown(pr_number: str, pr_title: str) -> str:
+    if not pr_number:
+        return pr_page_heading(pr_number, pr_title)
+    return f'[#{pr_number}]({_pr_url(pr_number)}) {pr_title}'.strip()
+
+
+def _resolve_pr_identity(
+    output_dir: Path,
+    pr_number: str = '',
+    pr_title: str = '',
+) -> tuple[str, str]:
+    number = pr_number.strip() or (output_dir.name if output_dir.name.isdigit() else '')
+    data_dir = _inferred_pr_data_dir(output_dir)
+    title = resolve_pr_title(number, data_dir=data_dir, pr_title=pr_title)
+    return number, title
+
+
+_expanded_commit_shas: dict[str, str] = {}
+
+
+def _expand_commit_sha(commit: str) -> str:
+    if len(commit) >= 40:
+        return commit[:40]
+    cached = _expanded_commit_shas.get(commit)
+    if cached:
+        return cached
+    sha = _fetch_full_commit_sha(commit)
+    if sha:
+        _expanded_commit_shas[commit] = sha
+        return sha
+    return commit
+
+
+def _commit_github_href(commit: str) -> str:
+    return f'{STATUS_APP_REPO}/commit/{_expand_commit_sha(commit)}'
+
+
+def _commit_link_html(commit: str) -> str:
+    sha = _expand_commit_sha(commit).lower()
+    short = escape((sha or commit)[:9])
+    if len(sha) != 40 or any(char not in '0123456789abcdef' for char in sha):
+        return f'<span class="last-run-commit">{short}</span>'
+    href = f'{STATUS_APP_REPO}/commit/{sha}'
+    return (
+        f'<a class="last-run-commit" href="{href}" title="{href}" '
+        f'target="_blank">{short}</a>'
+    )
 
 
 def _machine_info_panel(run_environment: pd.DataFrame) -> str:
@@ -706,17 +1100,34 @@ def _machine_info_panel(run_environment: pd.DataFrame) -> str:
         f'<div><dt>{escape(label)}</dt><dd>{escape(display)}</dd></div>'
         for label, display in rows
     ]
-
-    commit = _field_text(latest.get('commit_hash'))
-    date = latest.get('date')
-    recorded = date.strftime('%b %d, %Y') if hasattr(date, 'strftime') else ''
-    meta = ' · '.join(part for part in (recorded, f'commit {commit[:9]}' if commit else '') if part)
-
     return (
         '<section class="machine-info">'
         '<h2>System info</h2>'
-        f'<p class="subtitle">Latest recorded environment{(" · " + escape(meta)) if meta else ""}</p>'
+        '<p class="subtitle">Windows e2e benchmark runner</p>'
         f'<dl>{"".join(items)}</dl>'
+        '</section>'
+    )
+
+
+def _last_run_stamp(frame: pd.DataFrame) -> tuple[str, str]:
+    row = latest_run_row(frame)
+    if row is None:
+        return '', ''
+    return _row_stamp(row)
+
+
+def _last_run_panel(run_environment: pd.DataFrame) -> str:
+    date, commit = _last_run_stamp(run_environment)
+    if not date and not commit:
+        return ''
+    date_html = (
+        f'<span class="last-run-date">{escape(date)}</span>' if date else ''
+    )
+    commit_html = _commit_link_html(commit) if commit else ''
+    return (
+        '<section class="last-run">'
+        '<span class="last-run-label">Last run</span>'
+        f'{date_html}{commit_html}'
         '</section>'
     )
 
@@ -731,7 +1142,19 @@ def _machine_info_markdown(run_environment: pd.DataFrame) -> list[str]:
         return []
 
     parts = [f'**{label}:** {display}' for label, display in rows]
-    return ['## System info', '', ' · '.join(parts), '']
+    return ['## System info', '', 'Windows e2e benchmark runner.', '', ' · '.join(parts), '']
+
+
+def _last_run_markdown(run_environment: pd.DataFrame) -> list[str]:
+    date, commit = _last_run_stamp(run_environment)
+    parts = ['**Last run**']
+    if date:
+        parts.append(date)
+    if commit:
+        parts.append(f'[`{commit[:9]}`]({_commit_github_href(commit)})')
+    if len(parts) == 1:
+        return []
+    return [' · '.join(parts), '']
 
 
 def _chart_permalink(test_id: str) -> str:
@@ -986,6 +1409,16 @@ def _measured_summary(
     return None
 
 
+def _measured_parts(measured: ScenarioSummary | None) -> tuple[str, str]:
+    build = measured.commit_hash[:9] if measured is not None and measured.commit_hash else '—'
+    date = measured.date if measured is not None and measured.date else '—'
+    return build, date
+
+
+def _metric_or_dash(chart: ChartTest | None, summary: ScenarioSummary | None) -> str:
+    return _metric_value(chart, summary) if chart is not None else '—'
+
+
 def _measured_cell_html(build: str, date: str) -> str:
     if build == '—' and date == '—':
         return '—'
@@ -997,18 +1430,18 @@ def _measured_cell_html(build: str, date: str) -> str:
     )
 
 
-def _reference_style(value: str) -> tuple[str, str]:
+def _reference_style(value: str, *, baseline: str = '2.38.0') -> tuple[str, str]:
     if value == 'parity':
-        return 'reference-parity', 'Within ±15% of 2.38.0'
+        return 'reference-parity', f'Within ±15% of {baseline}'
     if value.startswith('+'):
-        return 'reference-regression', 'Slower than 2.38.0'
+        return 'reference-regression', f'Slower than {baseline}'
     if value.startswith('-'):
-        return 'reference-improvement', 'Faster than 2.38.0'
+        return 'reference-improvement', f'Faster than {baseline}'
     return 'reference-neutral', 'No reference comparison available'
 
 
-def _reference_html(value: str) -> str:
-    css_class, title = _reference_style(value)
+def _reference_html(value: str, *, baseline: str = '2.38.0') -> str:
+    css_class, title = _reference_style(value, baseline=baseline)
     return (
         f'<span class="reference-value {css_class}" '
         f'title="{escape(title, quote=True)}">{escape(value)}</span>'
@@ -1023,11 +1456,128 @@ def _reference_markdown(value: str) -> str:
     return value
 
 
+def _row_stamp(row: object) -> tuple[str, str]:
+    date = _run_date_label(row.get('date') if hasattr(row, 'get') else None)
+    commit_value = row.get('commit_hash') if hasattr(row, 'get') else ''
+    return date, _field_text(commit_value)
+
+
+def _nightly_stamp(
+    run_environment: pd.DataFrame | None = None,
+    metrics: dict[str, pd.DataFrame] | None = None,
+) -> tuple[str, str]:
+    row = latest_run_row(run_environment)
+    if row is None and metrics:
+        row = latest_run_row(metrics.get('performance'))
+    if row is None:
+        return '', ''
+    return _row_stamp(row)
+
+
+def nightly_comparison_header(
+    run_environment: pd.DataFrame | None = None,
+    metrics: dict[str, pd.DataFrame] | None = None,
+) -> tuple[str, str, str]:
+    """Column label, tooltip, and cell baseline name for vs nightly."""
+    date, commit = _nightly_stamp(run_environment, metrics)
+    label = f'vs nightly · {date}' if date else 'vs nightly'
+    name = f'nightly {date}' if date else 'latest nightly'
+    if date and commit:
+        title = f'Difference from nightly {date} · commit {commit[:9]}'
+    elif date:
+        title = f'Difference from nightly {date}'
+    else:
+        title = 'Difference from the latest nightly at the time this PR was measured'
+    return label, title, name
+
+
+def _nightly_header_html(label: str, title: str) -> str:
+    main, _sep, date = label.partition(' · ')
+    if date:
+        inner = f'{escape(main)}<span class="column-date">{escape(date)}</span>'
+    else:
+        inner = escape(label)
+    return (
+        f'<th class="reference-column nightly-column" '
+        f'title="{escape(title, quote=True)}">{inner}</th>'
+    )
+
+
+def _nightly_cell_html(value: str, *, label: str, name: str) -> str:
+    return (
+        f'<td class="reference-column" data-label="{escape(label, quote=True)}">'
+        f'{_reference_html(value, baseline=name)}</td>'
+    )
+
+
+def _optional_nightly_cell(value: str, nightly: NightlyBaseline) -> str:
+    if not nightly.label:
+        return ''
+    return _nightly_cell_html(value, label=nightly.label, name=nightly.name)
+
+
+def _comparison_values(
+    performance_chart: ChartTest | None,
+    performance: ScenarioSummary | None,
+) -> tuple[str, str]:
+    if performance_chart is None or performance is None:
+        return '—', '—'
+    return performance.vs_reference, performance.vs_nightly
+
+
+def _scenario_snapshot(
+    group: dict[str, ChartTest],
+    summaries: dict[str, ScenarioSummary],
+) -> _ScenarioSnapshot:
+    performance_chart, performance = _scenario_summary(group, summaries, 'performance')
+    cpu_chart, cpu = _scenario_summary(group, summaries, 'cpu')
+    ram_chart, ram = _scenario_summary(group, summaries, 'ram')
+    vs_reference, vs_nightly = _comparison_values(performance_chart, performance)
+    return _ScenarioSnapshot(
+        scenario=_scenario_chart(group),
+        performance_chart=performance_chart,
+        performance=performance,
+        cpu_chart=cpu_chart,
+        cpu=cpu,
+        ram_chart=ram_chart,
+        ram=ram,
+        measured=_measured_summary(group, summaries),
+        vs_reference=vs_reference,
+        vs_nightly=vs_nightly,
+    )
+
+
+def _load_time_html(snapshot: _ScenarioSnapshot) -> str:
+    if snapshot.performance_chart is None:
+        return '—'
+    return (
+        '<div class="load-time-cell">'
+        f'<span class="metric-value">'
+        f'{escape(_metric_value(snapshot.performance_chart, snapshot.performance))}'
+        f'</span>{_status_badges(snapshot.performance)}</div>'
+    )
+
+
+def _load_time_markdown(snapshot: _ScenarioSnapshot) -> str:
+    if snapshot.performance_chart is None:
+        return '—'
+    status = (
+        snapshot.performance.speed_status
+        if snapshot.performance is not None else 'no-data'
+    )
+    return (
+        f'{_metric_value(snapshot.performance_chart, snapshot.performance)} · '
+        f'{STATUS_LABELS[status]}'
+    )
+
+
 def _summary_row(
     area_label: str,
     group: dict[str, ChartTest] | None,
     summaries: dict[str, ScenarioSummary],
     page_slug: str,
+    *,
+    nightly: NightlyBaseline = NightlyBaseline(),
 ) -> str:
     if group is None:
         not_tested = _status_badges(None).replace(
@@ -1039,47 +1589,29 @@ def _summary_row(
             '<td data-label="Scenario">Not tested</td>'
             f'<td data-label="Load time / Speed">{not_tested}</td>'
             f'<td class="reference-column" data-label="vs 2.38.0">{_reference_html("—")}</td>'
+            f'{_optional_nightly_cell("—", nightly)}'
             '<td data-label="CPU">—</td>'
             '<td data-label="RAM">—</td>'
             '<td data-label="Measured">—</td>'
             '</tr>'
         )
 
-    scenario = _scenario_chart(group)
-    performance_chart, performance = _scenario_summary(group, summaries, 'performance')
-    cpu_chart, cpu = _scenario_summary(group, summaries, 'cpu')
-    ram_chart, ram = _scenario_summary(group, summaries, 'ram')
-    measured = _measured_summary(group, summaries)
-
-    if performance_chart is None:
-        load_time = '—'
-        vs_reference = '—'
-    else:
-        load_time = (
-            '<div class="load-time-cell">'
-            f'<span class="metric-value">{escape(_metric_value(performance_chart, performance))}</span>'
-            f'{_status_badges(performance)}'
-            '</div>'
-        )
-        vs_reference = performance.vs_reference if performance is not None else '—'
-    cpu_value = _metric_value(cpu_chart, cpu) if cpu_chart is not None else '—'
-    ram_value = _metric_value(ram_chart, ram) if ram_chart is not None else '—'
-    build = measured.commit_hash[:9] if measured is not None and measured.commit_hash else '—'
-    date = measured.date if measured is not None and measured.date else '—'
+    snapshot = _scenario_snapshot(group, summaries)
+    build, date = _measured_parts(snapshot.measured)
     scenario_link = (
-        f'<a href="{_chart_href(page_slug, scenario.test_id)}">'
-        f'{escape(scenario.display_name)}</a>'
+        f'<a href="{_chart_href(page_slug, snapshot.scenario.test_id)}">'
+        f'{escape(snapshot.scenario.display_name)}</a>'
     )
-
     return (
         '<tr>'
         f'<td data-label="Area">{escape(area_label)}</td>'
         f'<td data-label="Scenario">{scenario_link}</td>'
-        f'<td data-label="Load time / Speed">{load_time}</td>'
+        f'<td data-label="Load time / Speed">{_load_time_html(snapshot)}</td>'
         f'<td class="reference-column" data-label="vs 2.38.0">'
-        f'{_reference_html(vs_reference)}</td>'
-        f'<td data-label="CPU">{escape(cpu_value)}</td>'
-        f'<td data-label="RAM">{escape(ram_value)}</td>'
+        f'{_reference_html(snapshot.vs_reference)}</td>'
+        f'{_optional_nightly_cell(snapshot.vs_nightly, nightly)}'
+        f'<td data-label="CPU">{escape(_metric_or_dash(snapshot.cpu_chart, snapshot.cpu))}</td>'
+        f'<td data-label="RAM">{escape(_metric_or_dash(snapshot.ram_chart, snapshot.ram))}</td>'
         f'<td class="measured-column" data-label="Measured">'
         f'{_measured_cell_html(build, date)}</td>'
         '</tr>'
@@ -1098,64 +1630,130 @@ def _summary_sort_key(
     return float(performance.value)
 
 
-def _summary_page(
+def _summary_intro(*, nightly_column: str = '') -> str:
+    nightly_note = ''
+    if nightly_column:
+        nightly_note = (
+            f' <strong>{escape(nightly_column)}</strong> compares the same load time '
+            'with that nightly run — the latest nightly at the time this PR was measured.'
+        )
+    return (
+        '<h2 class="summary-heading">Test scenarios</h2>'
+        '<div class="summary-legend">'
+        '<div class="speed-legend">'
+        '<span class="status status-fast">Fast · &lt;0.5s</span>'
+        '<span class="status status-ok">Ok · 0.5–0.9s</span>'
+        '<span class="status status-ok-warn">Near ok · 0.9–1.0s</span>'
+        '<span class="status status-slow">Slow · &gt;1.0s</span>'
+        '</div>'
+        '<p class="summary-legend-note">'
+        'The <strong>vs 2.38.0</strong> column compares the latest load time with the '
+        '2.38.0 release. A difference within ±15% is shown as parity.'
+        f'{nightly_note}'
+        '</p>'
+        '</div>'
+    )
+
+
+def _summary_profile_section(
+    page: BenchmarkPage,
+    charts_by_id: dict[str, ChartTest],
+    summaries: dict[str, ScenarioSummary],
+    *,
+    nightly: NightlyBaseline = NightlyBaseline(),
+) -> str:
+    keyed_rows: list[tuple[float, str]] = []
+    scenario_count = 0
+    for area, area_label in PRODUCT_AREAS:
+        groups = _scenario_groups(page, charts_by_id, area) or [None]
+        if groups[0] is not None:
+            scenario_count += len(groups)
+        for group in groups:
+            keyed_rows.append((
+                _summary_sort_key(group, summaries),
+                _summary_row(
+                    area_label, group, summaries, page.slug, nightly=nightly,
+                ),
+            ))
+    keyed_rows.sort(key=lambda item: item[0], reverse=True)
+    rows = ''.join(html for _key, html in keyed_rows)
+    count_label = _count_label(scenario_count, 'scenario')
+    nightly_header = (
+        _nightly_header_html(nightly.label, nightly.title) if nightly.label else ''
+    )
+    return (
+        '<details class="summary-profile">'
+        '<summary><span class="scenario-summary-content">'
+        f'<span>{escape(page.title)}</span>'
+        f'<span class="scenario-chart-count">{count_label}</span>'
+        '</span></summary>'
+        '<div class="summary-profile-body">'
+        f'<p class="subtitle">{escape(page.description)} '
+        f'<a href="{escape(page.slug)}.html">Open profile →</a></p>'
+        '<table class="summary-table"><thead><tr>'
+        '<th>Area</th><th>Scenario</th>'
+        '<th class="load-time-column" '
+        'title="Latest measured loading time and mobile-style speed category">'
+        'Load time / Speed</th>'
+        '<th class="reference-column" '
+        'title="Difference from the 2.38.0 reference build">vs 2.38.0</th>'
+        f'{nightly_header}'
+        '<th title="Average CPU usage during the scenario">CPU</th>'
+        '<th title="Average RAM usage during the scenario">RAM</th>'
+        '<th class="measured-column" '
+        'title="Build and date of the latest scenario result">Measured</th>'
+        f'</tr></thead><tbody>{rows}</tbody></table>'
+        '</div></details>'
+    )
+
+
+def _summary_sections(
     pages: tuple[BenchmarkPage, ...],
     charts_by_id: dict[str, ChartTest],
     summaries: dict[str, ScenarioSummary],
     *,
-    channel: str = 'nightly',
+    nightly: NightlyBaseline = NightlyBaseline(),
 ) -> str:
-    sections = []
-    for page in pages:
-        keyed_rows: list[tuple[float, str]] = []
-        for area, area_label in PRODUCT_AREAS:
-            groups = _scenario_groups(page, charts_by_id, area)
-            if groups:
-                for group in groups:
-                    keyed_rows.append((
-                        _summary_sort_key(group, summaries),
-                        _summary_row(area_label, group, summaries, page.slug),
-                    ))
-            else:
-                keyed_rows.append((
-                    _summary_sort_key(None, summaries),
-                    _summary_row(area_label, None, summaries, page.slug),
-                ))
-        keyed_rows.sort(key=lambda item: item[0], reverse=True)
-        rows = ''.join(html for _key, html in keyed_rows)
-        sections.append(
-            '<section class="summary-profile">'
-            f'<h2><a href="{escape(page.slug)}.html">{escape(page.title)}</a></h2>'
-            f'<p class="subtitle">{escape(page.description)}</p>'
-            '<table class="summary-table"><thead><tr>'
-            '<th>Area</th><th>Scenario</th>'
-            '<th class="load-time-column" '
-            'title="Latest measured loading time and mobile-style speed category">'
-            'Load time / Speed</th>'
-            '<th class="reference-column" '
-            'title="Difference from the 2.38.0 reference build">vs 2.38.0</th>'
-            '<th title="Average CPU usage during the scenario">CPU</th>'
-            '<th title="Average RAM usage during the scenario">RAM</th>'
-            '<th class="measured-column" '
-            'title="Build and date of the latest scenario result">Measured</th>'
-            f'</tr></thead><tbody>{rows}</tbody></table>'
-            '</section>'
-        )
+    return ''.join(
+        _summary_profile_section(page, charts_by_id, summaries, nightly=nightly)
+        for page in pages
+    )
+
+
+def _profile_cards_html(pages: tuple[BenchmarkPage, ...]) -> str:
+    return ''.join(
+        f'<a class="card" href="{escape(page.slug)}.html">'
+        f'<h2>{escape(page.title)}</h2>'
+        f'<p>{escape(page.description)}</p>'
+        f'{_profile_facts(page)}</a>'
+        for page in pages
+    )
+
+
+def _profiles_page(
+    pages: tuple[BenchmarkPage, ...],
+    *,
+    channel: str = 'nightly',
+    heading: str = 'User profiles',
+    heading_html: str = '',
+) -> str:
     return (
-        '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-        f'{_heading_with_badge("Scenario summary", channel)}'
-        '<p class="subtitle">Latest result for every tested scenario. '
-        'Speed categories:<br>'
-        '<span class="speed-legend">'
-        '<span class="speed-fast">&lt;0.5s Fast</span>'
-        '<span class="speed-ok">0.5–0.9s Ok</span>'
-        '<span class="speed-ok-warn">0.9–1.0s Ok near slow</span>'
-        '<span class="speed-slow">&gt;1.0s Slow</span>'
-        '</span><br>'
-        'Reference parity (where shown) means the latest value is within ±15% of 2.38.0. '
-        'Wallet tab scenarios omit the 2.38.0 comparison because the e2e methodology '
-        'changed in Jul 2026.</p>'
-        f'{"".join(sections)}'
+        f'{_back_nav("index.html", "Dashboard")}'
+        f'{_heading_with_badge(heading, channel, heading_html=heading_html)}'
+        '<p class="subtitle">Choose a user profile to open its scenario charts.</p>'
+        f'<div class="grid">{_profile_cards_html(pages)}</div>'
+    )
+
+
+def _redirect_page(href: str, label: str) -> str:
+    return (
+        '<!DOCTYPE html><html lang="en"><head>'
+        '<meta charset="utf-8">'
+        f'<meta http-equiv="refresh" content="0;url={escape(href)}">'
+        f'<link rel="canonical" href="{escape(href)}">'
+        f'<title>Redirecting</title></head><body>'
+        f'<p><a href="{escape(href)}">{escape(label)}</a></p>'
+        '</body></html>'
     )
 
 
@@ -1260,6 +1858,8 @@ def _regression_page(
     page_slugs_by_test_id: dict[str, str] | None = None,
     *,
     channel: str = 'nightly',
+    heading: str = 'Flags',
+    heading_html: str = '',
 ) -> str:
     tickets = flag_tickets or {}
     page_slugs = page_slugs_by_test_id or {}
@@ -1272,9 +1872,11 @@ def _regression_page(
         _regression_section(title, items, tickets, page_slugs)
         for title, items in by_rule.items()
     )
+    flags_title = _channel_subheading(channel, 'Flags')
     return (
-        '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-        f'{_heading_with_badge("Flags", channel)}'
+        f'{_back_nav("index.html", "Dashboard")}'
+        f'{_heading_with_badge(heading, channel, heading_html=heading_html)}'
+        f'{flags_title}'
         '<p class="subtitle">Automated flags from nightly performance data.</p>'
         '<p class="subtitle regression-legend">'
         '<span class="regression-legend-item">'
@@ -1298,10 +1900,66 @@ def _summary_links_html(violations: list[Violation]) -> str:
         badge = f'<span class="summary-badge">{len(violations)}</span>'
     return (
         '<div class="summary-links">'
-        '<a class="summary-link" href="summary.html">View scenario summary →</a>'
+        '<a class="summary-link" href="profiles.html">User profiles →</a>'
         f'<a class="summary-link" href="regression_report.html">View flags{badge} →</a>'
         '</div>'
     )
+
+
+def _channel_copy(
+    channel: str,
+    *,
+    release_series: str = '',
+    nightly: NightlyBaseline = NightlyBaseline(),
+    pr_number: str = '',
+    pr_title: str = '',
+) -> tuple[str, str, str]:
+    if channel == 'release':
+        heading = f'Windows {release_series} Release Benchmarks'
+        subtitle = (
+            f'Performance history for {release_series} release candidates through the final build. '
+            'Each point is one RC or final benchmark run; the complete release series stays visible.'
+        )
+        return heading, '', subtitle
+    if channel == 'pr':
+        heading = pr_page_heading(pr_number, pr_title)
+        subtitle = (
+            'Performance history for this pull request. Each point is one requested benchmark run. '
+            f'vs 2.38.0 is the last release; {nightly.label} is the latest master nightly '
+            'at measurement time.'
+        )
+        return heading, _pr_heading_html(pr_number, pr_title), subtitle
+    return (
+        'Windows Nightly Benchmark Dashboard',
+        '',
+        f'Performance metrics from the last {CHART_WINDOW_DAYS} days. '
+        'Each point is one nightly run; release baselines are pinned separately.',
+    )
+
+
+def _profile_areas_html(
+    page: BenchmarkPage,
+    charts_by_id: dict[str, ChartTest],
+    charts_by_test_id: dict[str, ChartEntry],
+) -> str:
+    sections = []
+    for area, area_label in PRODUCT_AREAS:
+        groups = _scenario_groups(page, charts_by_id, area)
+        if not groups:
+            content = '<div class="area-empty">Not tested for this user profile.</div>'
+        else:
+            content = (
+                '<div class="scenario-list">'
+                + ''.join(
+                    _scenario_charts_section(group, charts_by_test_id)
+                    for group in groups
+                )
+                + '</div>'
+            )
+        sections.append(
+            f'<section class="area-group"><h2>{escape(area_label)}</h2>{content}</section>'
+        )
+    return ''.join(sections)
 
 
 def write_site(
@@ -1311,114 +1969,110 @@ def write_site(
     *,
     chart_tests: tuple[ChartTest, ...] = (),
     summaries: dict[str, ScenarioSummary] | None = None,
-    run_environment: pd.DataFrame | None = None,
+    runs: pd.DataFrame | None = None,
     violations: list[Violation] | None = None,
     flag_tickets: dict[str, FlagTicket] | None = None,
     channel: str = 'nightly',
     release_series: str = '',
+    nightly_baseline_label: str = '',
+    nightly_baseline_title: str = '',
+    nightly_baseline_name: str = '',
+    pr_number: str = '',
+    pr_title: str = '',
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    env_frame = run_environment if run_environment is not None else pd.DataFrame()
-    machine_panel = _machine_info_panel(env_frame)
+    runs_frame = runs if runs is not None else pd.DataFrame()
+    machine_panel = _last_run_panel(runs_frame)
     charts_by_id = {chart.test_id: chart for chart in chart_tests}
     scenario_summaries = summaries or {}
     regression_violations = violations or []
     tickets = flag_tickets or {}
     page_slugs_by_test_id = _page_slugs_by_test_id(pages)
 
-    cards = ''.join(
-        f'<a class="card" href="{escape(page.slug)}.html">'
-        f'<h2>{escape(page.title)}</h2>'
-        f'<p>{escape(page.description)}</p>'
-        f'{_profile_facts(page)}</a>'
-        for page in pages
+    nightly = NightlyBaseline()
+    resolved_pr_number = ''
+    resolved_pr_title = ''
+    if channel == 'pr':
+        nightly = NightlyBaseline.for_pr(
+            nightly_baseline_label,
+            nightly_baseline_title,
+            nightly_baseline_name,
+        )
+        resolved_pr_number, resolved_pr_title = _resolve_pr_identity(
+            output_dir, pr_number, pr_title,
+        )
+    heading, heading_html, subtitle = _channel_copy(
+        channel,
+        release_series=release_series,
+        nightly=nightly,
+        pr_number=resolved_pr_number,
+        pr_title=resolved_pr_title,
     )
-    if channel == 'release':
-        heading = f'Windows {release_series} Release Benchmarks'
-        subtitle = (
-            f'Performance history for {release_series} release candidates through the final build. '
-            'Each point is one RC or final benchmark run; the complete release series stays visible.'
-        )
-    elif channel == 'pr':
-        heading = 'Windows Pull Request Benchmarks'
-        subtitle = (
-            'Performance history for this pull request. Each point is one requested benchmark run; '
-            'release baselines are pinned separately for comparison.'
-        )
-    else:
-        heading = 'Windows Nightly Benchmark Dashboard'
-        subtitle = (
-            f'Performance metrics from the last {CHART_WINDOW_DAYS} days. '
-            'Each point is one nightly run; release baselines are pinned separately.'
-        )
     index_body = (
-        f'<nav class="back"><a href="{_channel_root_href(channel)}">← All Windows benchmarks</a></nav>'
-        f'{_heading_with_badge(heading, channel)}'
+        f'{_back_nav(_channel_root_href(channel), "All Windows benchmarks")}'
+        f'{_heading_with_badge(heading, channel, heading_html=heading_html)}'
         f'<p class="subtitle">{escape(subtitle)} '
         'Load-time charts plot the average of samples per run.</p>'
         f'{machine_panel}'
         f'{_summary_links_html(regression_violations)}'
-        '<h2 style="margin-top:2rem">User profiles</h2>'
-        f'<div class="grid">{cards}</div>'
+        f'{_summary_intro(nightly_column=nightly.label)}'
+        f'{_summary_sections(pages, charts_by_id, scenario_summaries, nightly=nightly)}'
         '<p class="note">Raw CSV history lives in the repository <code>data/</code> folder. '
         'PNG charts on GitHub: '
         f'<a href="{_github_readme_href(output_dir)}">{escape(_github_readme_rel(output_dir))}</a>.</p>'
     )
-    (output_dir / 'index.html').write_text(_layout('Dashboard', index_body), encoding='utf-8')
-    print('Generated index.html')
+    _write_page(output_dir, 'index.html', heading, index_body)
+
+    profiles_title, profiles_html = _channel_page_title(
+        channel, heading, heading_html, 'User profiles',
+    )
+    _write_page(
+        output_dir, 'profiles.html', profiles_title,
+        _profiles_page(
+            pages, channel=channel,
+            heading=profiles_title, heading_html=profiles_html,
+        ),
+    )
 
     (output_dir / 'summary.html').write_text(
-        _layout(
-            'Scenario summary',
-            _summary_page(pages, charts_by_id, scenario_summaries, channel=channel),
-        ),
+        _redirect_page('index.html', 'View scenario summary'),
         encoding='utf-8',
     )
     print('Generated summary.html')
 
-    (output_dir / 'regression_report.html').write_text(
-        _layout(
-            'Flags',
-            _regression_page(
-                regression_violations,
-                tickets,
-                page_slugs_by_test_id,
-                channel=channel,
-            ),
-        ),
-        encoding='utf-8',
+    flags_title, flags_html = _channel_page_title(
+        channel, heading, heading_html, 'Flags',
     )
-    print('Generated regression_report.html')
+    _write_page(
+        output_dir, 'regression_report.html', flags_title,
+        _regression_page(
+            regression_violations,
+            tickets,
+            page_slugs_by_test_id,
+            channel=channel,
+            heading=flags_title,
+            heading_html=flags_html,
+        ),
+    )
 
-    expected_pages = {f'{page.slug}.html' for page in pages} | {'summary.html', 'regression_report.html'}
+    expected_pages = {
+        f'{page.slug}.html' for page in pages
+    } | {'summary.html', 'profiles.html', 'regression_report.html'}
     for page in pages:
-        area_sections = []
-        for area, area_label in PRODUCT_AREAS:
-            groups = _scenario_groups(page, charts_by_id, area)
-            if not groups:
-                content = '<div class="area-empty">Not tested for this user profile.</div>'
-            else:
-                sections = ''.join(
-                    _scenario_charts_section(group, charts_by_test_id)
-                    for group in groups
-                )
-                content = f'<div class="scenario-list">{sections}</div>'
-            area_sections.append(
-                f'<section class="area-group"><h2>{escape(area_label)}</h2>{content}</section>'
-            )
+        page_title, page_html = _channel_page_title(
+            channel, heading, heading_html, page.title,
+        )
+        back_label = heading if channel == 'pr' else 'User profiles'
         page_body = (
-            '<nav class="back"><a href="index.html">← Dashboard</a></nav>'
-            f'{_heading_with_badge(page.title, channel)}'
+            f'{_back_nav("profiles.html", back_label)}'
+            f'{_heading_with_badge(page_title, channel, heading_html=page_html)}'
+            f'{_channel_subheading(channel, page.title)}'
             f'<p class="subtitle">{escape(page.description)}</p>'
             f'{_profile_details(page)}'
-            f'{"".join(area_sections)}'
+            f'{_profile_areas_html(page, charts_by_id, charts_by_test_id)}'
             f'{_chart_hash_script()}'
         )
-        (output_dir / f'{page.slug}.html').write_text(
-            _layout(page.title, page_body),
-            encoding='utf-8',
-        )
-        print(f'Generated {page.slug}.html')
+        _write_page(output_dir, f'{page.slug}.html', page_title, page_body)
 
     for stale_page in output_dir.glob('*.html'):
         if stale_page.name != 'index.html' and stale_page.name not in expected_pages:
@@ -1429,8 +2083,11 @@ def write_site(
         output_dir, pages, charts_by_test_id,
         chart_tests=chart_tests,
         summaries=scenario_summaries,
-        run_environment=env_frame,
+        runs=runs_frame,
         channel=channel,
+        nightly_baseline_label=nightly.label,
+        pr_number=resolved_pr_number,
+        pr_title=resolved_pr_title,
     )
 
 
@@ -1464,9 +2121,6 @@ def channel_listing_sort_key(name: str) -> tuple:
     return (2, name)
 
 
-MANIFEST_CSV_NAME = 'runs.csv'
-
-
 def _desktop_data_dir(desktop_dir: Path) -> Path:
     """Map docs/desktop -> <repo>/data/desktop."""
     return desktop_dir.parent.parent / 'data' / 'desktop'
@@ -1489,21 +2143,12 @@ LISTING_HISTORY_LIMIT = 8
 
 
 def _load_runs_frame(runs_csv: Path) -> pd.DataFrame | None:
-    if not runs_csv.exists():
-        return None
-    try:
-        frame = pd.read_csv(runs_csv)
-    except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError):
-        return None
+    frame = load_run_manifest(runs_csv)
     if frame.empty:
         return None
-    ordered = frame.copy()
-    ordered['_sort_date'] = pd.to_datetime(
-        ordered['date'] if 'date' in ordered.columns else pd.NaT,
-        errors='coerce',
-        utc=True,
+    return frame.assign(_sort_date=utc_dates(frame)).sort_values(
+        '_sort_date', ascending=False, na_position='last',
     )
-    return ordered.sort_values('_sort_date', ascending=False, na_position='last')
 
 
 def _run_history_entries(frame: pd.DataFrame) -> list[dict[str, object]]:
@@ -1570,72 +2215,53 @@ def _listing_card(
     )
 
 
-def _pr_listing_card(path: Path, data_root: Path) -> str:
-    runs_csv = data_root / 'pr' / path.name / MANIFEST_CSV_NAME
-    frame = _load_runs_frame(runs_csv)
-    title = f'PR #{path.name}'
-    meta_lines: list[str] = []
-    history_html = ''
+def _listing_history(
+    frame: pd.DataFrame | None,
+    *,
+    include_commits: bool = False,
+) -> tuple[list[str], str]:
     if frame is None or frame.empty:
-        meta_lines.append('No run metadata yet.')
-    else:
-        run_count = len(frame)
+        return ['No run metadata yet.'], ''
+    run_count = len(frame)
+    parts: list[str] = []
+    if run_count:
+        parts.append(_count_label(run_count, 'run'))
+    if include_commits:
         commit_count = _unique_commit_count(frame)
-        latest_date = _format_run_date(frame.iloc[0].get('date'))
-        parts = []
-        if run_count:
-            parts.append(f'{run_count} run{"s" if run_count != 1 else ""}')
         if commit_count:
-            parts.append(f'{commit_count} commit{"s" if commit_count != 1 else ""}')
-        if latest_date:
-            parts.append(f'last {latest_date}')
-        if parts:
-            meta_lines.append(' · '.join(parts))
-        history_html = _history_list_html(_run_history_entries(frame))
-        remaining = run_count - min(run_count, LISTING_HISTORY_LIMIT)
-        if remaining > 0:
-            history_html += (
-                f'<p class="listing-meta">+{remaining} earlier run'
-                f'{"s" if remaining != 1 else ""}</p>'
-            )
+            parts.append(_count_label(commit_count, 'commit'))
+    latest_date = _format_run_date(frame.iloc[0].get('date'))
+    if latest_date:
+        parts.append(f'last {latest_date}')
+    history_html = _history_list_html(_run_history_entries(frame))
+    remaining = run_count - min(run_count, LISTING_HISTORY_LIMIT)
+    if remaining > 0:
+        history_html += (
+            f'<p class="listing-meta">+{_count_label(remaining, "earlier run")}</p>'
+        )
+    return ([' · '.join(parts)] if parts else []), history_html
+
+
+def _pr_listing_card(path: Path, data_root: Path) -> str:
+    data_dir = data_root / 'pr' / path.name
+    frame = _load_runs_frame(data_dir)
+    meta_lines, history_html = _listing_history(frame, include_commits=True)
     return _listing_card(
         href=f'{path.name}/',
-        title=title,
+        title=pr_page_heading(path.name, resolve_pr_title(path.name, data_dir=data_dir)),
         meta_lines=meta_lines,
         history_html=history_html,
-        extra_href=f'{STATUS_APP_REPO}/pull/{path.name}',
+        extra_href=_pr_url(path.name),
         extra_label='View on GitHub →',
     )
 
 
 def _release_listing_card(path: Path, data_root: Path) -> str:
-    runs_csv = data_root / 'releases' / path.name / MANIFEST_CSV_NAME
-    frame = _load_runs_frame(runs_csv)
-    title = f'Release {path.name}'
-    meta_lines: list[str] = []
-    history_html = ''
-    if frame is None or frame.empty:
-        meta_lines.append('No run metadata yet.')
-    else:
-        run_count = len(frame)
-        latest_date = _format_run_date(frame.iloc[0].get('date'))
-        parts = []
-        if run_count:
-            parts.append(f'{run_count} run{"s" if run_count != 1 else ""}')
-        if latest_date:
-            parts.append(f'last {latest_date}')
-        if parts:
-            meta_lines.append(' · '.join(parts))
-        history_html = _history_list_html(_run_history_entries(frame))
-        remaining = run_count - min(run_count, LISTING_HISTORY_LIMIT)
-        if remaining > 0:
-            history_html += (
-                f'<p class="listing-meta">+{remaining} earlier run'
-                f'{"s" if remaining != 1 else ""}</p>'
-            )
+    frame = _load_runs_frame(data_root / 'releases' / path.name)
+    meta_lines, history_html = _listing_history(frame)
     return _listing_card(
         href=f'{path.name}/',
-        title=title,
+        title=f'Release {path.name}',
         meta_lines=meta_lines,
         history_html=history_html,
     )
@@ -1647,15 +2273,16 @@ def _channel_directory_cards(
     *,
     kind: str,
 ) -> str:
+    empty = '<p class="note">No published runs yet.</p>'
     if not parent.exists():
-        return '<p class="note">No published runs yet.</p>'
+        return empty
     entries = [
         path for path in parent.iterdir()
         if path.is_dir() and (path / 'index.html').exists()
     ]
     entries.sort(key=lambda item: channel_listing_sort_key(item.name), reverse=True)
     if not entries:
-        return '<p class="note">No published runs yet.</p>'
+        return empty
     if kind == 'pr':
         cards = ''.join(_pr_listing_card(path, data_root) for path in entries)
     else:
@@ -1669,7 +2296,7 @@ def _write_nightly_stub(nightly_dir: Path) -> None:
         return
     nightly_dir.mkdir(parents=True, exist_ok=True)
     body = (
-        '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
+        f'{_back_nav("../", "All Windows benchmarks")}'
         f'{_heading_with_badge("Windows Nightly Benchmark Dashboard", "nightly")}'
         '<p class="subtitle">Nightly charts have not been published to this path yet.</p>'
         '<p class="note">After the next successful nightly publish, this page is replaced '
@@ -1697,7 +2324,7 @@ def write_desktop_landing(desktop_dir: Path) -> None:
     (releases_dir / 'index.html').write_text(
         _layout(
             'Release benchmarks',
-            '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
+            f'{_back_nav("../", "All Windows benchmarks")}'
             f'{_heading_with_badge("Release benchmarks", "release")}'
             '<p class="subtitle">RC-to-final performance history, isolated by release series.</p>'
             f'{_channel_directory_cards(releases_dir, data_root, kind="release")}',
@@ -1707,7 +2334,7 @@ def write_desktop_landing(desktop_dir: Path) -> None:
     (prs_dir / 'index.html').write_text(
         _layout(
             'Pull request benchmarks',
-            '<nav class="back"><a href="../">← All Windows benchmarks</a></nav>'
+            f'{_back_nav("../", "All Windows benchmarks")}'
             f'{_heading_with_badge("Pull request benchmarks", "pr")}'
             '<p class="subtitle">Persistent benchmark history for explicitly tested pull requests.</p>'
             f'{_channel_directory_cards(prs_dir, data_root, kind="pr")}',
@@ -1715,10 +2342,13 @@ def write_desktop_landing(desktop_dir: Path) -> None:
         encoding='utf-8',
     )
 
+    nightly_env = load_run_environment(desktop_dir.parent.parent / 'data')
+    host_panel = _machine_info_panel(nightly_env)
     body = (
         '<h1>Windows Benchmark Dashboard</h1>'
         '<p class="subtitle">Nightly, pull request, and release results are stored '
         'and charted independently.</p>'
+        f'{host_panel}'
         '<div class="grid">'
         '<a class="card" href="nightly/"><h2>Nightly</h2>'
         '<p>Rolling master performance trend and promoted release baselines.</p></a>'
@@ -1731,22 +2361,21 @@ def write_desktop_landing(desktop_dir: Path) -> None:
     (desktop_dir / 'index.html').write_text(
         _layout('Windows benchmarks', body), encoding='utf-8',
     )
-    (desktop_dir / 'README.md').write_text(
-        '\n'.join([
-            '# Windows benchmarks',
-            '',
-            'Nightly, pull request, and release charts are stored separately:',
-            '',
-            '- [Nightly](nightly/README.md)',
-            '- [Releases](releases/)',
-            '- [Pull requests](pr/)',
-            '',
-            'Interactive dashboard: '
-            '[docs/desktop/](https://status-im.github.io/status-app-benchmarks/desktop/).',
-            '',
-        ]),
-        encoding='utf-8',
-    )
+    readme_lines = [
+        '# Windows benchmarks',
+        '',
+        'Nightly, pull request, and release charts are stored separately:',
+        '',
+        '- [Nightly](nightly/README.md)',
+        '- [Releases](releases/)',
+        '- [Pull requests](pr/)',
+        '',
+        'Interactive dashboard: '
+        '[docs/desktop/](https://status-im.github.io/status-app-benchmarks/desktop/).',
+        '',
+    ]
+    readme_lines.extend(_machine_info_markdown(nightly_env))
+    (desktop_dir / 'README.md').write_text('\n'.join(readme_lines), encoding='utf-8')
     print(f'Generated {desktop_dir / "index.html"}')
 
 
@@ -1776,20 +2405,32 @@ def _github_summary_markdown(
     pages: tuple[BenchmarkPage, ...],
     charts_by_id: dict[str, ChartTest],
     summaries: dict[str, ScenarioSummary],
+    *,
+    nightly_column: str = '',
 ) -> list[str]:
+    nightly_note = (
+        f' **{nightly_column}** is that nightly run — the latest nightly when this PR was measured.'
+        if nightly_column else ''
+    )
+    nightly_header = f' {nightly_column} |' if nightly_column else ''
+    nightly_divider = '----------------------|' if nightly_column else ''
+    empty_row_tail = '| — | — | — | — |' + (' — |' if nightly_column else '')
     lines = [
         '## Scenario summary',
         '',
         'Latest result for every tested scenario. Speed categories:',
         '',
-        '**<0.5s Fast** · **0.5–0.9s Ok** · **0.9–1.0s Ok near slow** · **>1.0s Slow**',
+        '**<0.5s Fast** · **0.5–0.9s Ok** · **0.9–1.0s Near ok** · **>1.0s Slow**',
         '',
         'Reference parity (where shown) means the latest value '
         'is within ±15% of 2.38.0. Wallet tab scenarios show **no baseline** '
-        'because the e2e test now waits for tab content (Jul 2026).',
+        'because the e2e test now waits for tab content (Jul 2026).'
+        + nightly_note,
         '',
-        '| User profile | Area | Scenario | Load time / Speed | vs 2.38.0 | CPU | RAM | Measured |',
-        '|--------------|------|----------|-------------------|-----------|-----|-----|----------|',
+        '| User profile | Area | Scenario | Load time / Speed | vs 2.38.0 |'
+        f'{nightly_header} CPU | RAM | Measured |',
+        '|--------------|------|----------|-------------------|-----------|'
+        f'{nightly_divider}-----|-----|----------|',
     ]
     for page in pages:
         for area, area_label in PRODUCT_AREAS:
@@ -1797,45 +2438,27 @@ def _github_summary_markdown(
             if not groups:
                 lines.append(
                     f'| {page.title} | {area_label} | Not tested | Not tested '
-                    '| — | — | — | — |'
+                    f'{empty_row_tail}'
                 )
                 continue
             for group in groups:
-                scenario = _scenario_chart(group)
-                performance_chart, performance = _scenario_summary(
-                    group, summaries, 'performance'
-                )
-                cpu_chart, cpu = _scenario_summary(group, summaries, 'cpu')
-                ram_chart, ram = _scenario_summary(group, summaries, 'ram')
-                measured = _measured_summary(group, summaries)
-
-                if performance_chart is None:
-                    load_time = '—'
-                    vs_reference = '—'
-                else:
-                    status = performance.speed_status if performance is not None else 'no-data'
-                    load_time = (
-                        f'{_metric_value(performance_chart, performance)} · '
-                        f'{STATUS_LABELS[status]}'
-                    )
-                    vs_reference = (
-                        performance.vs_reference if performance is not None else '—'
-                    )
-                cpu_value = _metric_value(cpu_chart, cpu) if cpu_chart is not None else '—'
-                ram_value = _metric_value(ram_chart, ram) if ram_chart is not None else '—'
-                build = (
-                    measured.commit_hash[:9]
-                    if measured is not None and measured.commit_hash else '—'
-                )
-                date = measured.date if measured is not None and measured.date else '—'
+                snapshot = _scenario_snapshot(group, summaries)
+                build, date = _measured_parts(snapshot.measured)
                 measured_cell = (
                     f'{build}<br>{date}'
                     if build != '—' or date != '—' else '—'
                 )
+                nightly_cell = (
+                    f'{_reference_markdown(snapshot.vs_nightly)} | '
+                    if nightly_column else ''
+                )
                 lines.append(
-                    f'| {page.title} | {area_label} | {scenario.display_name} '
-                    f'| {load_time} | {_reference_markdown(vs_reference)} '
-                    f'| {cpu_value} | {ram_value} '
+                    f'| {page.title} | {area_label} | {snapshot.scenario.display_name} '
+                    f'| {_load_time_markdown(snapshot)} | '
+                    f'{_reference_markdown(snapshot.vs_reference)} | '
+                    f'{nightly_cell}'
+                    f'{_metric_or_dash(snapshot.cpu_chart, snapshot.cpu)} | '
+                    f'{_metric_or_dash(snapshot.ram_chart, snapshot.ram)} '
                     f'| {measured_cell} |'
                 )
     lines.append('')
@@ -1849,8 +2472,11 @@ def write_github_readme(
     *,
     chart_tests: tuple[ChartTest, ...] = (),
     summaries: dict[str, ScenarioSummary] | None = None,
-    run_environment: pd.DataFrame | None = None,
+    runs: pd.DataFrame | None = None,
     channel: str = 'nightly',
+    nightly_baseline_label: str = '',
+    pr_number: str = '',
+    pr_title: str = '',
 ) -> None:
     """GitHub-rendered fallback dashboard (PNG embeds) until GitHub Pages is enabled."""
     if channel == 'release':
@@ -1868,8 +2494,12 @@ def write_github_readme(
             f'Charts show data from the last {CHART_WINDOW_DAYS} days — '
             'each point is one nightly run.'
         )
+    if channel == 'pr' and pr_number:
+        readme_heading = _pr_heading_markdown(pr_number, pr_title)
+    else:
+        readme_heading = 'Windows — performance benchmarks'
     lines = [
-        '# Windows — performance benchmarks',
+        f'# {readme_heading}',
         '',
         'Automated test suite performance tracking for the Windows desktop app.',
         window_line,
@@ -1889,11 +2519,16 @@ def write_github_readme(
         '',
     ]
 
-    env_frame = run_environment if run_environment is not None else pd.DataFrame()
-    lines.extend(_machine_info_markdown(env_frame))
+    stamp_frame = runs if runs is not None else pd.DataFrame()
+    lines.extend(_last_run_markdown(stamp_frame))
     charts_by_id = {chart.test_id: chart for chart in chart_tests}
     scenario_summaries = summaries or {}
-    lines.extend(_github_summary_markdown(pages, charts_by_id, scenario_summaries))
+    lines.extend(
+        _github_summary_markdown(
+            pages, charts_by_id, scenario_summaries,
+            nightly_column=nightly_baseline_label,
+        )
+    )
 
     for page in pages:
         lines.extend([f'## {page.title}', '', page.description, ''])

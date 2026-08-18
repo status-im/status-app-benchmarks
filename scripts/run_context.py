@@ -7,11 +7,15 @@ import re
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
+
+import pandas as pd
 
 
 CHANNELS = ('nightly', 'pr', 'release')
 MANIFEST_CSV = 'runs.csv'
+NIGHTLY_BASELINE_CSV = 'nightly_baseline.csv'
+NIGHTLY_BASELINE_FIELDS = ('run_id', 'commit_hash', 'date', 'pr_run_id')
 BASELINE_REGISTRY_CSV = 'registry.csv'
 METRIC_FILES = (
     'performance_metrics.csv',
@@ -120,6 +124,87 @@ def append_run_manifest(data_dir: Path, context: RunContext) -> None:
         if not exists:
             writer.writeheader()
         writer.writerow(context.as_row())
+
+
+def load_nightly_baseline(data_dir: Path) -> dict[str, str]:
+    path = data_dir / NIGHTLY_BASELINE_CSV
+    if not path.exists():
+        return {}
+    with open(path, newline='', encoding='utf-8') as handle:
+        rows = list(csv.DictReader(handle))
+    if not rows:
+        return {}
+    row = rows[0]
+    return {
+        field: (row.get(field) or '').strip()
+        for field in NIGHTLY_BASELINE_FIELDS
+    }
+
+
+def save_nightly_baseline(data_dir: Path, stamp: dict[str, str]) -> None:
+    if not (stamp.get('commit_hash') or stamp.get('date')):
+        return
+    data_dir.mkdir(parents=True, exist_ok=True)
+    with open(data_dir / NIGHTLY_BASELINE_CSV, 'w', newline='', encoding='utf-8') as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(NIGHTLY_BASELINE_FIELDS))
+        writer.writeheader()
+        writer.writerow({
+            field: (stamp.get(field) or '').strip()
+            for field in NIGHTLY_BASELINE_FIELDS
+        })
+
+
+def load_run_manifest(path: Path) -> pd.DataFrame:
+    """Read runs.csv from a data directory or from the CSV path itself."""
+    csv_path = path if path.suffix.lower() == '.csv' else path / MANIFEST_CSV
+    if not csv_path.exists():
+        return pd.DataFrame()
+    try:
+        frame = pd.read_csv(csv_path)
+    except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError):
+        return pd.DataFrame()
+    return frame if frame is not None else pd.DataFrame()
+
+
+def utc_dates(frame: pd.DataFrame, column: str = 'date') -> pd.Series:
+    if frame is None or frame.empty or column not in frame.columns:
+        index = getattr(frame, 'index', None)
+        return pd.Series(dtype='datetime64[ns, UTC]', index=index)
+    return pd.to_datetime(frame[column], utc=True, errors='coerce')
+
+
+def latest_run_row(
+    frame: pd.DataFrame | None,
+    *,
+    until: Optional[pd.Timestamp] = None,
+) -> Optional[pd.Series]:
+    if frame is None or frame.empty or 'date' not in frame.columns:
+        return None
+    ordered = frame.assign(_sort=utc_dates(frame))
+    ordered = ordered[ordered['_sort'].notna()]
+    if until is not None and not pd.isna(until):
+        ordered = ordered[ordered['_sort'] <= until]
+    if ordered.empty:
+        return None
+    return ordered.sort_values('_sort').iloc[-1].drop(labels='_sort', errors='ignore')
+
+
+def run_stamp(row: object | None) -> dict[str, str]:
+    if row is None:
+        return {}
+    getter = row.get if hasattr(row, 'get') else lambda _key, default='': default
+    date = getter('date')
+    if date is None or (not isinstance(date, str) and pd.isna(date)):
+        date_text = ''
+    elif hasattr(date, 'strftime'):
+        date_text = pd.Timestamp(date).strftime('%Y-%m-%dT%H:%M:%S')
+    else:
+        date_text = str(date).strip()
+    return {
+        'run_id': str(getter('run_id') or '').strip(),
+        'commit_hash': str(getter('commit_hash') or '').strip(),
+        'date': date_text,
+    }
 
 
 def load_baseline_registry(baseline_dir: Path) -> list[dict[str, str]]:
