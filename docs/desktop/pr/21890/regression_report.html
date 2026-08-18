@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Flags — Status App Benchmarks</title>
+  <meta http-equiv="Cache-Control" content="no-store">
+  <title>#21890 Perf/loading skeletons — Status App Benchmarks</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -70,6 +71,13 @@
       margin: 0 0 0.25rem;
     }
     .page-heading h1 { margin: 0; }
+    .page-heading h1 a { color: inherit; text-decoration: none; }
+    .page-heading h1 a:hover { text-decoration: underline; }
+    .page-heading h1 .pr-title { font-weight: 600; }
+    .profile-page-name {
+      margin: 0.85rem 0 0.25rem;
+      font-size: 1.2rem;
+    }
     .channel-badge {
       display: inline-block;
       font-size: 0.72rem;
@@ -338,8 +346,49 @@
       background: #cf222e;
       color: #fff;
     }
-    .summary-profile { margin: 2rem 0; }
-    .summary-profile h2 { margin-bottom: 0.25rem; }
+    .summary-heading {
+      margin: 2rem 0 0.55rem;
+      font-size: 1.35rem;
+      text-align: center;
+    }
+    .summary-legend {
+      margin: 0 0 1.5rem;
+      text-align: center;
+    }
+    .summary-legend-note {
+      margin: 0.7rem auto 0;
+      max-width: 38rem;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    details.summary-profile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+    details.summary-profile[open] { border-color: var(--link); }
+    details.summary-profile > summary {
+      cursor: pointer;
+      padding: 0.9rem 1.1rem;
+      font-weight: 600;
+    }
+    details.summary-profile > summary:hover {
+      background: var(--accent-data-bg);
+    }
+    details.summary-profile > summary:focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: -2px;
+    }
+    .summary-profile-body {
+      border-top: 1px solid var(--border);
+      padding: 0.25rem 1rem 1rem;
+    }
+    .summary-profile-body .subtitle { margin: 0.75rem 0 0; }
+    section.summary-profile { margin: 2rem 0; }
+    section.summary-profile h2 { margin-bottom: 0.25rem; }
     .summary-table {
       width: 100%;
       border-collapse: collapse;
@@ -363,6 +412,16 @@
     .summary-table .reference-column {
       min-width: 105px;
       white-space: nowrap;
+    }
+    .summary-table th.nightly-column {
+      white-space: normal;
+      min-width: 6.75rem;
+    }
+    .summary-table th .column-date {
+      display: block;
+      margin-top: 0.12rem;
+      font-weight: 500;
+      font-size: 0.72rem;
     }
     .summary-table .measured-column {
       min-width: 6.5rem;
@@ -438,15 +497,12 @@
       .status-backlog { background: var(--accent-wallet-bg); }
     }
     .speed-legend {
-      display: inline-flex;
+      display: flex;
       flex-wrap: wrap;
-      gap: 0.25rem 0.75rem;
-      margin-top: 0.2rem;
+      justify-content: center;
+      gap: 0.45rem 0.6rem;
     }
-    .speed-fast { color: #1a7f37; font-weight: 600; }
-    .speed-ok { color: var(--link); font-weight: 600; }
-    .speed-ok-warn { color: #9a6700; font-weight: 600; }
-    .speed-slow { color: #cf222e; font-weight: 600; }
+    .speed-legend .status { margin: 0; }
     .regression-legend {
       display: flex;
       flex-direction: column;
@@ -540,9 +596,45 @@
       color: var(--muted);
       font-size: 0.85rem;
     }
-    section.machine-info dd {
-      margin: 0.1rem 0 0;
-      font-weight: 500;
+    section.last-run {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem 0.9rem;
+      background: var(--accent-data-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1.15rem;
+      margin: 1rem 0;
+    }
+    .last-run-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .last-run-date {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    a.last-run-commit {
+      display: inline-flex;
+      align-items: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--link);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      text-decoration: none;
+    }
+    a.last-run-commit:hover {
+      border-color: var(--link);
+      text-decoration: underline;
     }
     @media (max-width: 700px) {
       main { padding: 1rem; }
@@ -564,6 +656,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><div class="page-heading"><span class="channel-badge channel-badge-pr">Pull request</span><h1>Flags</h1></div><p class="subtitle">Automated flags from nightly performance data.</p><p class="subtitle regression-legend"><span class="regression-legend-item"><span class="status status-slow">↗ Regression</span>3 consecutive builds each ≥15% slower than the previous.</span><span class="regression-legend-item"><span class="status status-ok-warn">⏱ Slow</span>latest value exceeds 1.0s slow threshold (and not yet a backlog candidate).</span><span class="regression-legend-item"><span class="status status-backlog">Backlog</span>slow in 3 of the last 5 builds (listed here instead of Slow).</span></p><p class="subtitle"><strong>Total flags:</strong> 9</p><section class="summary-profile"><h2 class="section-heading">Regression<span class="status status-slow">↗ Regression</span></h2><p class="subtitle">No violations.</p></section><section class="summary-profile"><h2 class="section-heading">Slow builds<span class="summary-badge">9</span><span class="status status-ok-warn">⏱ Slow</span></h2><table class="summary-table"><thead><tr><th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th><th>Ticket</th></tr></thead><tbody><tr><td data-label="Test"><a href="community-populated.html#test_status_community_first_open_loading_time_member">test_status_community_first_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">5.103s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 5.103s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="community-populated.html#test_status_community_second_open_loading_time_member">test_status_community_second_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">2.195s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 2.195s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_send_first_open_time_wallet_load_alex">test_wallet_send_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.864s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.864s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_assets_tab_first_open_time_wallet_load">test_wallet_assets_tab_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.321s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.321s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_send_first_open_time_wallet_load">test_wallet_send_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.157s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.157s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_receive_first_open_time_wallet_load">test_wallet_receive_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.108s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.108s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_swap_first_open_time_wallet_load_alex">test_wallet_swap_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.067s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.067s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_receive_first_open_time_wallet_load_alex">test_wallet_receive_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.026s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.026s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_send_first_open_time_fresh">test_wallet_send_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.025s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>6d95be</code></td><td data-label="Date">2026-08-17 10:47</td><td data-label="Detail">Latest value 1.025s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr></tbody></table></section><section class="summary-profile"><h2 class="section-heading">Backlog candidates<span class="status status-backlog">Backlog</span></h2><p class="subtitle">No violations.</p></section></main>
+  <main><nav class="back"><a href="index.html">← Dashboard</a></nav><div class="page-heading"><span class="channel-badge channel-badge-pr">Pull request</span><h1><a href="https://github.com/status-im/status-app/pull/21890" title="https://github.com/status-im/status-app/pull/21890" target="_blank">#21890</a><span class="pr-title"> Perf/loading skeletons</span></h1></div><h2 class="profile-page-name">Flags</h2><p class="subtitle">Automated flags from nightly performance data.</p><p class="subtitle regression-legend"><span class="regression-legend-item"><span class="status status-slow">↗ Regression</span>3 consecutive builds each ≥15% slower than the previous.</span><span class="regression-legend-item"><span class="status status-ok-warn">⏱ Slow</span>latest value exceeds 1.0s slow threshold (and not yet a backlog candidate).</span><span class="regression-legend-item"><span class="status status-backlog">Backlog</span>slow in 3 of the last 5 builds (listed here instead of Slow).</span></p><p class="subtitle"><strong>Total flags:</strong> 7</p><section class="summary-profile"><h2 class="section-heading">Regression<span class="status status-slow">↗ Regression</span></h2><p class="subtitle">No violations.</p></section><section class="summary-profile"><h2 class="section-heading">Slow builds<span class="summary-badge">7</span><span class="status status-ok-warn">⏱ Slow</span></h2><table class="summary-table"><thead><tr><th>Test</th><th>Variant</th><th>Value</th><th>Commit</th><th>Date</th><th>Detail</th><th>Ticket</th></tr></thead><tbody><tr><td data-label="Test"><a href="community-populated.html#test_status_community_first_open_loading_time_member">test_status_community_first_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">3.130s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 3.130s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="community-populated.html#test_status_community_second_open_loading_time_member">test_status_community_second_open_loading_time_member</a></td><td data-label="Variant">user_data0-user_account0</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">2.269s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 2.269s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load.html#test_wallet_send_first_open_time_wallet_load">test_wallet_send_first_open_time_wallet_load</a></td><td data-label="Variant">wallet_load_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.792s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 1.792s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_send_first_open_time_wallet_load_alex">test_wallet_send_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.493s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 1.493s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-wallet-load-alex.html#test_wallet_swap_first_open_time_wallet_load_alex">test_wallet_swap_first_open_time_wallet_load_alex</a></td><td data-label="Variant">wallet_load_alex_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.032s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 1.032s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_send_first_open_time_fresh">test_wallet_send_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.028s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 1.028s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr><tr><td data-label="Test"><a href="wallet-fresh.html#test_wallet_swap_first_open_time_fresh">test_wallet_swap_first_open_time_fresh</a></td><td data-label="Variant">fresh_user</td><td data-label="Value"><div class="load-time-cell"><span class="metric-value">1.004s</span><span class="status status-ok-warn">⏱ Slow</span></div></td><td data-label="Commit"><code>f792d7</code></td><td data-label="Date">2026-08-18 09:43</td><td data-label="Detail">Latest value 1.004s exceeds 1.0s slow threshold</td><td data-label="Ticket">—</td></tr></tbody></table></section><section class="summary-profile"><h2 class="section-heading">Backlog candidates<span class="status status-backlog">Backlog</span></h2><p class="subtitle">No violations.</p></section></main>
 </body>
 </html>

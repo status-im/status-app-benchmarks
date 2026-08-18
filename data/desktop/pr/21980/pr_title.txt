@@ -1,0 +1,1 @@
+feat(@ci): extend Windows benchmarks job to support PR and releases
