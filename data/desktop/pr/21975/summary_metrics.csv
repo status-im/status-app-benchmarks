@@ -1,0 +1,2 @@
+run_id,commit_hash,date,build_label,total_tests,passed,failed,broken,skipped,unknown,pass_rate,total_duration_ms,avg_duration_ms,min_duration_ms,max_duration_ms,total_retries,flaky_tests
+pr-21975-7ea77e-15,7ea77e,2026-08-18T13:16:25,PR 21975,32,32,0,0,0,0,100.0,252297,7884.28,662,27901,0,0
