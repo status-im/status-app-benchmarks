@@ -1,2 +1,3 @@
 run_id,channel,commit_hash,date,build_label,source_ref,build_source,pr_number,release_series,release_version
 pr-21975-7ea77e-15,pr,7ea77e,2026-08-18T13:16:25,PR 21975,perf/mobile-section-extras,https://status-im-desktop-prs.ams3.digitaloceanspaces.com/StatusIm-Desktop-260818-105453-7ea77e-pr21975-x86_64.7z,21975,,
+pr-21975-bfdca7-19,pr,bfdca7,2026-08-21T14:54:32,PR 21975,perf/mobile-section-extras,https://status-app-desktop-prs.hel1.your-objectstorage.com/StatusIm-Desktop-260821-120811-bfdca7-pr21975-x86_64.7z,21975,,
