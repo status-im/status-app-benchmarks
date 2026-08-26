@@ -1,0 +1,1 @@
+chore(@e2e): adjust tests to work on small screen

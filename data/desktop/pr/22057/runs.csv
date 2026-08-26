@@ -1,0 +1,2 @@
+run_id,channel,commit_hash,date,build_label,source_ref,build_source,pr_number,release_series,release_version
+pr-22057-7ac633-21,pr,7ac633,2026-08-26T14:08:20,PR 22057,tests/fix-tests-on-mac,https://status-app-desktop-prs.hel1.your-objectstorage.com/StatusIm-Desktop-260826-121238-7ac633-pr22057-x86_64.7z,22057,,
