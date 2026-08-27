@@ -1,0 +1,2 @@
+run_id,commit_hash,date,build_label,hostname,windows_version,os_build,cpu,ram_gb
+release-2.39.0-rc.1-ce5b19-22,ce5b19,2026-08-27T15:39:42,2.39.0-rc.1,WINDOWS-NODE-01,Windows Server 2022 Standard 21H2,20348.1487,AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics,63

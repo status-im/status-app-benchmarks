@@ -1,0 +1,2 @@
+run_id,channel,commit_hash,date,build_label,source_ref,build_source,pr_number,release_series,release_version
+release-2.39.0-rc.1-ce5b19-22,release,ce5b19,2026-08-27T15:39:42,2.39.0-rc.1,release/2.39.x,https://status-app-releases.hel1.your-objectstorage.com/StatusIm-Desktop-2.39.0-rc.1-4-gce5b195085-ce5b19-x86_64.7z,,2.39,2.39.0-rc.1
