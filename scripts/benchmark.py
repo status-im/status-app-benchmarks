@@ -330,12 +330,49 @@ def _merge_baseline_metrics(
     return merged
 
 
+def _merge_reference_metrics(
+    metrics: Dict[str, Optional[pd.DataFrame]],
+    source_dir: Path,
+    reference_commit: str,
+) -> Dict[str, Optional[pd.DataFrame]]:
+    """Merge reference-build rows from nightly data into isolated channel metrics."""
+    source_metrics = load_metrics(source_dir)
+    merged = dict(metrics)
+    for kind, source_frame in source_metrics.items():
+        if source_frame is None or source_frame.empty:
+            continue
+        reference_rows = source_frame[
+            source_frame['commit_hash'].astype(str) == reference_commit
+        ]
+        if reference_rows.empty:
+            continue
+        group_cols = ['test_name']
+        if 'metric_id' in reference_rows.columns:
+            group_cols.append('metric_id')
+        reference_rows = (
+            reference_rows.sort_values('date')
+            .groupby(group_cols, as_index=False)
+            .tail(1)
+        )
+        current = merged.get(kind)
+        if current is None or current.empty:
+            merged[kind] = reference_rows.copy()
+        else:
+            existing_run_ids = set(current['run_id'].astype(str))
+            new_rows = reference_rows[
+                ~reference_rows['run_id'].astype(str).isin(existing_run_ids)
+            ]
+            if not new_rows.empty:
+                merged[kind] = (
+                    pd.concat([current, new_rows], ignore_index=True).sort_values('date')
+                )
+    return merged
+
+
 def _nightly_data_dir(data_dir: Path, channel: str) -> Path:
     if channel == 'nightly':
         return data_dir
-    if channel == 'pr':
-        return data_dir.parent.parent.parent
-    return data_dir
+    return data_dir.parent.parent.parent
 
 
 def generate_graphs(
@@ -367,6 +404,11 @@ def generate_graphs(
 
     print(f'\nLoading data from {data_dir}...')
     metrics = _merge_baseline_metrics(load_metrics(data_dir), baseline_dir, registry)
+    if channel in {'pr', 'release'}:
+        nightly_dir = _nightly_data_dir(data_dir, channel)
+        reference_commit = CONFIG.defaults.reference_build
+        if nightly_dir.exists() and reference_commit:
+            metrics = _merge_reference_metrics(metrics, nightly_dir, reference_commit)
     runs = load_run_manifest(data_dir)
 
     charts_by_test_id: Dict[str, ChartEntry] = {}
