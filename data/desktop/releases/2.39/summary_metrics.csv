@@ -1,3 +1,4 @@
 run_id,commit_hash,date,build_label,total_tests,passed,failed,broken,skipped,unknown,pass_rate,total_duration_ms,avg_duration_ms,min_duration_ms,max_duration_ms,total_retries,flaky_tests
 release-2.39.0-rc.1-ce5b19-22,ce5b19,2026-08-27T15:39:42,2.39.0-rc.1,32,32,0,0,0,0,100.0,250672,7833.5,267,27017,0,0
 release-2.39.0-rc.2-bf9a03-23,bf9a03,2026-08-31T14:23:00,2.39.0-rc.2,32,32,0,0,0,0,100.0,252536,7891.75,708,26756,0,0
+release-2.39.0-rc.5-e93665-25,e93665,2026-09-04T09:30:54,2.39.0-rc.5,32,32,0,0,0,0,100.0,241149,7535.91,487,25744,0,0
