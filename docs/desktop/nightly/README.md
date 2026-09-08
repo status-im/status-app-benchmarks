@@ -12,7 +12,7 @@ Full CSV history: [`data/`](../../data/).
 
 > **Baseline note:** A full 2.38.0 (`5f66de`) re-baseline is not available — benchmark user profiles are incompatible with the 2.38.0 binary, and wallet tab tests now wait for tab content. Nightly trend continues; non-tab scenarios still compare to 2.38.0 where valid. When **2.39.0** ships, **2.38.2** becomes the new baseline — see [`BASELINE_2.39.md`](./BASELINE_2.39.md).
 
-**Last run** · Sep 07, 2026 · [`3ddecdb8b`](https://github.com/status-im/status-app/commit/3ddecdb8bb372b3046b575909e13f996258b1e0e)
+**Last run** · Sep 08, 2026 · [`ad439bc22`](https://github.com/status-im/status-app/commit/ad439bc22b244407f92c0d42302f8b26634596be)
 
 ## Scenario summary
 
@@ -24,70 +24,70 @@ Reference parity (where shown) means the latest value is within ±15% of 2.38.0.
 
 | User profile | Area | Scenario | Load time / Speed | vs 2.38.0 | CPU | RAM | Measured |
 |--------------|------|----------|-------------------|-----------|-----|-----|----------|
-| New user profile | Wallet | Time to open Wallet for the first time after login | 0.597s · Ok | +0.225s slower | 66.3% | 718.0 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen Wallet in the same session | 0.611s · Ok | +0.232s slower | 73.1% | 869.9 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.163s · Fast | parity | 4.5% | 772.0 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the Add account modal for the first time in the session | 0.629s · Ok | parity | 15.2% | 773.9 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the Add account modal in the same session | 0.471s · Fast | parity | 17.2% | 822.5 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the Receive modal for the first time in the session | 0.403s · Fast | parity | 14.7% | 770.6 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the Receive modal in the same session | 0.298s · Fast | parity | 15.7% | 796.5 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the Send modal for the first time in the session | 1.095s · Slow | +0.207s slower | 18.7% | 695.7 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the Send modal in the same session | 0.361s · Fast | -0.137s faster | 25.7% | 769.9 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the Swap modal for the first time in the session | 1.014s · Slow | -0.545s faster | 33.6% | 822.6 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.439s · Fast | -0.130s faster | 21.7% | 838.6 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the Assets tab for the first time in the session | 0.144s · Fast | no baseline | 14.8% | 758.5 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the Assets tab in the same session | 0.464s · Fast | no baseline | 55.8% | 785.9 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | 0.287s · Fast | no baseline | 16.7% | 876.8 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | 0.243s · Fast | no baseline | 46.9% | 823.9 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to open the History tab for the first time in the session | 0.267s · Fast | no baseline | 60.2% | 874.7 MB | 3ddecdb8b<br>2026-09-07 |
-| New user profile | Wallet | Time to reopen the History tab in the same session | 0.245s · Fast | no baseline | 35.5% | 830.7 MB | 3ddecdb8b<br>2026-09-07 |
+| New user profile | Wallet | Time to open Wallet for the first time after login | 0.971s · Near ok | +0.599s slower | 63.6% | 781.3 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen Wallet in the same session | 0.645s · Ok | +0.266s slower | 66.4% | 863.1 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.148s · Fast | parity | 32.0% | 826.3 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the Add account modal for the first time in the session | 0.542s · Ok | parity | 14.8% | 871.9 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the Add account modal in the same session | 0.531s · Ok | +0.117s slower | 14.6% | 842.4 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the Receive modal for the first time in the session | 0.303s · Fast | -0.168s faster | 31.2% | 716.0 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the Receive modal in the same session | 0.438s · Fast | +0.136s slower | 19.1% | 743.3 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the Send modal for the first time in the session | 1.078s · Slow | +0.190s slower | 35.2% | 748.5 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the Send modal in the same session | 0.373s · Fast | -0.125s faster | 18.3% | 771.3 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the Swap modal for the first time in the session | 0.983s · Near ok | -0.576s faster | 23.6% | 718.6 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.448s · Fast | -0.121s faster | 22.1% | 808.8 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the Assets tab for the first time in the session | 0.172s · Fast | no baseline | 7.1% | 694.8 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the Assets tab in the same session | 0.487s · Fast | no baseline | 57.2% | 752.5 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | 0.312s · Fast | no baseline | 43.0% | 843.0 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | 0.258s · Fast | no baseline | 44.4% | 806.2 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to open the History tab for the first time in the session | 0.275s · Fast | no baseline | 18.2% | 743.3 MB | ad439bc22<br>2026-09-08 |
+| New user profile | Wallet | Time to reopen the History tab in the same session | 0.255s · Fast | no baseline | 38.0% | 810.5 MB | ad439bc22<br>2026-09-08 |
 | New user profile | Messenger | Not tested | Not tested | — | — | — | — |
 | New user profile | Communities | Not tested | Not tested | — | — | — | — |
 | New user profile | Browser | Not tested | Not tested | — | — | — | — |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 0.809s · Ok | +0.325s slower | 23.2% | 808.3 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.848s · Ok | +0.268s slower | 75.6% | 823.2 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.852s · Ok | +0.450s slower | 46.4% | 812.7 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | 0.564s · Ok | -0.185s faster | 56.8% | 754.5 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | 0.468s · Fast | parity | 31.3% | 749.0 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | 0.533s · Ok | -0.389s faster | 43.8% | 782.4 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | 0.332s · Fast | parity | 30.8% | 764.9 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | 1.122s · Slow | -0.668s faster | 42.3% | 814.2 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | 0.483s · Fast | -0.198s faster | 31.4% | 764.8 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | 0.600s · Ok | -0.767s faster | 38.9% | 799.1 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.417s · Fast | -0.115s faster | 28.2% | 813.3 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Assets tab for the first time in the session | 0.160s · Fast | no baseline | 52.9% | 854.7 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | 0.734s · Ok | no baseline | 64.9% | 781.5 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.427s · Fast | no baseline | 57.8% | 800.1 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | 1.352s · Slow | no baseline | 57.5% | 818.4 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | 0.887s · Ok | no baseline | 59.8% | 753.1 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the History tab in the same session | 0.725s · Ok | no baseline | 60.4% | 769.1 MB | 3ddecdb8b<br>2026-09-07 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 0.451s · Fast | parity | 77.0% | 886.0 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.828s · Ok | +0.248s slower | 70.1% | 802.6 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.476s · Fast | +0.074s slower | 31.9% | 833.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | 0.870s · Ok | +0.121s slower | 56.1% | 783.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | 0.471s · Fast | parity | 27.4% | 779.5 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | 0.605s · Ok | -0.317s faster | 37.3% | 754.6 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | 0.346s · Fast | parity | 43.4% | 747.0 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | 1.483s · Slow | -0.307s faster | 37.6% | 792.6 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | 0.466s · Fast | -0.215s faster | 34.8% | 789.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | 0.661s · Ok | -0.706s faster | 41.2% | 826.2 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.403s · Fast | -0.129s faster | 27.7% | 810.1 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Assets tab for the first time in the session | 0.249s · Fast | no baseline | 38.2% | 813.5 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | 0.894s · Ok | no baseline | 57.5% | 785.9 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | 1.781s · Slow | no baseline | 50.0% | 789.2 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | 1.454s · Slow | no baseline | 62.7% | 794.6 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | 0.732s · Ok | no baseline | 45.3% | 826.2 MB | ad439bc22<br>2026-09-08 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the History tab in the same session | 0.824s · Ok | no baseline | 67.4% | 808.2 MB | ad439bc22<br>2026-09-08 |
 | Returning user (semi-heavy wallet account) | Messenger | Not tested | Not tested | — | — | — | — |
 | Returning user (semi-heavy wallet account) | Communities | Not tested | Not tested | — | — | — | — |
 | Returning user (semi-heavy wallet account) | Browser | Not tested | Not tested | — | — | — | — |
-| Returning user (heavy account from Alex) | Wallet | Time to open Wallet for the first time after login | 1.114s · Slow | +0.889s slower | 48.8% | 893.1 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.914s · Near ok | +0.331s slower | 74.4% | 862.3 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.552s · Ok | +0.205s slower | 25.2% | 793.5 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | 0.805s · Ok | parity | 59.6% | 843.5 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Add account modal in the same session | 0.515s · Ok | +0.080s slower | 68.7% | 817.4 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | 0.547s · Ok | -0.403s faster | 44.0% | 826.7 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Receive modal in the same session | 0.358s · Fast | parity | 67.0% | 815.6 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Send modal for the first time in the session | 1.885s · Slow | parity | 50.7% | 838.3 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Send modal in the same session | 0.494s · Fast | -0.169s faster | 60.7% | 848.4 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | 0.624s · Ok | -0.674s faster | 44.8% | 861.2 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.645s · Ok | +0.131s slower | 61.6% | 870.9 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Assets tab for the first time in the session | 0.782s · Ok | no baseline | 53.3% | 840.2 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Assets tab in the same session | 0.796s · Ok | no baseline | 71.2% | 852.1 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.301s · Fast | no baseline | 49.3% | 804.7 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | 0.485s · Fast | no baseline | 62.1% | 823.7 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the History tab for the first time in the session | 0.667s · Ok | no baseline | 57.7% | 837.0 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the History tab in the same session | 0.744s · Ok | no baseline | 69.5% | 846.4 MB | 3ddecdb8b<br>2026-09-07 |
+| Returning user (heavy account from Alex) | Wallet | Time to open Wallet for the first time after login | 0.537s · Ok | +0.312s slower | 33.2% | 846.8 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.876s · Ok | +0.293s slower | 73.7% | 875.1 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.795s · Ok | +0.448s slower | 41.9% | 803.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | 0.881s · Ok | parity | 33.4% | 828.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Add account modal in the same session | 0.578s · Ok | +0.143s slower | 67.7% | 830.7 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | 0.567s · Ok | -0.383s faster | 54.0% | 842.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Receive modal in the same session | 0.418s · Fast | +0.090s slower | 54.8% | 843.0 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Send modal for the first time in the session | 1.169s · Slow | -0.601s faster | 51.3% | 813.7 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Send modal in the same session | 0.588s · Ok | parity | 38.9% | 827.2 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | 1.504s · Slow | +0.206s slower | 60.1% | 852.7 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.589s · Ok | parity | 57.2% | 890.4 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Assets tab for the first time in the session | 0.475s · Fast | no baseline | 47.9% | 808.6 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Assets tab in the same session | 0.854s · Ok | no baseline | 66.7% | 817.1 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.411s · Fast | no baseline | 65.5% | 835.9 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | 0.977s · Near ok | no baseline | 71.2% | 842.0 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the History tab for the first time in the session | 0.853s · Ok | no baseline | 72.5% | 797.9 MB | ad439bc22<br>2026-09-08 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the History tab in the same session | 0.750s · Ok | no baseline | 70.1% | 816.4 MB | ad439bc22<br>2026-09-08 |
 | Returning user (heavy account from Alex) | Messenger | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy account from Alex) | Communities | Not tested | Not tested | — | — | — | — |
 | Returning user (heavy account from Alex) | Browser | Not tested | Not tested | — | — | — | — |
 | Returning user (Status community member) | Wallet | Not tested | Not tested | — | — | — | — |
 | Returning user (Status community member) | Messenger | Not tested | Not tested | — | — | — | — |
-| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 3.168s · Slow | -0.607s faster | 45.9% | 754.3 MB | 3ddecdb8b<br>2026-09-07 |
-| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 2.231s · Slow | parity | 52.6% | 833.4 MB | 3ddecdb8b<br>2026-09-07 |
+| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 2.851s · Slow | -0.924s faster | 46.3% | 746.2 MB | ad439bc22<br>2026-09-08 |
+| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 2.160s · Slow | parity | 10.7% | 839.1 MB | ad439bc22<br>2026-09-08 |
 | Returning user (Status community member) | Browser | Not tested | Not tested | — | — | — | — |
 
 ## New user profile
