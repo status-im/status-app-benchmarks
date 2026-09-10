@@ -16,7 +16,7 @@ from benchmark_config import (
     ChartTest,
     effective_reference_build,
 )
-from chart_builder import series_for_chart, variant_name
+from chart_builder import SETTLE_COLUMN, series_for_chart, variant_name
 from run_context import latest_run_row, run_stamp, utc_dates
 
 
@@ -41,6 +41,7 @@ class ScenarioSummary:
     vs_reference: str
     detail: str
     vs_nightly: str = '—'
+    settle_sec: Optional[float] = None
 
 
 def _check_regression(
@@ -389,6 +390,9 @@ def collect_scenario_summaries(
             speed_status = 'neutral'
             vs_reference = '—'
             detail = 'Time-based thresholds do not apply to this metric.'
+        settle_sec = None
+        if SETTLE_COLUMN in latest.index and pd.notna(latest.get(SETTLE_COLUMN)):
+            settle_sec = float(latest[SETTLE_COLUMN])
         summaries[chart.test_id] = ScenarioSummary(
             test_id=chart.test_id,
             value=value,
@@ -397,6 +401,7 @@ def collect_scenario_summaries(
             speed_status=speed_status,
             vs_reference=vs_reference,
             detail=detail,
+            settle_sec=settle_sec,
         )
     return summaries
 

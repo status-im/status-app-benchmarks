@@ -6,3 +6,10 @@ __pycache__/
 *.bak
 machine_info.json
 pr-assets/
+
+# Local dashboard preview (scratch parse/graphs, not published nightly data)
+_local_preview/
+
+# Accidental root copies when generating graphs into _local_preview/docs
+/index.html
+/.nojekyll

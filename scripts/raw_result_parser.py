@@ -32,7 +32,18 @@ def _metric_values(data: dict, keyword: str) -> Dict:
         'avg_value': sum(values) / len(values),
         'run_count': len(values),
         'all_runs': ','.join(map(str, values)),
+        **_settle_fields(metric),
     }
+
+
+def _settle_fields(metric: dict) -> Dict:
+    durations = metric.get('durations_sec') or []
+    if not durations:
+        return {}
+    values = [float(value) for value in durations]
+    if not values:
+        return {}
+    return {'avg_settle_sec': sum(values) / len(values)}
 
 
 def _attachment_keyword_for_test(chart: ChartTest, test_name: str) -> str:
@@ -48,7 +59,7 @@ def _attachment_keyword_for_test(chart: ChartTest, test_name: str) -> str:
 def parse_raw_result_json(
     json_file: Path,
     config: BenchmarkConfig,
-) -> Tuple[Dict, List[Dict], List[Dict], List[Dict]]:
+) -> Tuple[Dict, List[Dict], List[Dict], List[Dict], List[Dict]]:
     data = json.loads(json_file.read_text(encoding='utf-8'))
     version = data.get('schema_version')
     if version != SUPPORTED_SCHEMA_VERSION:
@@ -67,6 +78,7 @@ def parse_raw_result_json(
         'performance': [],
         'cpu': [],
         'ram': [],
+        'net': [],
     }
     for chart in config.charts:
         patterns = (chart.source_pattern or chart.pattern, *chart.historical_patterns)
@@ -92,4 +104,9 @@ def parse_raw_result_json(
                 'status': test_result['status'],
                 **metric,
             })
-    return test_result, output['performance'], output['cpu'], output['ram']
+    hosts = data.get('hosts')
+    if hosts:
+        for row in output['net']:
+            if str(row.get('metric_id', '')).startswith('test_data_usage_total_'):
+                row['hosts'] = hosts
+    return test_result, output['performance'], output['cpu'], output['ram'], output['net']
