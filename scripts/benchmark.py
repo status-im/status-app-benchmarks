@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import json
 import sys
 from dataclasses import replace
 from datetime import datetime
@@ -55,6 +56,7 @@ from run_context import (
 )
 from site_generator import (
     NightlyBaseline,
+    latest_hosts_by_test_id,
     nightly_comparison_header,
     resolve_pr_title,
     write_desktop_landing,
@@ -73,6 +75,9 @@ METRICS_CSV = {
     }),
     'ram': ('ram_metrics.csv', {
         'min_ram_mb': 'min_value', 'max_ram_mb': 'max_value', 'avg_ram_mb': 'avg_value',
+    }),
+    'net': ('net_metrics.csv', {
+        'min_net_mb': 'min_value', 'max_net_mb': 'max_value', 'avg_net_mb': 'avg_value',
     }),
 }
 
@@ -163,6 +168,7 @@ def process_benchmark_run(
     performance_results: List[Dict] = []
     cpu_results: List[Dict] = []
     ram_results: List[Dict] = []
+    net_results: List[Dict] = []
     parse_errors: List[str] = []
     aggregate = {
         'total_tests': 0, 'passed': 0, 'failed': 0, 'broken': 0,
@@ -177,7 +183,7 @@ def process_benchmark_run(
                 parsed = parse_test_case_json(json_file, benchmark_dir, CONFIG)
             else:
                 parsed = parse_raw_result_json(json_file, CONFIG)
-            test_result, performance_metrics, cpu_metrics, ram_metrics = parsed
+            test_result, performance_metrics, cpu_metrics, ram_metrics, net_metrics = parsed
             aggregate['total_tests'] += 1
             aggregate[test_result['status']] = aggregate.get(test_result['status'], 0) + 1
             aggregate['total_duration_ms'] += test_result['duration_ms']
@@ -189,6 +195,7 @@ def process_benchmark_run(
             performance_results.extend(performance_metrics)
             cpu_results.extend(cpu_metrics)
             ram_results.extend(ram_metrics)
+            net_results.extend(net_metrics)
         except Exception as error:
             print(f'Error parsing {json_file.name}: {error}')
             parse_errors.append(f'{json_file.name}: {error}')
@@ -243,11 +250,12 @@ def process_benchmark_run(
         )},
     } for row in performance_results])
 
-    for results, kind in ((cpu_results, 'cpu'), (ram_results, 'ram')):
+    for results, kind in ((cpu_results, 'cpu'), (ram_results, 'ram'), (net_results, 'net')):
         csv_name, column_map = METRICS_CSV[kind]
+        extra_fields = ['avg_settle_sec', 'hosts_json'] if kind == 'net' else []
         _append_csv_rows(data_dir, csv_name, [
             'run_id', 'commit_hash', 'date', 'build_label', 'test_name', 'metric_id', 'status',
-            *column_map.keys(), 'run_count', 'all_runs',
+            *column_map.keys(), *extra_fields, 'run_count', 'all_runs',
         ], [{
             'run_id': context.run_id,
             'commit_hash': context.commit_hash,
@@ -257,6 +265,12 @@ def process_benchmark_run(
             'metric_id': row['metric_id'],
             'status': row['status'],
             **{csv_col: row[metric_key] for csv_col, metric_key in column_map.items()},
+            **({
+                'avg_settle_sec': row['avg_settle_sec']
+                if row.get('avg_settle_sec') is not None else '',
+                'hosts_json': json.dumps(row['hosts'], sort_keys=True)
+                if row.get('hosts') else '',
+            } if extra_fields else {}),
             'run_count': row['run_count'],
             'all_runs': row['all_runs'],
         } for row in results])
@@ -275,6 +289,8 @@ def process_benchmark_run(
         print(f'Processed {len(cpu_results)} CPU results')
     if ram_results:
         print(f'Processed {len(ram_results)} RAM results')
+    if net_results:
+        print(f'Processed {len(net_results)} data-usage results')
     print(f"Pass rate: {aggregate['pass_rate']}%")
     print(f"Total duration: {aggregate['total_duration_ms']}ms")
 
@@ -398,7 +414,11 @@ def generate_graphs(
         for row in registry if row.get('commit_hash')
     }
     window_days = None if channel in {'release', 'pr'} else 30
-    graph_filenames = [chart.graph_filename for chart in CONFIG.charts]
+    page_chart_ids = {test_id for page in CONFIG.pages for test_id in page.test_ids}
+    graph_filenames = [
+        chart.graph_filename for chart in CONFIG.charts
+        if chart.test_id in page_chart_ids
+    ]
     output_dir.mkdir(parents=True, exist_ok=True)
     cleanup_stale_charts(output_dir, graph_filenames)
 
@@ -412,9 +432,12 @@ def generate_graphs(
     runs = load_run_manifest(data_dir)
 
     charts_by_test_id: Dict[str, ChartEntry] = {}
+    charts_by_id = {chart.test_id: chart for chart in CONFIG.charts}
 
     print(f'\nGenerating charts in {output_dir}...')
     for chart in CONFIG.charts:
+        if chart.test_id not in page_chart_ids:
+            continue
         frame = metrics.get(chart.metrics_kind)
         if frame is None or frame.empty:
             continue
@@ -422,6 +445,7 @@ def generate_graphs(
             entry = render_chart(
                 chart, frame, output_dir, CONFIG.defaults,
                 window_days=window_days, build_labels=build_labels,
+                charts_by_id=charts_by_id,
             )
             if entry is not None:
                 charts_by_test_id[chart.test_id] = entry
@@ -474,6 +498,7 @@ def generate_graphs(
         nightly_baseline_title=nightly.title,
         nightly_baseline_name=nightly.name,
         pr_title=resolved_pr_title,
+        hosts_by_test_id=latest_hosts_by_test_id(metrics.get('net')),
     )
     if channel in {'pr', 'release'}:
         desktop_dir = output_dir.parent.parent

@@ -13,9 +13,13 @@ CHART_WINDOW_DAYS = 30
 DEFAULT_CONFIG = Path('scripts/tests_config.toml')
 LOAD_TIME_FOOTNOTE = 'Each point = average of 5 runs on that build.'
 DESKTOP_BUILD_LABELS = Path('data/desktop/build_labels.csv')
+NET_SETTLE_DESCRIPTION = 'Total = Waku + HTTPS + Other. Other is leftover (mostly DiscV5 UDP peer discovery).'
 
-MetricsKind = Literal['performance', 'cpu', 'ram']
-ProductArea = Literal['wallet', 'messenger', 'communities', 'browser']
+MetricsKind = Literal['performance', 'cpu', 'ram', 'net']
+ProductArea = Literal[
+    'total', 'waku', 'https', 'udp', 'other',
+    'wallet', 'messenger', 'communities', 'browser',
+]
 
 
 @dataclass(frozen=True)
@@ -54,6 +58,10 @@ class ChartTest:
     baselines: tuple[str, ...] = ()
     historical_patterns: tuple[str, ...] = ()
     historical_attachment_keywords: tuple[str, ...] = ()
+    overlay_test_ids: tuple[str, ...] = ()
+    legend_name: str = ''
+    line_dash: str = 'solid'
+    marker_symbol: str = 'circle'
 
 
 @dataclass(frozen=True)
@@ -215,6 +223,10 @@ def _load_chart_tests(
             historical_attachment_keywords=tuple(
                 entry.get('historical_attachment_keywords', [])
             ),
+            overlay_test_ids=tuple(entry.get('overlay_test_ids', [])),
+            legend_name=entry.get('legend_name', ''),
+            line_dash=entry.get('line_dash', 'solid'),
+            marker_symbol=entry.get('marker_symbol', 'circle'),
         ))
     return charts
 
@@ -375,6 +387,85 @@ def _expand_wallet_scenarios(
     return charts, page_test_ids
 
 
+def _expand_net_scenarios(
+    raw: dict,
+    defaults: ChartDefaults,
+) -> tuple[list[ChartTest], dict[str, list[str]]]:
+    profiles = raw.get('net_profile_variants', [])
+    screens = raw.get('net_screens', [])
+    if not profiles and not screens:
+        return [], {}
+    if not profiles or not screens:
+        raise ValueError(
+            'Both [[net_profile_variants]] and [[net_screens]] are required'
+        )
+
+    entries = []
+    page_test_ids: dict[str, list[str]] = {}
+    for screen in screens:
+        _require_fields(
+            screen,
+            'screen_id', 'display_name', 'attachment_keyword',
+            'area', 'graph_stem', 'footnote',
+            context='net screen',
+        )
+        for profile in profiles:
+            _require_fields(
+                profile,
+                'suffix', 'param_id', 'page_slug', 'footnote_prefix',
+                context='net profile variant',
+            )
+            suffix = profile['suffix']
+            screen_id = screen['screen_id']
+            test_id = f'test_data_usage_{screen_id}_{suffix}'
+            description = screen.get('description') or NET_SETTLE_DESCRIPTION
+            overlay_ids = [
+                f"test_data_usage_{overlay_id}_{suffix}"
+                for overlay_id in screen.get('overlay_screen_ids', [])
+            ]
+            entry = {
+                'test_id': test_id,
+                'display_name': screen['display_name'],
+                'description': description,
+                'graph_filename': f"{screen['graph_stem']}_{suffix}.png",
+                'pattern': f"test_data_usage_first_open[{profile['param_id']}]",
+                'attachment_keyword': screen['attachment_keyword'],
+                'area': screen['area'],
+                'ylabel': screen.get('ylabel', 'Data usage (MB)'),
+                'footnote': f"{profile['footnote_prefix']} · {screen['footnote']}",
+                'color': screen.get('color'),
+                'legend_name': screen.get('legend_name', ''),
+                'line_dash': screen.get('line_dash', 'solid'),
+                'marker_symbol': screen.get('marker_symbol', 'circle'),
+                'overlay_test_ids': overlay_ids,
+                'show_rolling_average': bool(screen.get('show_rolling_average', False))
+                if overlay_ids else True,
+            }
+            entries.append(entry)
+            if screen.get('page_visible', True):
+                page_test_ids.setdefault(profile['page_slug'], []).append(test_id)
+
+    charts = _load_chart_tests(
+        entries,
+        metrics_kind='net',
+        value_column='avg_net_mb',
+        default_ylabel='Data usage (MB)',
+        default_attachment_keyword='data usage',
+        defaults=defaults,
+        default_show_rolling_average=True,
+        inherit_baselines=False,
+    )
+    return charts, page_test_ids
+
+
+def _merge_page_test_ids(*maps: dict[str, list[str]]) -> dict[str, list[str]]:
+    merged: dict[str, list[str]] = {}
+    for mapping in maps:
+        for slug, ids in mapping.items():
+            merged.setdefault(slug, []).extend(ids)
+    return merged
+
+
 def _load_pages(
     entries: list[dict],
     generated_test_ids: Optional[dict[str, list[str]]] = None,
@@ -468,7 +559,9 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
         raw = tomllib.load(handle)
 
     defaults = _load_defaults(raw)
-    wallet_charts, generated_page_test_ids = _expand_wallet_scenarios(raw, defaults)
+    wallet_charts, wallet_page_test_ids = _expand_wallet_scenarios(raw, defaults)
+    net_charts, net_page_test_ids = _expand_net_scenarios(raw, defaults)
+    generated_page_test_ids = _merge_page_test_ids(wallet_page_test_ids, net_page_test_ids)
     flag_tickets = _load_flag_tickets(raw.get('flag_tickets', []))
 
     load_time_tests = _load_chart_tests(
@@ -508,6 +601,17 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
             defaults=defaults,
             default_show_rolling_average=True,
         ),
+        *net_charts,
+        *_load_chart_tests(
+            raw.get('net_tests', []),
+            metrics_kind='net',
+            value_column='avg_net_mb',
+            default_ylabel='Data usage (MB)',
+            default_attachment_keyword='data usage',
+            defaults=defaults,
+            default_show_rolling_average=True,
+            inherit_baselines=False,
+        ),
     ]
 
     pages = _load_pages(raw.get('pages', []), generated_page_test_ids)
@@ -517,7 +621,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
     )
     if unknown_generated_pages:
         raise ValueError(
-            'Wallet profile variants reference unknown pages: '
+            'Profile variants reference unknown pages: '
             + ', '.join(unknown_generated_pages)
         )
     _validate_config(pages, charts)

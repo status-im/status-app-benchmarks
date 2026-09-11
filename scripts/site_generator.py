@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from html import escape
 from pathlib import Path
 from typing import Optional
+import json
 
 import pandas as pd
 
@@ -16,6 +17,7 @@ from benchmark_config import (
     ChartTest,
     FlagTicket,
 )
+from chart_builder import _format_settle_sec
 from environment_parser import RUN_ENVIRONMENT_FIELDS, load_run_environment
 from regression_report import ScenarioSummary, Violation
 from run_context import latest_run_row, load_run_manifest, utc_dates
@@ -36,6 +38,11 @@ MACHINE_FIELD_LABELS = {
     'ram_gb': 'RAM',
 }
 PRODUCT_AREAS = (
+    ('total', 'Data usage'),
+    ('waku', 'Waku'),
+    ('https', 'HTTPS'),
+    ('udp', 'UDP'),
+    ('other', 'Other'),
     ('wallet', 'Wallet'),
     ('messenger', 'Messenger'),
     ('communities', 'Communities'),
@@ -93,6 +100,8 @@ class _ScenarioSnapshot:
     cpu: ScenarioSummary | None
     ram_chart: ChartTest | None
     ram: ScenarioSummary | None
+    net_chart: ChartTest | None
+    net: ScenarioSummary | None
     measured: ScenarioSummary | None
     vs_reference: str
     vs_nightly: str
@@ -653,6 +662,29 @@ def _page_styles() -> str:
       font-size: 0.85rem;
       margin: 0.5rem 0 0;
     }
+    .hosts-table-wrap {
+      margin: 0.85rem 0 0;
+      overflow-x: auto;
+    }
+    .hosts-table-wrap h3 {
+      margin: 0 0 0.4rem;
+      font-size: 0.95rem;
+    }
+    .hosts-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .hosts-table th,
+    .hosts-table td {
+      text-align: left;
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .hosts-table th { color: var(--muted); font-weight: 600; }
+    .hosts-table td:last-child,
+    .hosts-table th:last-child { text-align: right; white-space: nowrap; }
+    .hosts-empty { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 0; }
     section.chart-placeholder {
       border-style: dashed;
       background: transparent;
@@ -819,6 +851,12 @@ def _chart_iframe(chart_path: str, title: str) -> str:
         f'<iframe src="{escape(chart_path)}" '
         f'title="{escape(title, quote=True)}" loading="lazy" scrolling="no"></iframe>'
     )
+
+
+def _chart_caption(text: str) -> str:
+    if not text:
+        return ''
+    return f'<p class="chart-footnote">{escape(text)}</p>'
 
 
 def _field_text(value: object) -> str:
@@ -1166,7 +1204,11 @@ def _chart_permalink(test_id: str) -> str:
     )
 
 
-def _placeholder_section(test_id: str, title: str) -> str:
+def _placeholder_section(
+    test_id: str,
+    title: str,
+    extra_html: str = '',
+) -> str:
     anchor = escape(test_id, quote=True)
     return (
         f'<section class="chart chart-placeholder" id="{anchor}">'
@@ -1175,43 +1217,119 @@ def _placeholder_section(test_id: str, title: str) -> str:
         '<p class="placeholder-note">'
         'No data yet — chart will appear after the next nightly benchmark run.'
         '</p>'
+        f'{extra_html}'
         '</section>'
     )
 
 
-def _chart_section(test_id: str, chart: ChartEntry) -> str:
+def _chart_section(
+    test_id: str,
+    chart: ChartEntry,
+    hosts_by_test_id: dict[str, dict] | None = None,
+    caption: str = '',
+) -> str:
     anchor = escape(test_id, quote=True)
     chart_path = f'{CHARTS_DIR}/{chart.html_filename}'
     return (
         f'<section class="chart" id="{anchor}">'
         f'{_chart_permalink(test_id)}'
         f'{_chart_iframe(chart_path, chart.display_name)}'
+        f'{_chart_caption(caption)}'
+        f'{_hosts_table_html(hosts_by_test_id.get(test_id) if hosts_by_test_id else None)}'
         '</section>'
     )
+
+
+def _hosts_table_html(hosts: dict | None) -> str:
+    if not hosts:
+        return ''
+    https_rows = hosts.get('https') or []
+    if not https_rows:
+        return '<p class="hosts-empty">No HTTPS hosts in the latest run.</p>'
+    sections = ['<div class="hosts-table-wrap"><h3>Latest run hosts</h3>']
+    if https_rows:
+        sections.append(_hosts_rows_table('HTTPS host', https_rows, 'host'))
+    sections.append('</div>')
+    return ''.join(sections)
+
+
+def _hosts_rows_table(label: str, rows: list, name_key: str) -> str:
+    body = []
+    for row in rows:
+        name = escape(str(row.get(name_key, '')))
+        mb = row.get('mb', 0)
+        try:
+            mb_text = f'{float(mb):.2f} MB'
+        except (TypeError, ValueError):
+            mb_text = escape(str(mb))
+        body.append(f'<tr><td>{name}</td><td>{mb_text}</td></tr>')
+    return (
+        '<table class="hosts-table">'
+        f'<thead><tr><th>{escape(label)}</th><th>Bytes</th></tr></thead>'
+        f'<tbody>{"".join(body)}</tbody></table>'
+    )
+
+
+def latest_hosts_by_test_id(net_metrics: pd.DataFrame | None) -> dict[str, dict]:
+    if net_metrics is None or net_metrics.empty:
+        return {}
+    if 'hosts_json' not in net_metrics.columns or 'metric_id' not in net_metrics.columns:
+        return {}
+    frame = net_metrics.copy()
+    frame = frame[frame['hosts_json'].notna()]
+    frame = frame[frame['hosts_json'].astype(str).str.strip() != '']
+    if frame.empty:
+        return {}
+    if 'date' in frame.columns:
+        frame = frame.sort_values('date')
+    latest: dict[str, dict] = {}
+    for _, row in frame.iterrows():
+        metric_id = str(row.get('metric_id', ''))
+        if not metric_id.startswith('test_data_usage_total_'):
+            continue
+        try:
+            parsed = json.loads(str(row['hosts_json']))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if isinstance(parsed, dict):
+            latest[metric_id] = parsed
+    return latest
 
 
 def _scenario_charts_section(
     group: dict[str, ChartTest],
     charts_by_test_id: dict[str, ChartEntry],
+    hosts_by_test_id: dict[str, dict] | None = None,
 ) -> str:
     scenario = _scenario_chart(group)
     sections = []
-    for metrics_kind in ('performance', 'cpu', 'ram'):
+    for metrics_kind in ('performance', 'cpu', 'ram', 'net'):
         chart_test = group.get(metrics_kind)
         if chart_test is None:
             continue
         chart = charts_by_test_id.get(chart_test.test_id)
+        caption = chart_test.description if chart_test.metrics_kind == 'net' else ''
         if chart is not None:
-            sections.append(_chart_section(chart_test.test_id, chart))
+            sections.append(_chart_section(
+                chart_test.test_id, chart, hosts_by_test_id,
+                caption=caption,
+            ))
         else:
+            extra = (
+                f'{_chart_caption(caption)}'
+                f'{_hosts_table_html(hosts_by_test_id.get(chart_test.test_id) if hosts_by_test_id else None)}'
+            )
             sections.append(_placeholder_section(
-                chart_test.test_id, chart_test.display_name,
+                chart_test.test_id,
+                chart_test.display_name,
+                extra,
             ))
 
     chart_count = len(sections)
     chart_label = 'chart' if chart_count == 1 else 'charts'
+    opened = ' open' if list(group) == ['net'] else ''
     return (
-        '<details class="scenario-charts">'
+        f'<details class="scenario-charts"{opened}>'
         '<summary><span class="scenario-summary-content">'
         f'<span>{escape(scenario.display_name)}</span>'
         f'<span class="scenario-chart-count">{chart_count} {chart_label}</span>'
@@ -1284,6 +1402,18 @@ def _profile_detail_section(title: str, category: str, chips: str) -> str:
     )
 
 
+def _is_data_usage_page(page: BenchmarkPage) -> bool:
+    return page.slug.startswith('data-usage')
+
+
+def _split_site_pages(
+    pages: tuple[BenchmarkPage, ...],
+) -> tuple[tuple[BenchmarkPage, ...], tuple[BenchmarkPage, ...]]:
+    profile_pages = tuple(page for page in pages if not _is_data_usage_page(page))
+    data_usage_pages = tuple(page for page in pages if _is_data_usage_page(page))
+    return profile_pages, data_usage_pages
+
+
 def _profile_facts(page: BenchmarkPage) -> str:
     wallet_chips = ''.join([
         _stat_chip('accounts', page.wallet_accounts, 'wallet'),
@@ -1291,20 +1421,26 @@ def _profile_facts(page: BenchmarkPage) -> str:
         _stat_chip('NFTs', page.wallet_nfts, 'wallet'),
         _stat_chip('txs', page.wallet_transactions, 'wallet'),
     ])
-    messenger_chips = ''.join([
-        _stat_chip('DMs', page.messenger_direct_chats, 'messenger'),
-        _stat_chip('groups', page.messenger_group_chats, 'messenger'),
-    ])
-    community_chips = ''.join([
-        _stat_chip('joined', page.communities_joined, 'communities'),
-        _stat_chip('spectated', page.communities_spectated, 'communities'),
-    ])
+    groups = [
+        _user_data_chip(page.user_data_size),
+        _stat_group("Wallet", "wallet", wallet_chips),
+    ]
+    if not _is_data_usage_page(page):
+        messenger_chips = ''.join([
+            _stat_chip('DMs', page.messenger_direct_chats, 'messenger'),
+            _stat_chip('groups', page.messenger_group_chats, 'messenger'),
+        ])
+        community_chips = ''.join([
+            _stat_chip('joined', page.communities_joined, 'communities'),
+            _stat_chip('spectated', page.communities_spectated, 'communities'),
+        ])
+        groups.extend([
+            _stat_group("Messenger", "messenger", messenger_chips),
+            _stat_group("Communities", "communities", community_chips),
+        ])
     return (
         '<div class="profile-fact-groups">'
-        f'{_user_data_chip(page.user_data_size)}'
-        f'{_stat_group("Wallet", "wallet", wallet_chips)}'
-        f'{_stat_group("Messenger", "messenger", messenger_chips)}'
-        f'{_stat_group("Communities", "communities", community_chips)}'
+        f'{"".join(groups)}'
         '</div>'
     )
 
@@ -1316,22 +1452,26 @@ def _profile_details(page: BenchmarkPage) -> str:
         _stat_chip('NFTs', page.wallet_nfts, 'wallet'),
         _stat_chip('transactions', page.wallet_transactions, 'wallet'),
     ])
-    messenger_chips = ''.join([
-        _stat_chip('1-on-1 chats', page.messenger_direct_chats, 'messenger'),
-        _stat_chip('group chats', page.messenger_group_chats, 'messenger'),
-    ])
-    community_chips = ''.join([
-        _stat_chip('joined', page.communities_joined, 'communities'),
-        _stat_chip('spectated', page.communities_spectated, 'communities'),
-    ])
+    sections = [_profile_detail_section("Wallet", "wallet", wallet_chips)]
+    if not _is_data_usage_page(page):
+        messenger_chips = ''.join([
+            _stat_chip('1-on-1 chats', page.messenger_direct_chats, 'messenger'),
+            _stat_chip('group chats', page.messenger_group_chats, 'messenger'),
+        ])
+        community_chips = ''.join([
+            _stat_chip('joined', page.communities_joined, 'communities'),
+            _stat_chip('spectated', page.communities_spectated, 'communities'),
+        ])
+        sections.extend([
+            _profile_detail_section("Messenger", "messenger", messenger_chips),
+            _profile_detail_section("Communities", "communities", community_chips),
+        ])
     return (
         '<section class="profile-details">'
         '<h2>User data profile</h2>'
         f'<p class="subtitle">Stored data: {escape(page.user_data_size)}</p>'
         '<div class="profile-details-grid">'
-        f'{_profile_detail_section("Wallet", "wallet", wallet_chips)}'
-        f'{_profile_detail_section("Messenger", "messenger", messenger_chips)}'
-        f'{_profile_detail_section("Communities", "communities", community_chips)}'
+        f'{"".join(sections)}'
         '</div></section>'
     )
 
@@ -1343,6 +1483,12 @@ def _metric_value(chart: ChartTest, summary: ScenarioSummary | None) -> str:
         return f'{summary.value:.3f}s'
     if chart.metrics_kind == 'cpu':
         return f'{summary.value:.1f}%'
+    if chart.metrics_kind == 'net':
+        label = f'{summary.value:.2f} MB'
+        if summary.settle_sec is not None:
+            settle = _format_settle_sec(summary.settle_sec)
+            return f'{label} · {settle}' if settle else label
+        return label
     return f'{summary.value:.1f} MB'
 
 
@@ -1365,8 +1511,23 @@ def _scenario_groups(
         chart = charts_by_id.get(test_id)
         if chart is None or chart.area != area:
             continue
-        groups.setdefault(chart.pattern, {})[chart.metrics_kind] = chart
+        group_key = chart.test_id if chart.metrics_kind == 'net' else chart.pattern
+        groups.setdefault(group_key, {})[chart.metrics_kind] = chart
     return list(groups.values())
+
+
+def _product_areas_on_page(
+    page: BenchmarkPage,
+    charts_by_id: dict[str, ChartTest],
+) -> tuple[tuple[str, str], ...]:
+    present = {
+        charts_by_id[test_id].area
+        for test_id in page.test_ids
+        if test_id in charts_by_id
+    }
+    return tuple(
+        (area, label) for area, label in PRODUCT_AREAS if area in present
+    )
 
 
 def _scenario_chart(group: dict[str, ChartTest]) -> ChartTest:
@@ -1400,7 +1561,7 @@ def _measured_summary(
     group: dict[str, ChartTest],
     summaries: dict[str, ScenarioSummary],
 ) -> ScenarioSummary | None:
-    for metrics_kind in ('performance', 'cpu', 'ram'):
+    for metrics_kind in ('performance', 'cpu', 'ram', 'net'):
         chart = group.get(metrics_kind)
         if chart is not None:
             summary = summaries.get(chart.test_id)
@@ -1532,6 +1693,7 @@ def _scenario_snapshot(
     performance_chart, performance = _scenario_summary(group, summaries, 'performance')
     cpu_chart, cpu = _scenario_summary(group, summaries, 'cpu')
     ram_chart, ram = _scenario_summary(group, summaries, 'ram')
+    net_chart, net = _scenario_summary(group, summaries, 'net')
     vs_reference, vs_nightly = _comparison_values(performance_chart, performance)
     return _ScenarioSnapshot(
         scenario=_scenario_chart(group),
@@ -1541,32 +1703,46 @@ def _scenario_snapshot(
         cpu=cpu,
         ram_chart=ram_chart,
         ram=ram,
+        net_chart=net_chart,
+        net=net,
         measured=_measured_summary(group, summaries),
         vs_reference=vs_reference,
         vs_nightly=vs_nightly,
     )
 
 
+def _primary_metric(
+    snapshot: _ScenarioSnapshot,
+) -> tuple[ChartTest | None, ScenarioSummary | None]:
+    if snapshot.performance_chart is not None:
+        return snapshot.performance_chart, snapshot.performance
+    if snapshot.net_chart is not None:
+        return snapshot.net_chart, snapshot.net
+    return None, None
+
+
 def _load_time_html(snapshot: _ScenarioSnapshot) -> str:
-    if snapshot.performance_chart is None:
+    chart, summary = _primary_metric(snapshot)
+    if chart is None:
         return '—'
     return (
         '<div class="load-time-cell">'
         f'<span class="metric-value">'
-        f'{escape(_metric_value(snapshot.performance_chart, snapshot.performance))}'
-        f'</span>{_status_badges(snapshot.performance)}</div>'
+        f'{escape(_metric_value(chart, summary))}'
+        f'</span>{_status_badges(summary)}</div>'
     )
 
 
 def _load_time_markdown(snapshot: _ScenarioSnapshot) -> str:
-    if snapshot.performance_chart is None:
+    chart, summary = _primary_metric(snapshot)
+    if chart is None:
         return '—'
     status = (
-        snapshot.performance.speed_status
-        if snapshot.performance is not None else 'no-data'
+        summary.speed_status
+        if summary is not None else 'no-data'
     )
     return (
-        f'{_metric_value(snapshot.performance_chart, snapshot.performance)} · '
+        f'{_metric_value(chart, summary)} · '
         f'{STATUS_LABELS[status]}'
     )
 
@@ -1625,9 +1801,12 @@ def _summary_sort_key(
     if group is None:
         return -1.0
     _chart, performance = _scenario_summary(group, summaries, 'performance')
-    if performance is None or performance.value is None:
-        return -1.0
-    return float(performance.value)
+    if performance is not None and performance.value is not None:
+        return float(performance.value)
+    _net_chart, net = _scenario_summary(group, summaries, 'net')
+    if net is not None and net.value is not None:
+        return float(net.value)
+    return -1.0
 
 
 def _summary_intro(*, nightly_column: str = '') -> str:
@@ -1664,10 +1843,9 @@ def _summary_profile_section(
 ) -> str:
     keyed_rows: list[tuple[float, str]] = []
     scenario_count = 0
-    for area, area_label in PRODUCT_AREAS:
-        groups = _scenario_groups(page, charts_by_id, area) or [None]
-        if groups[0] is not None:
-            scenario_count += len(groups)
+    for area, area_label in _product_areas_on_page(page, charts_by_id):
+        groups = _scenario_groups(page, charts_by_id, area)
+        scenario_count += len(groups)
         for group in groups:
             keyed_rows.append((
                 _summary_sort_key(group, summaries),
@@ -1678,6 +1856,7 @@ def _summary_profile_section(
     keyed_rows.sort(key=lambda item: item[0], reverse=True)
     rows = ''.join(html for _key, html in keyed_rows)
     count_label = _count_label(scenario_count, 'scenario')
+    open_label = 'Open chart →' if _is_data_usage_page(page) else 'Open profile →'
     nightly_header = (
         _nightly_header_html(nightly.label, nightly.title) if nightly.label else ''
     )
@@ -1689,7 +1868,7 @@ def _summary_profile_section(
         '</span></summary>'
         '<div class="summary-profile-body">'
         f'<p class="subtitle">{escape(page.description)} '
-        f'<a href="{escape(page.slug)}.html">Open profile →</a></p>'
+        f'<a href="{escape(page.slug)}.html">{open_label}</a></p>'
         '<table class="summary-table"><thead><tr>'
         '<th>Area</th><th>Scenario</th>'
         '<th class="load-time-column" '
@@ -1720,6 +1899,36 @@ def _summary_sections(
     )
 
 
+def _data_usage_summary_intro() -> str:
+    return (
+        '<h2 class="summary-heading">Data usage</h2>'
+        '<p class="subtitle">Process-wide traffic from login through 5 min after Wallet. '
+        'Other is leftover after Waku and HTTPS (mostly DiscV5 UDP peer discovery).</p>'
+    )
+
+
+def _dashboard_summary_html(
+    pages: tuple[BenchmarkPage, ...],
+    charts_by_id: dict[str, ChartTest],
+    summaries: dict[str, ScenarioSummary],
+    *,
+    nightly: NightlyBaseline = NightlyBaseline(),
+) -> str:
+    profile_pages, data_usage_pages = _split_site_pages(pages)
+    parts = [
+        _summary_intro(nightly_column=nightly.label),
+        _summary_sections(profile_pages, charts_by_id, summaries, nightly=nightly),
+    ]
+    if data_usage_pages:
+        parts.extend([
+            _data_usage_summary_intro(),
+            _summary_sections(
+                data_usage_pages, charts_by_id, summaries, nightly=nightly,
+            ),
+        ])
+    return ''.join(parts)
+
+
 def _profile_cards_html(pages: tuple[BenchmarkPage, ...]) -> str:
     return ''.join(
         f'<a class="card" href="{escape(page.slug)}.html">'
@@ -1736,11 +1945,12 @@ def _profiles_page(
     channel: str = 'nightly',
     heading: str = 'User profiles',
     heading_html: str = '',
+    subtitle: str = 'Choose a user profile to open its scenario charts.',
 ) -> str:
     return (
         f'{_back_nav("index.html", "Dashboard")}'
         f'{_heading_with_badge(heading, channel, heading_html=heading_html)}'
-        '<p class="subtitle">Choose a user profile to open its scenario charts.</p>'
+        f'<p class="subtitle">{escape(subtitle)}</p>'
         f'<div class="grid">{_profile_cards_html(pages)}</div>'
     )
 
@@ -1894,13 +2104,22 @@ def _regression_page(
     )
 
 
-def _summary_links_html(violations: list[Violation]) -> str:
+def _summary_links_html(
+    violations: list[Violation],
+    *,
+    has_data_usage: bool = False,
+) -> str:
     badge = ''
     if violations:
         badge = f'<span class="summary-badge">{len(violations)}</span>'
+    data_usage_link = (
+        '<a class="summary-link" href="data-usage.html">Data usage →</a>'
+        if has_data_usage else ''
+    )
     return (
         '<div class="summary-links">'
         '<a class="summary-link" href="profiles.html">User profiles →</a>'
+        f'{data_usage_link}'
         f'<a class="summary-link" href="regression_report.html">View flags{badge} →</a>'
         '</div>'
     )
@@ -1941,21 +2160,19 @@ def _profile_areas_html(
     page: BenchmarkPage,
     charts_by_id: dict[str, ChartTest],
     charts_by_test_id: dict[str, ChartEntry],
+    hosts_by_test_id: dict[str, dict] | None = None,
 ) -> str:
     sections = []
-    for area, area_label in PRODUCT_AREAS:
+    for area, area_label in _product_areas_on_page(page, charts_by_id):
         groups = _scenario_groups(page, charts_by_id, area)
-        if not groups:
-            content = '<div class="area-empty">Not tested for this user profile.</div>'
-        else:
-            content = (
-                '<div class="scenario-list">'
-                + ''.join(
-                    _scenario_charts_section(group, charts_by_test_id)
-                    for group in groups
-                )
-                + '</div>'
+        content = (
+            '<div class="scenario-list">'
+            + ''.join(
+                _scenario_charts_section(group, charts_by_test_id, hosts_by_test_id)
+                for group in groups
             )
+            + '</div>'
+        )
         sections.append(
             f'<section class="area-group"><h2>{escape(area_label)}</h2>{content}</section>'
         )
@@ -1979,6 +2196,7 @@ def write_site(
     nightly_baseline_name: str = '',
     pr_number: str = '',
     pr_title: str = '',
+    hosts_by_test_id: dict[str, dict] | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     runs_frame = runs if runs is not None else pd.DataFrame()
@@ -1988,6 +2206,7 @@ def write_site(
     regression_violations = violations or []
     tickets = flag_tickets or {}
     page_slugs_by_test_id = _page_slugs_by_test_id(pages)
+    profile_pages, data_usage_pages = _split_site_pages(pages)
 
     nightly = NightlyBaseline()
     resolved_pr_number = ''
@@ -2014,9 +2233,8 @@ def write_site(
         f'<p class="subtitle">{escape(subtitle)} '
         'Load-time charts plot the average of samples per run.</p>'
         f'{machine_panel}'
-        f'{_summary_links_html(regression_violations)}'
-        f'{_summary_intro(nightly_column=nightly.label)}'
-        f'{_summary_sections(pages, charts_by_id, scenario_summaries, nightly=nightly)}'
+        f'{_summary_links_html(regression_violations, has_data_usage=bool(data_usage_pages))}'
+        f'{_dashboard_summary_html(pages, charts_by_id, scenario_summaries, nightly=nightly)}'
         '<p class="note">Raw CSV history lives in the repository <code>data/</code> folder. '
         'PNG charts on GitHub: '
         f'<a href="{_github_readme_href(output_dir)}">{escape(_github_readme_rel(output_dir))}</a>.</p>'
@@ -2029,10 +2247,26 @@ def write_site(
     _write_page(
         output_dir, 'profiles.html', profiles_title,
         _profiles_page(
-            pages, channel=channel,
+            profile_pages, channel=channel,
             heading=profiles_title, heading_html=profiles_html,
         ),
     )
+
+    if data_usage_pages:
+        usage_title, usage_html = _channel_page_title(
+            channel, heading, heading_html, 'Data usage',
+        )
+        _write_page(
+            output_dir, 'data-usage.html', usage_title,
+            _profiles_page(
+                data_usage_pages, channel=channel,
+                heading=usage_title, heading_html=usage_html,
+                subtitle=(
+                    'Process-wide traffic from login through 5 min after Wallet. '
+                    'Other is leftover after Waku and HTTPS (mostly DiscV5 UDP peer discovery).'
+                ),
+            ),
+        )
 
     (output_dir / 'summary.html').write_text(
         _redirect_page('index.html', 'View scenario summary'),
@@ -2058,18 +2292,25 @@ def write_site(
     expected_pages = {
         f'{page.slug}.html' for page in pages
     } | {'summary.html', 'profiles.html', 'regression_report.html'}
+    if data_usage_pages:
+        expected_pages.add('data-usage.html')
     for page in pages:
         page_title, page_html = _channel_page_title(
             channel, heading, heading_html, page.title,
         )
-        back_label = heading if channel == 'pr' else 'User profiles'
+        if _is_data_usage_page(page):
+            back_href = 'data-usage.html'
+            back_label = heading if channel == 'pr' else 'Data usage'
+        else:
+            back_href = 'profiles.html'
+            back_label = heading if channel == 'pr' else 'User profiles'
         page_body = (
-            f'{_back_nav("profiles.html", back_label)}'
+            f'{_back_nav(back_href, back_label)}'
             f'{_heading_with_badge(page_title, channel, heading_html=page_html)}'
             f'{_channel_subheading(channel, page.title)}'
             f'<p class="subtitle">{escape(page.description)}</p>'
             f'{_profile_details(page)}'
-            f'{_profile_areas_html(page, charts_by_id, charts_by_test_id)}'
+            f'{_profile_areas_html(page, charts_by_id, charts_by_test_id, hosts_by_test_id)}'
             f'{_chart_hash_script()}'
         )
         _write_page(output_dir, f'{page.slug}.html', page_title, page_body)
@@ -2380,7 +2621,7 @@ def write_desktop_landing(desktop_dir: Path) -> None:
 
 
 def _profile_data_markdown(page: BenchmarkPage) -> list[str]:
-    return [
+    lines = [
         '### User data profile',
         '',
         f'- **Stored data:** {page.user_data_size}',
@@ -2389,16 +2630,20 @@ def _profile_data_markdown(page: BenchmarkPage) -> list[str]:
             f'{page.wallet_tokens} tokens with balance > 0 · '
             f'{page.wallet_nfts} NFTs · {page.wallet_transactions} transactions'
         ),
-        (
-            f'- **Messenger:** {page.messenger_direct_chats} 1-on-1 chats · '
-            f'{page.messenger_group_chats} group chats'
-        ),
-        (
-            f'- **Communities:** {page.communities_joined} joined communities · '
-            f'{page.communities_spectated} spectated communities'
-        ),
-        '',
     ]
+    if not _is_data_usage_page(page):
+        lines.extend([
+            (
+                f'- **Messenger:** {page.messenger_direct_chats} 1-on-1 chats · '
+                f'{page.messenger_group_chats} group chats'
+            ),
+            (
+                f'- **Communities:** {page.communities_joined} joined communities · '
+                f'{page.communities_spectated} spectated communities'
+            ),
+        ])
+    lines.append('')
+    return lines
 
 
 def _github_summary_markdown(
@@ -2414,7 +2659,6 @@ def _github_summary_markdown(
     )
     nightly_header = f' {nightly_column} |' if nightly_column else ''
     nightly_divider = '----------------------|' if nightly_column else ''
-    empty_row_tail = '| — | — | — | — |' + (' — |' if nightly_column else '')
     lines = [
         '## Scenario summary',
         '',
@@ -2433,13 +2677,9 @@ def _github_summary_markdown(
         f'{nightly_divider}-----|-----|----------|',
     ]
     for page in pages:
-        for area, area_label in PRODUCT_AREAS:
+        for area, area_label in _product_areas_on_page(page, charts_by_id):
             groups = _scenario_groups(page, charts_by_id, area)
             if not groups:
-                lines.append(
-                    f'| {page.title} | {area_label} | Not tested | Not tested '
-                    f'{empty_row_tail}'
-                )
                 continue
             for group in groups:
                 snapshot = _scenario_snapshot(group, summaries)
@@ -2462,6 +2702,40 @@ def _github_summary_markdown(
                     f'| {measured_cell} |'
                 )
     lines.append('')
+    return lines
+
+
+def _github_page_charts_markdown(
+    page: BenchmarkPage,
+    charts_by_id: dict[str, ChartTest],
+    charts_by_test_id: dict[str, ChartEntry],
+    *,
+    heading_level: int = 2,
+) -> list[str]:
+    heading = '#' * heading_level
+    lines = [f'{heading} {page.title}', '', page.description, '']
+    lines.extend(_profile_data_markdown(page))
+    for area, area_label in _product_areas_on_page(page, charts_by_id):
+        test_ids = [
+            test_id for test_id in page.test_ids
+            if test_id in charts_by_id and charts_by_id[test_id].area == area
+        ]
+        lines.extend([f'{heading}# {area_label}', ''])
+        if not test_ids:
+            continue
+        for test_id in test_ids:
+            chart = charts_by_test_id.get(test_id)
+            if chart is None:
+                chart_test = charts_by_id[test_id]
+                lines.extend([
+                    f'**{chart_test.display_name}**',
+                    '',
+                    '_No data yet — chart will appear after the next nightly benchmark run._',
+                    '',
+                ])
+                continue
+            png_name = Path(chart.html_filename).with_suffix('.png').name
+            lines.extend([f'![{chart.display_name}](./{png_name})', ''])
     return lines
 
 
@@ -2523,38 +2797,31 @@ def write_github_readme(
     lines.extend(_last_run_markdown(stamp_frame))
     charts_by_id = {chart.test_id: chart for chart in chart_tests}
     scenario_summaries = summaries or {}
+    profile_pages, data_usage_pages = _split_site_pages(pages)
     lines.extend(
         _github_summary_markdown(
-            pages, charts_by_id, scenario_summaries,
+            profile_pages, charts_by_id, scenario_summaries,
             nightly_column=nightly_baseline_label,
         )
     )
 
-    for page in pages:
-        lines.extend([f'## {page.title}', '', page.description, ''])
-        lines.extend(_profile_data_markdown(page))
-        for area, area_label in PRODUCT_AREAS:
-            test_ids = [
-                test_id for test_id in page.test_ids
-                if test_id in charts_by_id and charts_by_id[test_id].area == area
-            ]
-            lines.extend([f'### {area_label}', ''])
-            if not test_ids:
-                lines.extend(['_Not tested for this user profile._', ''])
-                continue
-            for test_id in test_ids:
-                chart = charts_by_test_id.get(test_id)
-                if chart is None:
-                    chart_test = charts_by_id[test_id]
-                    lines.extend([
-                        f'**{chart_test.display_name}**',
-                        '',
-                        '_No data yet — chart will appear after the next nightly benchmark run._',
-                        '',
-                    ])
-                    continue
-                png_name = Path(chart.html_filename).with_suffix('.png').name
-                lines.extend([f'![{chart.display_name}](./{png_name})', ''])
+    for page in profile_pages:
+        lines.extend(_github_page_charts_markdown(
+            page, charts_by_id, charts_by_test_id,
+        ))
+
+    if data_usage_pages:
+        lines.extend([
+            '## Data usage',
+            '',
+            'Process-wide traffic from login through 5 min after Wallet. '
+            'Other is leftover after Waku and HTTPS (mostly DiscV5 UDP peer discovery).',
+            '',
+        ])
+        for page in data_usage_pages:
+            lines.extend(_github_page_charts_markdown(
+                page, charts_by_id, charts_by_test_id, heading_level=3,
+            ))
 
     lines.extend([
         '---',

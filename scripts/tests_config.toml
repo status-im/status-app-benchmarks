@@ -58,6 +58,24 @@ test_ids = [
     "test_status_community_second_open_ram_member",
 ]
 
+[[pages]]
+slug = "data-usage-fresh"
+title = "Data usage (new user)"
+description = "From login through 5 min after Wallet. Other is leftover after Waku and HTTPS (mostly DiscV5 UDP peer discovery)."
+user_data_size = "No pre-seeded data"
+wallet = { accounts = "1", tokens = "0", nfts = "0", transactions = "0" }
+messenger = { direct_chats = "0", group_chats = "0" }
+communities = { joined = "0", spectated = "0" }
+
+[[pages]]
+slug = "data-usage-wallet-load-alex"
+title = "Data usage (heavy account from Alex)"
+description = "From login through 5 min after Wallet. Other is leftover after Waku and HTTPS (mostly DiscV5 UDP peer discovery)."
+user_data_size = "~35 MB"
+wallet = { accounts = "4", tokens = "144", nfts = "773", transactions = "5239" }
+messenger = { direct_chats = "0", group_chats = "0" }
+communities = { joined = "0", spectated = "0" }
+
 # --- Wallet profile matrix ---
 
 [[wallet_profile_variants]]
@@ -307,6 +325,72 @@ graph_filename = "community_second_open_ram_member.png"
 attachment_keyword = "ram usage"
 ylabel = "RAM Usage (MB)"
 footnote = "status_community_member profile · each point = average of 5 runs on that build"
+
+# --- Wallet first-open data usage (fixed 5 min window) ---
+
+[[net_profile_variants]]
+suffix = "fresh"
+param_id = "fresh_user"
+page_slug = "data-usage-fresh"
+footnote_prefix = "New user profile"
+
+[[net_profile_variants]]
+suffix = "wallet_load_alex"
+param_id = "wallet_load_alex_user"
+page_slug = "data-usage-wallet-load-alex"
+footnote_prefix = "heavy account (from Alex)"
+
+[[net_screens]]
+screen_id = "total"
+display_name = "Data usage"
+legend_name = "Total"
+color = "#1B4F72"
+overlay_screen_ids = ["waku", "https", "other"]
+description = "Total = Waku + HTTPS + Other. Other is leftover (mostly DiscV5 UDP peer discovery)."
+attachment_keyword = "Total data usage"
+area = "total"
+graph_stem = "data_usage_total"
+footnote = "5 min window"
+
+[[net_screens]]
+screen_id = "waku"
+display_name = "Waku"
+legend_name = "Waku"
+color = "#16A085"
+marker_symbol = "diamond"
+description = "libp2p only"
+attachment_keyword = "Waku data usage"
+area = "waku"
+graph_stem = "data_usage_waku"
+page_visible = false
+footnote = "5 min window"
+
+[[net_screens]]
+screen_id = "https"
+display_name = "HTTPS"
+legend_name = "HTTPS"
+color = "#27AE60"
+marker_symbol = "triangle-up"
+description = "status-go HTTP by host (token lists, RPC proxy)"
+attachment_keyword = "HTTPS data usage"
+area = "https"
+graph_stem = "data_usage_https"
+page_visible = false
+footnote = "5 min window"
+
+[[net_screens]]
+screen_id = "other"
+display_name = "Other"
+legend_name = "Other"
+color = "#D35400"
+line_dash = "dash"
+marker_symbol = "square"
+description = "leftover after Waku and HTTPS: mostly DiscV5 UDP peer discovery"
+attachment_keyword = "Other data usage"
+area = "other"
+graph_stem = "data_usage_other"
+page_visible = false
+footnote = "5 min window"
 
 # --- Flag tickets (shown on Flags report when a test_id is flagged) ---
 

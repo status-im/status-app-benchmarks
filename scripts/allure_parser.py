@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from benchmark_config import BenchmarkConfig, ChartTest
+
+
+SETTLE_IN_RE = re.compile(r'\bin\s+([\d.]+)\s*s\b', re.IGNORECASE)
 
 
 def attachment_path(benchmark_dir: Path, source: str) -> Path:
@@ -24,6 +28,8 @@ def parse_metric_attachment(attachment_file: Path, metric_keyword: str) -> Dict:
     try:
         run_values = []
         avg_value = None
+        run_settles = []
+        avg_settle = None
         for line in attachment_file.read_text(encoding='utf-8').split('\n'):
             line_lower = line.lower()
             if keyword not in line_lower:
@@ -35,21 +41,32 @@ def parse_metric_attachment(attachment_file: Path, metric_keyword: str) -> Dict:
                 value = float(parts[1].strip().split()[0])
             except ValueError:
                 continue
+            settle_match = SETTLE_IN_RE.search(line)
+            settle = float(settle_match.group(1)) if settle_match else None
             if 'average' in line_lower:
                 avg_value = value
+                if settle is not None:
+                    avg_settle = settle
             else:
                 run_values.append(value)
+                if settle is not None:
+                    run_settles.append(settle)
 
         if not run_values:
             return {}
 
-        return {
+        parsed = {
             'min_value': min(run_values),
             'max_value': max(run_values),
             'avg_value': avg_value if avg_value is not None else sum(run_values) / len(run_values),
             'run_count': len(run_values),
             'all_runs': ','.join(map(str, run_values)),
         }
+        if run_settles:
+            parsed['avg_settle_sec'] = (
+                avg_settle if avg_settle is not None else sum(run_settles) / len(run_settles)
+            )
+        return parsed
     except Exception as error:
         print(f'Warning: Failed to parse {metric_keyword} attachment {attachment_file}: {error}')
         return {}
@@ -110,7 +127,7 @@ def parse_test_case_json(
     json_file: Path,
     benchmark_dir: Path,
     config: BenchmarkConfig,
-) -> Tuple[Dict, List[Dict], List[Dict], List[Dict]]:
+) -> Tuple[Dict, List[Dict], List[Dict], List[Dict], List[Dict]]:
     data = json.loads(json_file.read_text(encoding='utf-8'))
 
     test_result = {
@@ -124,6 +141,7 @@ def parse_test_case_json(
     performance_results: List[Dict] = []
     cpu_results: List[Dict] = []
     ram_results: List[Dict] = []
+    net_results: List[Dict] = []
 
     for chart in config.charts:
         patterns = (
@@ -151,9 +169,13 @@ def parse_test_case_json(
             cpu_results.append(
                 _resource_row(chart, chart.pattern, test_result['status'], metric_data)
             )
-        else:
+        elif chart.metrics_kind == 'ram':
             ram_results.append(
                 _resource_row(chart, chart.pattern, test_result['status'], metric_data)
             )
+        elif chart.metrics_kind == 'net':
+            net_results.append(
+                _resource_row(chart, chart.pattern, test_result['status'], metric_data)
+            )
 
-    return test_result, performance_results, cpu_results, ram_results
+    return test_result, performance_results, cpu_results, ram_results, net_results

@@ -21,6 +21,7 @@ METRIC_FILES = (
     'performance_metrics.csv',
     'cpu_metrics.csv',
     'ram_metrics.csv',
+    'net_metrics.csv',
     'summary_metrics.csv',
     'run_environment.csv',
 )

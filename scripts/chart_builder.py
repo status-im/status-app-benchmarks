@@ -33,6 +33,7 @@ CHART_WIDTH = 1200
 CHART_HEIGHT = 600
 CHART_SCALE = 1
 MAX_RECENT_BUILDS = 28
+SETTLE_COLUMN = 'avg_settle_sec'
 
 # Share of figure height reserved below the plot (tilted ticks + footer lines).
 BOTTOM_RESERVE_RATIO = 0.34
@@ -62,9 +63,12 @@ def metrics_in_chart_window(
     baseline_rows = metrics[metrics['commit_hash'].astype(str).isin(baseline_hashes)]
     if baseline_rows.empty:
         return recent
+    subset = ['commit_hash', 'test_name', 'date']
+    if 'metric_id' in metrics.columns:
+        subset.append('metric_id')
     return (
         pd.concat([recent, baseline_rows], ignore_index=True)
-        .drop_duplicates(subset=['commit_hash', 'test_name', 'date'], keep='last')
+        .drop_duplicates(subset=subset, keep='last')
         .reset_index(drop=True)
     )
 
@@ -81,14 +85,17 @@ def aggregate_by_build(
     if 'build_label' not in frame:
         frame['build_label'] = ''
     keys = ['run_id', *(group_cols or [])]
+    aggregations = {
+        value_col: (value_col, 'mean'),
+        'date': ('date', 'max'),
+        'commit_hash': ('commit_hash', 'first'),
+        'build_label': ('build_label', 'first'),
+    }
+    if SETTLE_COLUMN in frame.columns:
+        aggregations[SETTLE_COLUMN] = (SETTLE_COLUMN, 'mean')
     aggregated = (
         frame.groupby(keys, as_index=False)
-        .agg(**{
-            value_col: (value_col, 'mean'),
-            'date': ('date', 'max'),
-            'commit_hash': ('commit_hash', 'first'),
-            'build_label': ('build_label', 'first'),
-        })
+        .agg(**aggregations)
         .sort_values('date')
         .reset_index(drop=True)
     )
@@ -114,16 +121,34 @@ def _select_x_ticks(points: pd.DataFrame, max_ticks: int = 14) -> pd.DataFrame:
     return points.iloc[indices]
 
 
-def _format_point_label(value: float, metrics_kind: str) -> str:
+def _format_settle_sec(settle_sec) -> str:
+    if settle_sec is None:
+        return ''
+    try:
+        value = float(settle_sec)
+    except (TypeError, ValueError):
+        return ''
+    if pd.isna(value):
+        return ''
+    if value >= 100:
+        return f'{value:.0f}s'
+    return f'{value:.1f}s'
+
+
+def _format_point_label(value: float, metrics_kind: str, settle_sec=None) -> str:
     if metrics_kind == 'performance':
         return f'{value:.2f}s'
     if metrics_kind == 'cpu':
         return f'{value:.1f}%'
+    if metrics_kind == 'net':
+        label = f'{value:.2f} MB'
+        settle = _format_settle_sec(settle_sec)
+        return f'{label} · {settle}' if settle else label
     return f'{value:.1f} MB'
 
 
 def _hover_value_format(metrics_kind: str) -> str:
-    return '.2f' if metrics_kind == 'performance' else '.1f'
+    return '.2f' if metrics_kind in {'performance', 'net'} else '.1f'
 
 
 def _point_label_texts(
@@ -132,6 +157,7 @@ def _point_label_texts(
     *,
     n_baselines: int = 0,
     ref_levels: Optional[List[float]] = None,
+    settle_secs: Optional[List] = None,
 ) -> tuple[List[str], List[str]]:
     """Alternate label positions; thin out text when many builds."""
     count = len(values)
@@ -145,6 +171,7 @@ def _point_label_texts(
     y_tol = 0.04 if metrics_kind == 'performance' else 0.5
     texts = []
     for index, value in enumerate(values):
+        settle = settle_secs[index] if settle_secs is not None else None
         if index < n_baselines:
             texts.append('')
             continue
@@ -152,7 +179,7 @@ def _point_label_texts(
         if near_ref:
             texts.append('')
         elif index % stride == 0 or index == count - 1:
-            texts.append(_format_point_label(value, metrics_kind))
+            texts.append(_format_point_label(value, metrics_kind, settle_sec=settle))
         else:
             texts.append('')
     positions = [
@@ -207,6 +234,10 @@ def series_for_chart(
     test_data = filtered[match_chart_patterns(filtered['test_name'], chart)].copy()
     if test_data.empty:
         return None
+    if 'metric_id' in test_data.columns:
+        by_id = test_data[test_data['metric_id'].astype(str) == chart.test_id]
+        if not by_id.empty:
+            test_data = by_id
     test_data['test_name'] = chart.pattern
     aggregated = aggregate_by_build(test_data, chart.value_column, ['test_name'])
     if aggregated.empty:
@@ -258,21 +289,61 @@ def _rolling_mean(values: List[float], window: int) -> List[float]:
     return result
 
 
-def _hover_template(trace_name: str, ylabel: str, *, value_format: str = '.3f') -> str:
+def _hover_template(
+    trace_name: str,
+    ylabel: str,
+    *,
+    value_format: str = '.3f',
+    compact: bool = False,
+    include_meta: bool = True,
+) -> str:
+    value_line = f'{ylabel}: %{{y:{value_format}}}'
+    if compact:
+        meta = (
+            '<br>Commit: %{customdata[0]}'
+            if include_meta else ''
+        )
+        return (
+            f'<b>{trace_name}</b>: %{{y:{value_format}}} MB'
+            f'{meta}'
+            '<extra></extra>'
+        )
+    meta = (
+        'Commit: %{customdata[0]}<br>Date: %{customdata[1]}<br>'
+        if include_meta else ''
+    )
     return (
         f'<b>{trace_name}</b><br>'
-        'Commit: %{customdata[0]}<br>'
-        'Date: %{customdata[1]}<br>'
-        f'{ylabel}: %{{y:{value_format}}}'
+        f'{meta}'
+        f'{value_line}'
         '<extra></extra>'
     )
 
 
 def _trace_customdata(points: pd.DataFrame) -> list:
-    return np.column_stack([
-        points['commit_hash'].astype(str),
-        points['date'].dt.strftime('%b %d, %Y %H:%M'),
-    ]).tolist()
+    commits = points['commit_hash'].astype(str)
+    dates = points['date'].dt.strftime('%b %d, %Y %H:%M')
+    if SETTLE_COLUMN not in points.columns:
+        return np.column_stack([commits, dates]).tolist()
+    settles = [
+        _format_settle_sec(value) or '—'
+        for value in points[SETTLE_COLUMN]
+    ]
+    return np.column_stack([commits, dates, settles]).tolist()
+
+
+def _align_customdata(full_cd: list, x_values) -> list:
+    width = len(full_cd[0]) if full_cd else 2
+    empty = [''] * width
+    customdata = []
+    value_idx = 0
+    for x in x_values:
+        if x is None:
+            customdata.append(empty)
+        else:
+            customdata.append(full_cd[value_idx])
+            value_idx += 1
+    return customdata
 
 
 def _axis_ticks(axis_points: pd.DataFrame, n_baselines: int = 0) -> pd.DataFrame:
@@ -376,14 +447,21 @@ def _add_speed_zones(
         )
 
 
+def _footnote_line_count(footnote: str) -> int:
+    if not footnote.strip():
+        return 0
+    return footnote.count('<br>') + 1
+
+
 def _bottom_margin(*, show_zones: bool, normal_range_label: str, footnote: str) -> int:
     reserve = int(CHART_HEIGHT * BOTTOM_RESERVE_RATIO)
     if show_zones:
         reserve += 14
     if normal_range_label:
         reserve += 14
-    if footnote.strip():
-        reserve += 14
+    lines = _footnote_line_count(footnote)
+    if lines:
+        reserve += 14 * lines
     return reserve
 
 
@@ -533,10 +611,12 @@ def _apply_layout(
     footnote: str = '',
     chart_width: int = CHART_WIDTH,
     n_baselines: int = 0,
+    hovermode: str = 'closest',
+    legend_inside: bool = False,
 ):
     ticks = _axis_ticks(axis_points, n_baselines=n_baselines)
     uses_build_index = 'x_index' in axis_points.columns
-    top_margin = 95 if chart.description else 80
+    top_margin = 118 if chart.description else 80
     bottom = _bottom_margin(
         show_zones=show_zones,
         normal_range_label=normal_range_label,
@@ -556,12 +636,32 @@ def _apply_layout(
         width=chart_width,
         height=CHART_HEIGHT,
         margin=dict(l=60, r=60, t=top_margin, b=bottom),
-        hovermode='closest',
+        hovermode=hovermode,
+        hoverlabel=dict(
+            bgcolor='#FFFFFF',
+            bordercolor='#D0D7DE',
+            font=dict(size=15, family='Segoe UI, Arial, sans-serif', color='#1F2328'),
+            align='left',
+            namelength=-1,
+        ),
         showlegend=show_legend,
         yaxis=dict(range=[0, ymax], showgrid=True, gridcolor='#E8ECF0', gridwidth=1),
     )
     if show_legend:
-        layout['legend'] = dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
+        if legend_inside:
+            layout['legend'] = dict(
+                orientation='h',
+                yanchor='top',
+                y=0.98,
+                xanchor='left',
+                x=0.02,
+                bgcolor='rgba(255,255,255,0.88)',
+                bordercolor='#E8ECF0',
+                borderwidth=1,
+                font=dict(size=11),
+            )
+        else:
+            layout['legend'] = dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
     fig.update_layout(**layout)
 
     if len(ticks) > 0 and uses_build_index:
@@ -636,26 +736,30 @@ def _add_build_trace(
     metrics_kind: str = 'performance',
     n_baselines: int = 0,
     ref_levels: Optional[List[float]] = None,
+    line_dash: str = 'solid',
+    marker_symbol: str = 'circle',
+    line_width: float = 2.5,
+    compact_hover: bool = False,
+    include_meta: bool = True,
 ):
     x_col = 'x_index' if 'x_index' in points.columns else 'date'
     values = points[value_col].tolist()
+    settle_secs = (
+        points[SETTLE_COLUMN].tolist()
+        if SETTLE_COLUMN in points.columns else None
+    )
+    label_kwargs = dict(
+        n_baselines=n_baselines, ref_levels=ref_levels, settle_secs=settle_secs,
+    )
     if x_col == 'x_index' and n_baselines > 0:
         x_values, y_values = _disconnected_trace_series(
             points.reset_index(drop=True), value_col, n_baselines=n_baselines,
         )
-        full_cd = _trace_customdata(points)
-        customdata: list = []
-        value_idx = 0
-        for x in x_values:
-            if x is None:
-                customdata.append(['', ''])
-            else:
-                customdata.append(full_cd[value_idx])
-                value_idx += 1
+        customdata = _align_customdata(_trace_customdata(points), x_values)
         # Map disconnected indices back to text labels (skip None slots).
         if show_point_labels:
             full_text, full_pos = _point_label_texts(
-                values, metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
+                values, metrics_kind, **label_kwargs,
             )
             text, textposition = [], []
             value_idx = 0
@@ -677,22 +781,25 @@ def _add_build_trace(
         customdata = _trace_customdata(points)
         if show_point_labels:
             text, textposition = _point_label_texts(
-                values, metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
+                values, metrics_kind, **label_kwargs,
             )
             mode = 'lines+markers+text'
         else:
             text, textposition = None, None
             mode = 'lines+markers'
-    marker_size = 6 if len(points) > 24 else 7
+    marker_size = 8 if len(points) <= 24 else 7
     trace_kwargs = dict(
         x=x_values,
         y=y_values,
         mode=mode,
         name=name,
-        line=dict(color=color, width=2.5),
-        marker=dict(size=marker_size, color=color),
+        line=dict(color=color, width=line_width, dash=line_dash),
+        marker=dict(size=marker_size, color=color, symbol=marker_symbol),
         customdata=customdata,
-        hovertemplate=_hover_template(name, ylabel, value_format=value_format),
+        hovertemplate=_hover_template(
+            name, ylabel, value_format=value_format,
+            compact=compact_hover, include_meta=include_meta,
+        ),
         text=text,
         textposition=textposition,
         textfont=dict(size=8, color=color),
@@ -774,6 +881,22 @@ def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> 
     return html_filename
 
 
+def _align_overlay_series(
+    primary: pd.DataFrame,
+    overlay: pd.DataFrame,
+    value_col: str,
+) -> pd.DataFrame:
+    """Reuse the primary x-axis so overlay points sit on the same builds."""
+    extra = [SETTLE_COLUMN] if SETTLE_COLUMN in overlay.columns else []
+    overlay_cols = ['run_id', value_col, 'commit_hash', 'date', *extra]
+    aligned = primary[['run_id', 'x_index', 'tick_label']].merge(
+        overlay[overlay_cols],
+        on='run_id',
+        how='left',
+    )
+    return aligned.dropna(subset=[value_col]).reset_index(drop=True)
+
+
 def build_chart_figure(
     chart: ChartTest,
     metrics: pd.DataFrame,
@@ -782,6 +905,7 @@ def build_chart_figure(
     footnote: str = '',
     build_labels: Optional[dict[str, str]] = None,
     window_days: Optional[int] = CHART_WINDOW_DAYS,
+    charts_by_id: Optional[dict[str, ChartTest]] = None,
 ) -> Optional[go.Figure]:
     labels = build_labels if build_labels is not None else load_desktop_build_labels()
     result = series_for_chart(metrics, chart, labels, window_days=window_days)
@@ -792,12 +916,21 @@ def build_chart_figure(
 
     fig = go.Figure()
     value_format = _hover_value_format(chart.metrics_kind)
-    show_point_labels = True
     color = chart.color or (
         PRIMARY_LOAD_TIME_COLOR if chart.metrics_kind == 'performance'
         else PERFORMANCE_COLORS[0]
     )
-    show_legend = bool(chart.show_rolling_average)
+    overlay_charts = []
+    if chart.overlay_test_ids and charts_by_id:
+        overlay_charts = [
+            charts_by_id[test_id]
+            for test_id in chart.overlay_test_ids
+            if test_id in charts_by_id
+        ]
+    combined = bool(overlay_charts)
+    show_legend = combined or bool(chart.show_rolling_average)
+    hovermode = 'x unified' if combined else 'closest'
+    primary_name = chart.legend_name or ('Total' if combined else 'per build')
 
     ref_builds = _reference_builds_for_chart(chart)
     ref_levels = [
@@ -807,11 +940,44 @@ def build_chart_figure(
     ]
 
     _add_build_trace(
-        fig, series, chart.value_column, name='per build', ylabel=chart.ylabel,
-        color=color, value_format=value_format, show_point_labels=show_point_labels,
+        fig, series, chart.value_column, name=primary_name, ylabel=chart.ylabel,
+        color=color, value_format=value_format, show_point_labels=True,
         metrics_kind=chart.metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
+        line_dash=chart.line_dash, marker_symbol=chart.marker_symbol,
+        line_width=3.0 if combined else 2.5,
+        compact_hover=combined,
+        include_meta=True,
     )
-    if chart.show_rolling_average:
+    ymax = float(series[chart.value_column].max())
+    for overlay in overlay_charts:
+        overlay_result = series_for_chart(
+            metrics, overlay, labels, window_days=window_days,
+        )
+        if overlay_result is None:
+            continue
+        overlay_series, _ = overlay_result
+        aligned = _align_overlay_series(series, overlay_series, overlay.value_column)
+        if aligned.empty:
+            continue
+        overlay_color = overlay.color or PERFORMANCE_COLORS[1]
+        _add_build_trace(
+            fig, aligned, overlay.value_column,
+            name=overlay.legend_name or overlay.display_name,
+            ylabel=overlay.ylabel,
+            color=overlay_color,
+            value_format=value_format,
+            show_point_labels=False,
+            metrics_kind=overlay.metrics_kind,
+            n_baselines=n_baselines,
+            line_dash=overlay.line_dash,
+            marker_symbol=overlay.marker_symbol,
+            line_width=2.2,
+            compact_hover=True,
+            include_meta=False,
+        )
+        ymax = max(ymax, float(aligned[overlay.value_column].max()))
+
+    if chart.show_rolling_average and not combined:
         _add_rolling_average_trace_trend_only(
             fig, series, chart.value_column,
             n_baselines=n_baselines,
@@ -821,7 +987,7 @@ def build_chart_figure(
         if trend_len >= 4:
             show_legend = True
 
-    ymax = series[chart.value_column].max() * 1.35
+    ymax = ymax * 1.35
     show_zones = chart.show_speed_zones and chart.metrics_kind == 'performance'
     if show_zones:
         ymax = max(ymax, defaults.slow_threshold_s * 1.1)
@@ -845,7 +1011,8 @@ def build_chart_figure(
         fig, chart, chart.ylabel, series,
         show_legend=show_legend, ymax=ymax, show_zones=show_zones,
         normal_range_label=normal_range_label, footnote=footnote,
-        chart_width=chart_width, n_baselines=n_baselines,
+        chart_width=chart_width, n_baselines=n_baselines, hovermode=hovermode,
+        legend_inside=combined,
     )
     return fig
 
@@ -858,11 +1025,13 @@ def render_chart(
     *,
     window_days: Optional[int] = CHART_WINDOW_DAYS,
     build_labels: Optional[dict[str, str]] = None,
+    charts_by_id: Optional[dict[str, ChartTest]] = None,
 ) -> Optional[ChartEntry]:
     footnote = compose_chart_footnote(chart)
     fig = build_chart_figure(
         chart, metrics, defaults, footnote=footnote,
         window_days=window_days, build_labels=build_labels,
+        charts_by_id=charts_by_id,
     )
     if fig is None:
         return None
