@@ -367,6 +367,19 @@ def _page_styles() -> str:
     }
     .area-group { margin-top: 2rem; }
     .area-group > h2 { margin-bottom: 0.75rem; }
+    .send-timing-legend {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1.1rem;
+      margin: 0 0 0.9rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .send-timing-legend p { margin: 0 0 0.45rem; }
+    .send-timing-legend p:last-child { margin-bottom: 0; }
+    .send-timing-legend strong { color: var(--text); }
     .scenario-list {
       display: flex;
       flex-direction: column;
@@ -1924,6 +1937,26 @@ def _channel_copy(
     )
 
 
+def _has_send_timing_charts(groups: list[dict[str, ChartTest]]) -> bool:
+    for group in groups:
+        chart = group.get('performance') or next(iter(group.values()), None)
+        if chart is not None and 'send_message_timing' in (chart.source_pattern or ''):
+            return True
+    return False
+
+
+def _send_timing_legend_html() -> str:
+    return (
+        '<div class="send-timing-legend">'
+        '<p><strong>Sent</strong> is the time from pressing Send until the outgoing '
+        'message shows one tick — the message was published to the network.</p>'
+        '<p><strong>Delivered</strong> is the time from pressing Send until the outgoing '
+        'message shows two ticks — a recipient acknowledged it. '
+        'This interval includes time to Sent.</p>'
+        '</div>'
+    )
+
+
 def _profile_areas_html(
     page: BenchmarkPage,
     charts_by_id: dict[str, ChartTest],
@@ -1934,8 +1967,10 @@ def _profile_areas_html(
         groups = _scenario_groups(page, charts_by_id, area)
         if not groups:
             continue
+        legend = _send_timing_legend_html() if _has_send_timing_charts(groups) else ''
         content = (
-            '<div class="scenario-list">'
+            legend
+            + '<div class="scenario-list">'
             + ''.join(
                 _scenario_charts_section(group, charts_by_test_id)
                 for group in groups
@@ -2521,6 +2556,15 @@ def write_github_readme(
             if not test_ids:
                 continue
             lines.extend([f'### {area_label}', ''])
+            if any(
+                'send_message_timing' in (charts_by_id[test_id].source_pattern or '')
+                for test_id in test_ids
+            ):
+                lines.extend([
+                    '**Sent** is the time from pressing Send until the outgoing message shows one tick (published to the network). '
+                    '**Delivered** is the time from pressing Send until two ticks (a recipient acknowledged it); this includes time to Sent.',
+                    '',
+                ])
             for test_id in test_ids:
                 chart = charts_by_test_id.get(test_id)
                 if chart is None:

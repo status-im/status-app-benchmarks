@@ -383,9 +383,14 @@ def _merge_page_test_ids(*maps: dict[str, list[str]]) -> dict[str, list[str]]:
     return merged
 
 
+_SEND_STATUS_LEGEND = (
+    '<b>Sent</b> = one tick on the outgoing bubble (message published to the network). '
+    '<br><b>Delivered</b> = two ticks (a recipient confirmed receipt). '
+    'Both clocks start when Send is pressed; Delivered includes time to Sent.'
+)
 _SENT_AND_DELIVERED_STAGES = (
     ('sent', 'Sent', True),
-    ('delivered', 'Delivered', False),
+    ('delivered', 'Delivered', True),
 )
 
 _SEND_TIMING_EXPANDERS = (
@@ -468,7 +473,7 @@ def _expand_send_timing_scenarios(
                             f"Time to {stage_label} after sending "
                             f"{scenario['display_name']} {scenario_context}"
                         ),
-                        'description': 'Lower is better.',
+                        'description': f'Lower is better.<br>{_SEND_STATUS_LEGEND}',
                         'graph_filename': f"{scenario['graph_stem']}_{stage_id}_time.png",
                         'attachment_keyword': f'{subject} load time',
                         'show_speed_zones': show_speed_zones,
@@ -483,6 +488,7 @@ def _expand_send_timing_scenarios(
                             f"CPU usage while waiting for {stage_label} after "
                             f"sending {scenario['display_name']}"
                         ),
+                        'description': _SEND_STATUS_LEGEND,
                         'graph_filename': f"{scenario['graph_stem']}_{stage_id}_cpu.png",
                         'attachment_keyword': f'{subject} CPU usage',
                     },
@@ -496,6 +502,7 @@ def _expand_send_timing_scenarios(
                             f"RAM usage while waiting for {stage_label} after "
                             f"sending {scenario['display_name']}"
                         ),
+                        'description': _SEND_STATUS_LEGEND,
                         'graph_filename': f"{scenario['graph_stem']}_{stage_id}_ram.png",
                         'attachment_keyword': f'{subject} RAM usage',
                     },

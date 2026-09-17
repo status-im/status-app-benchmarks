@@ -537,7 +537,9 @@ def _apply_layout(
 ):
     ticks = _axis_ticks(axis_points, n_baselines=n_baselines)
     uses_build_index = 'x_index' in axis_points.columns
-    top_margin = 95 if chart.description else 80
+    top_margin = 80
+    if chart.description:
+        top_margin = 128 if '<b>' in chart.description or '<br>' in chart.description else 95
     bottom = _bottom_margin(
         show_zones=show_zones,
         normal_range_label=normal_range_label,
