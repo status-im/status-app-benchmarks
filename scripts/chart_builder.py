@@ -1,8 +1,9 @@
-"""Build Plotly charts and write PNG + interactive HTML assets."""
+"""Build Plotly charts and write interactive HTML assets."""
 
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 from typing import Iterable, List, Optional
 
@@ -31,7 +32,7 @@ BASELINE_REFERENCE_COLOR_FALLBACK = ['#2E86DE', '#1e8449', '#F79F1F', '#9b59b6']
 
 CHART_WIDTH = 1200
 CHART_HEIGHT = 600
-CHART_SCALE = 1
+PLOTLY_JS_NAME = 'plotly.min.js'
 MAX_RECENT_BUILDS = 28
 
 # Share of figure height reserved below the plot (tilted ticks + footer lines).
@@ -745,17 +746,27 @@ def _add_rolling_average_trace_trend_only(
     )
 
 
+def ensure_plotly_js(charts_dir: Path) -> None:
+    """Copy plotly.min.js once so parallel HTML writes do not race."""
+    charts_dir.mkdir(parents=True, exist_ok=True)
+    target = charts_dir / PLOTLY_JS_NAME
+    if target.exists():
+        return
+    import plotly
+    source = Path(plotly.__file__).resolve().parent / 'package_data' / PLOTLY_JS_NAME
+    shutil.copy(source, target)
+
+
 def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> str:
     charts_dir = output_dir / 'charts'
-    charts_dir.mkdir(parents=True, exist_ok=True)
+    ensure_plotly_js(charts_dir)
     html_filename = Path(graph_filename).with_suffix('.html').name
-    fig.write_image(output_dir / graph_filename, scale=CHART_SCALE)
     html_figure = go.Figure(fig)
     html_figure.update_layout(width=None, height=None, autosize=True)
     html_path = charts_dir / html_filename
     html_figure.write_html(
         html_path,
-        include_plotlyjs='directory',
+        include_plotlyjs=PLOTLY_JS_NAME,
         full_html=True,
         config={'responsive': True},
         default_width='100%',
@@ -770,7 +781,7 @@ def save_chart_assets(fig: go.Figure, output_dir: Path, graph_filename: str) -> 
         1,
     )
     html_path.write_text(html, encoding='utf-8')
-    print(f'Generated {graph_filename} and charts/{html_filename}')
+    print(f'Generated charts/{html_filename}')
     return html_filename
 
 
@@ -875,16 +886,16 @@ def render_chart(
 
 
 def cleanup_stale_charts(output_dir: Path, graph_filenames: Iterable[str]):
-    expected_png = set(graph_filenames)
     for png in output_dir.glob('*.png'):
-        if png.name not in expected_png:
-            png.unlink()
-            print(f'Removed stale chart: {png.name}')
+        png.unlink()
+        print(f'Removed legacy PNG chart: {png.name}')
 
     charts_dir = output_dir / 'charts'
     if not charts_dir.exists():
         return
-    expected_html = {Path(name).with_suffix('.html').name for name in expected_png}
+    expected_html = {
+        Path(name).with_suffix('.html').name for name in graph_filenames
+    }
     for html_file in charts_dir.glob('*.html'):
         if html_file.name not in expected_html:
             html_file.unlink()

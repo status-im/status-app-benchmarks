@@ -3,6 +3,7 @@
 import argparse
 import csv
 import sys
+import time
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
@@ -31,7 +32,7 @@ _configure_stdio()
 
 from allure_parser import parse_test_case_json
 from benchmark_config import DEFAULT_CONFIG, BenchmarkConfig, ChartEntry, load_benchmark_config
-from chart_builder import cleanup_stale_charts, render_chart
+from chart_builder import cleanup_stale_charts, ensure_plotly_js, render_chart
 from environment_parser import record_run_environment
 from regression_report import (
     collect_scenario_summaries,
@@ -375,6 +376,39 @@ def _nightly_data_dir(data_dir: Path, channel: str) -> Path:
     return data_dir.parent.parent.parent
 
 
+def _render_charts(
+    charts: tuple,
+    metrics: Dict[str, Optional[pd.DataFrame]],
+    output_dir: Path,
+    defaults,
+    *,
+    window_days: Optional[int],
+    build_labels: dict[str, str],
+) -> Dict[str, ChartEntry]:
+    charts_by_test_id: Dict[str, ChartEntry] = {}
+    started_at = time.perf_counter()
+    chart_count = 0
+
+    for chart in charts:
+        frame = metrics.get(chart.metrics_kind)
+        if frame is None or frame.empty:
+            continue
+        try:
+            entry = render_chart(
+                chart, frame, output_dir, defaults,
+                window_days=window_days, build_labels=build_labels,
+            )
+            if entry is not None:
+                charts_by_test_id[chart.test_id] = entry
+                chart_count += 1
+        except Exception as error:
+            print(f'Error generating chart for {chart.test_id}: {error}')
+
+    elapsed = time.perf_counter() - started_at
+    print(f'Chart rendering finished in {elapsed:.1f}s ({chart_count} charts)')
+    return charts_by_test_id
+
+
 def generate_graphs(
     data_dir: Path,
     output_dir: Path,
@@ -411,23 +445,17 @@ def generate_graphs(
             metrics = _merge_reference_metrics(metrics, nightly_dir, reference_commit)
     runs = load_run_manifest(data_dir)
 
-    charts_by_test_id: Dict[str, ChartEntry] = {}
+    ensure_plotly_js(output_dir / 'charts')
+    charts_by_test_id = _render_charts(
+        CONFIG.charts,
+        metrics,
+        output_dir,
+        CONFIG.defaults,
+        window_days=window_days,
+        build_labels=build_labels,
+    )
 
-    print(f'\nGenerating charts in {output_dir}...')
-    for chart in CONFIG.charts:
-        frame = metrics.get(chart.metrics_kind)
-        if frame is None or frame.empty:
-            continue
-        try:
-            entry = render_chart(
-                chart, frame, output_dir, CONFIG.defaults,
-                window_days=window_days, build_labels=build_labels,
-            )
-            if entry is not None:
-                charts_by_test_id[chart.test_id] = entry
-        except Exception as error:
-            print(f'Error generating chart for {chart.test_id}: {error}')
-
+    site_started_at = time.perf_counter()
     print('\nGenerating GitHub Pages site...')
     summaries = collect_scenario_summaries(metrics, CONFIG, window_days=window_days)
     nightly = NightlyBaseline()
@@ -486,6 +514,8 @@ def generate_graphs(
     if performance is not None and not performance.empty:
         write_regression_report(performance, CONFIG, report_path, violations=violations)
 
+    site_elapsed = time.perf_counter() - site_started_at
+    print(f'Site generation finished in {site_elapsed:.1f}s')
     print(f'\nDone: {output_dir.absolute()}')
 
 

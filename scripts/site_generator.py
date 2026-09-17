@@ -1573,29 +1573,12 @@ def _load_time_markdown(snapshot: _ScenarioSnapshot) -> str:
 
 def _summary_row(
     area_label: str,
-    group: dict[str, ChartTest] | None,
+    group: dict[str, ChartTest],
     summaries: dict[str, ScenarioSummary],
     page_slug: str,
     *,
     nightly: NightlyBaseline = NightlyBaseline(),
 ) -> str:
-    if group is None:
-        not_tested = _status_badges(None).replace(
-            'status-no-data', 'status-not-tested'
-        ).replace('No data', 'Not tested')
-        return (
-            '<tr>'
-            f'<td data-label="Area">{escape(area_label)}</td>'
-            '<td data-label="Scenario">Not tested</td>'
-            f'<td data-label="Load time / Speed">{not_tested}</td>'
-            f'<td class="reference-column" data-label="vs 2.38.0">{_reference_html("—")}</td>'
-            f'{_optional_nightly_cell("—", nightly)}'
-            '<td data-label="CPU">—</td>'
-            '<td data-label="RAM">—</td>'
-            '<td data-label="Measured">—</td>'
-            '</tr>'
-        )
-
     snapshot = _scenario_snapshot(group, summaries)
     build, date = _measured_parts(snapshot.measured)
     scenario_link = (
@@ -2021,7 +2004,7 @@ def write_site(
         f'{_summary_intro(nightly_column=nightly.label)}'
         f'{_summary_sections(pages, charts_by_id, scenario_summaries, nightly=nightly)}'
         '<p class="note">Raw CSV history lives in the repository <code>data/</code> folder. '
-        'PNG charts on GitHub: '
+        'Chart index on GitHub: '
         f'<a href="{_github_readme_href(output_dir)}">{escape(_github_readme_rel(output_dir))}</a>.</p>'
     )
     _write_page(output_dir, 'index.html', heading, index_body)
@@ -2476,7 +2459,7 @@ def write_github_readme(
     pr_number: str = '',
     pr_title: str = '',
 ) -> None:
-    """GitHub-rendered fallback dashboard (PNG embeds) until GitHub Pages is enabled."""
+    """GitHub-rendered chart index with links to interactive HTML charts."""
     if channel == 'release':
         window_line = (
             'Charts show the full RC-to-final history for this release. '
@@ -2503,9 +2486,8 @@ def write_github_readme(
         window_line,
         'Load-time charts plot the average of runs per build. Lower is better.',
         '',
-        '> **Viewing charts:** This README renders inline PNG images on GitHub — works without',
-        '> GitHub Pages. For interactive charts (hover tooltips, zoom), use the',
-        '> [interactive dashboard](https://status-im.github.io/status-app-benchmarks/desktop/) once GitHub Pages is enabled.',
+        '> **Viewing charts:** Open the linked interactive charts below, or use the',
+        '> [dashboard](https://status-im.github.io/status-app-benchmarks/desktop/) on GitHub Pages.',
         '',
         f'Full CSV history: [`data/`](../../data/).',
         '',
@@ -2550,8 +2532,10 @@ def write_github_readme(
                         '',
                     ])
                     continue
-                png_name = Path(chart.html_filename).with_suffix('.png').name
-                lines.extend([f'![{chart.display_name}](./{png_name})', ''])
+                lines.extend([
+                    f'- [{chart.display_name}](charts/{chart.html_filename})',
+                    '',
+                ])
 
     lines.extend([
         '---',

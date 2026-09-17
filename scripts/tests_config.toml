@@ -256,7 +256,7 @@ display_name = "1000-character text"
 attachment_subject = "Group chat 1000-char text"
 graph_stem = "group_chat_plain_text"
 page_slug = "wallet-fresh"
-footnote = "fresh 3-person group · localhost/WiFi · each point = one sample on that build"
+footnote = "fresh 3-person group · each point = one sample on that build"
 
 [[group_chat_scenarios]]
 scenario_id = "group_chat_album"
@@ -264,7 +264,7 @@ display_name = "a 5-image album"
 attachment_subject = "Group chat image album"
 graph_stem = "group_chat_album"
 page_slug = "wallet-fresh"
-footnote = "fresh 3-person group · localhost/WiFi · each point = one sample on that build"
+footnote = "fresh 3-person group · each point = one sample on that build"
 
 [[group_chat_scenarios]]
 scenario_id = "group_chat_gif"
@@ -272,7 +272,7 @@ display_name = "a GIF"
 attachment_subject = "Group chat GIF"
 graph_stem = "group_chat_gif"
 page_slug = "wallet-fresh"
-footnote = "fresh 3-person group · localhost/WiFi · each point = one sample on that build"
+footnote = "fresh 3-person group · each point = one sample on that build"
 
 [[group_chat_scenarios]]
 scenario_id = "group_chat_burst"
@@ -280,7 +280,7 @@ display_name = "10 texts with 0.5s delay"
 attachment_subject = "Group chat 10-message burst"
 graph_stem = "group_chat_burst"
 page_slug = "wallet-fresh"
-footnote = "fresh 3-person group · localhost/WiFi · each point = average of 10 sends on that build"
+footnote = "fresh 3-person group · each point = average of 10 sends on that build"
 
 # --- Direct chat send timing (one pytest case, many series) ---
 # source: test_direct_chat_send_message_timing
