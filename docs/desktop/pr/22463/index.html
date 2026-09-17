@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <title>#22463 tests(@e2e): measure send message timing — Status App Benchmarks</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #1f2328;
+      --muted: #656d76;
+      --border: #d0d7de;
+      --link: #0969da;
+      --header-bg: #24292f;
+      --header-text: #ffffff;
+      --accent-data: #57606a;
+      --accent-data-bg: #eaeef2;
+      --accent-wallet: #6e40c9;
+      --accent-wallet-bg: #f3f0ff;
+      --accent-messenger: #1a7f37;
+      --accent-messenger-bg: #dafbe1;
+      --accent-communities: #bc4c00;
+      --accent-communities-bg: #fff1e5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --border: #30363d;
+        --link: #58a6ff;
+        --header-bg: #010409;
+        --header-text: #e6edf3;
+        --accent-data: #8b949e;
+        --accent-data-bg: #21262d;
+        --accent-wallet: #a371f7;
+        --accent-wallet-bg: #2b1f47;
+        --accent-messenger: #3fb950;
+        --accent-messenger-bg: #12261e;
+        --accent-communities: #f0883e;
+        --accent-communities-bg: #2d1f14;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1.25rem 1.5rem;
+    }
+    header a { color: var(--header-text); text-decoration: none; }
+    header a:hover { text-decoration: underline; }
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .page-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 0.85rem;
+      margin: 0 0 0.25rem;
+    }
+    .page-heading h1 { margin: 0; }
+    .page-heading h1 a { color: inherit; text-decoration: none; }
+    .page-heading h1 a:hover { text-decoration: underline; }
+    .page-heading h1 .pr-title { font-weight: 600; }
+    .profile-page-name {
+      margin: 0.85rem 0 0.25rem;
+      font-size: 1.2rem;
+    }
+    .channel-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.22rem 0.6rem;
+      border-radius: 999px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .channel-badge-nightly {
+      background: #ddf4ff;
+      color: #0969da;
+    }
+    .channel-badge-pr {
+      background: #dafbe1;
+      color: #1a7f37;
+    }
+    .channel-badge-release {
+      background: #fff1e5;
+      color: #bc4c00;
+    }
+    @media (prefers-color-scheme: dark) {
+      .channel-badge-nightly {
+        background: #12263a;
+        color: #58a6ff;
+      }
+      .channel-badge-pr {
+        background: #12261e;
+        color: #3fb950;
+      }
+      .channel-badge-release {
+        background: #2d1f14;
+        color: #f0883e;
+      }
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: var(--link); }
+    .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .listing-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .listing-card:hover { border-color: var(--link); }
+    .listing-card .listing-main {
+      text-decoration: none;
+      color: inherit;
+      flex: 1;
+    }
+    .listing-card .listing-main h2 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .listing-card .listing-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .listing-card .listing-meta + .listing-meta { margin-top: 0.2rem; }
+    .listing-card .listing-extra {
+      font-size: 0.85rem;
+      color: var(--link);
+      text-decoration: none;
+    }
+    .listing-card .listing-extra:hover { text-decoration: underline; }
+    .listing-history {
+      list-style: none;
+      margin: 0.65rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .listing-history li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .listing-history .commit {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .profile-fact-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+    }
+    .stat-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .stat-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 5.5rem;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.2rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .stat-chip strong { font-weight: 700; }
+    .stat-chip.stat-zero { opacity: 0.55; }
+    .stat-data {
+      align-self: flex-start;
+      background: var(--accent-data-bg);
+      color: var(--accent-data);
+      font-weight: 600;
+    }
+    .stat-wallet .stat-group-label { color: var(--accent-wallet); }
+    .stat-wallet .stat-chip {
+      background: var(--accent-wallet-bg);
+      color: var(--accent-wallet);
+    }
+    .stat-messenger .stat-group-label { color: var(--accent-messenger); }
+    .stat-messenger .stat-chip {
+      background: var(--accent-messenger-bg);
+      color: var(--accent-messenger);
+    }
+    .stat-communities .stat-group-label { color: var(--accent-communities); }
+    .stat-communities .stat-chip {
+      background: var(--accent-communities-bg);
+      color: var(--accent-communities);
+    }
+    .profile-details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .profile-details h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    .profile-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .profile-detail-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+    }
+    .profile-detail-section h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .profile-detail-section.stat-wallet {
+      border-color: color-mix(in srgb, var(--accent-wallet) 35%, var(--border));
+    }
+    .profile-detail-section.stat-wallet h3 { color: var(--accent-wallet); }
+    .profile-detail-section.stat-messenger {
+      border-color: color-mix(in srgb, var(--accent-messenger) 35%, var(--border));
+    }
+    .profile-detail-section.stat-messenger h3 { color: var(--accent-messenger); }
+    .profile-detail-section.stat-communities {
+      border-color: color-mix(in srgb, var(--accent-communities) 35%, var(--border));
+    }
+    .profile-detail-section.stat-communities h3 { color: var(--accent-communities); }
+    .profile-detail-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .area-group { margin-top: 2rem; }
+    .area-group > h2 { margin-bottom: 0.75rem; }
+    .scenario-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    details.scenario-charts {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    details.scenario-charts[open] { border-color: var(--link); }
+    details.scenario-charts > summary {
+      cursor: pointer;
+      padding: 0.9rem 1.1rem;
+      font-weight: 600;
+    }
+    details.scenario-charts > summary:hover {
+      background: var(--accent-data-bg);
+    }
+    details.scenario-charts > summary:focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: -2px;
+    }
+    .scenario-summary-content {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      width: calc(100% - 1.5rem);
+      margin-left: 0.25rem;
+      vertical-align: middle;
+    }
+    .scenario-chart-count {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .scenario-charts-body {
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .scenario-charts-body section.chart:last-child { margin-bottom: 0; }
+    .area-empty {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      color: var(--muted);
+    }
+    .summary-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    .summary-link {
+      display: inline-block;
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .summary-link:hover { text-decoration: underline; }
+    .summary-badge {
+      display: inline-block;
+      margin-left: 0.35rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #cf222e;
+      color: #fff;
+    }
+    .summary-heading {
+      margin: 2rem 0 0.55rem;
+      font-size: 1.35rem;
+      text-align: center;
+    }
+    .summary-legend {
+      margin: 0 0 1.5rem;
+      text-align: center;
+    }
+    .summary-legend-note {
+      margin: 0.7rem auto 0;
+      max-width: 38rem;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    details.summary-profile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+    details.summary-profile[open] { border-color: var(--link); }
+    details.summary-profile > summary {
+      cursor: pointer;
+      padding: 0.9rem 1.1rem;
+      font-weight: 600;
+    }
+    details.summary-profile > summary:hover {
+      background: var(--accent-data-bg);
+    }
+    details.summary-profile > summary:focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: -2px;
+    }
+    .summary-profile-body {
+      border-top: 1px solid var(--border);
+      padding: 0.25rem 1rem 1rem;
+    }
+    .summary-profile-body .subtitle { margin: 0.75rem 0 0; }
+    section.summary-profile { margin: 2rem 0; }
+    section.summary-profile h2 { margin-bottom: 0.25rem; }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .summary-table th,
+    .summary-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .summary-table th { color: var(--muted); font-size: 0.78rem; }
+    .summary-table .load-time-column {
+      min-width: 145px;
+      white-space: nowrap;
+    }
+    .summary-table .reference-column {
+      min-width: 105px;
+      white-space: nowrap;
+    }
+    .summary-table th.nightly-column {
+      white-space: normal;
+      min-width: 6.75rem;
+    }
+    .summary-table th .column-date {
+      display: block;
+      margin-top: 0.12rem;
+      font-weight: 500;
+      font-size: 0.72rem;
+    }
+    .summary-table .measured-column {
+      min-width: 6.5rem;
+    }
+    .measured-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      line-height: 1.2;
+    }
+    .measured-build {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+    }
+    .measured-date {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .summary-table tr:last-child td { border-bottom: 0; }
+    .load-time-cell {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .metric-value { white-space: nowrap; font-weight: 600; }
+    .status {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      margin: 0 0.2rem 0.2rem 0;
+      white-space: nowrap;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-fast {
+      color: #1a7f37;
+      border-color: #1a7f37;
+      background: #dafbe1;
+    }
+    .status-ok {
+      color: var(--link);
+      border-color: var(--link);
+      background: #ddf4ff;
+    }
+    .status-ok-warn {
+      color: #9a6700;
+      border-color: #9a6700;
+      background: #fff8c5;
+    }
+    .status-slow {
+      color: #cf222e;
+      border-color: #cf222e;
+      background: #ffebe9;
+    }
+    .status-backlog {
+      color: var(--accent-wallet);
+      border-color: var(--accent-wallet);
+      background: var(--accent-wallet-bg);
+    }
+    .status-neutral,
+    .status-no-data,
+    .status-not-tested {
+      color: var(--muted);
+      background: var(--accent-data-bg);
+    }
+    @media (prefers-color-scheme: dark) {
+      .status-fast { background: var(--accent-messenger-bg); }
+      .status-ok { background: #0c2d6b; color: #58a6ff; border-color: #58a6ff; }
+      .status-ok-warn { background: #3d2e00; color: #d4a72c; border-color: #d4a72c; }
+      .status-slow { background: #3d1418; }
+      .status-backlog { background: var(--accent-wallet-bg); }
+    }
+    .speed-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem 0.6rem;
+    }
+    .speed-legend .status { margin: 0; }
+    .regression-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+    .regression-legend-item {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .section-heading .summary-badge { margin-left: 0; }
+    .reference-value { font-weight: 600; white-space: nowrap; }
+    .reference-parity,
+    .reference-improvement { color: #1a7f37; }
+    .reference-regression { color: #cf222e; }
+    .reference-neutral { color: var(--muted); }
+    section.chart {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem 1.25rem;
+      margin-bottom: 1.5rem;
+      scroll-margin-top: 1rem;
+    }
+    .chart-permalink {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .chart-permalink a {
+      color: var(--link);
+      text-decoration: none;
+    }
+    .chart-permalink a:hover { text-decoration: underline; }
+    section.chart iframe {
+      width: 100%;
+      height: 600px;
+      border: 0;
+      border-radius: 4px;
+      background: #fff;
+      display: block;
+    }
+    .chart-footnote {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 0;
+    }
+    section.chart-placeholder {
+      border-style: dashed;
+      background: transparent;
+    }
+    .placeholder-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+      font-style: italic;
+    }
+    .note { color: var(--muted); font-size: 0.9rem; margin: 1rem 0 0; }
+    nav.back { margin-bottom: 1rem; }
+    nav.back a { color: var(--link); text-decoration: none; }
+    nav.back a:hover { text-decoration: underline; }
+    section.machine-info {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    section.machine-info h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+    section.machine-info dl {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem 1.5rem;
+      margin: 0;
+    }
+    section.machine-info dt {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    section.last-run {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem 0.9rem;
+      background: var(--accent-data-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1.15rem;
+      margin: 1rem 0;
+    }
+    .last-run-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .last-run-date {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    a.last-run-commit {
+      display: inline-flex;
+      align-items: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--link);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      text-decoration: none;
+    }
+    a.last-run-commit:hover {
+      border-color: var(--link);
+      text-decoration: underline;
+    }
+    @media (max-width: 700px) {
+      main { padding: 1rem; }
+      .summary-table,
+      .summary-table tbody,
+      .summary-table tr,
+      .summary-table td { display: block; width: 100%; }
+      .summary-table thead { display: none; }
+      .summary-table tr { padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+      .summary-table tr:last-child { border-bottom: 0; }
+      .summary-table td { border: 0; padding: 0.25rem 0.75rem; }
+      .summary-table td::before {
+        content: attr(data-label) ": ";
+        color: var(--muted);
+        font-weight: 600;
+      }
+    }
+    </style>
+</head>
+<body>
+  <header><a href="index.html">Status App Benchmarks</a></header>
+  <main><nav class="back"><a href="../../">← All Windows benchmarks</a></nav><div class="page-heading"><span class="channel-badge channel-badge-pr">Pull request</span><h1><a href="https://github.com/status-im/status-app/pull/22463" title="https://github.com/status-im/status-app/pull/22463" target="_blank">#22463</a><span class="pr-title"> tests(@e2e): measure send message timing</span></h1></div><p class="subtitle">Performance history for this pull request. Each point is one requested benchmark run. vs 2.38.0 is the last release; vs nightly · Sep 17, 2026 is the latest master nightly at measurement time. Load-time charts plot the average of samples per run.</p><section class="last-run"><span class="last-run-label">Last run</span><span class="last-run-date">Sep 17, 2026</span><a class="last-run-commit" href="https://github.com/status-im/status-app/commit/ee8c632de7bbc5ff1ab1c9927ce8b6ed35713444" title="https://github.com/status-im/status-app/commit/ee8c632de7bbc5ff1ab1c9927ce8b6ed35713444" target="_blank">ee8c632de</a></section><div class="summary-links"><a class="summary-link" href="profiles.html">User profiles →</a><a class="summary-link" href="regression_report.html">View flags<span class="summary-badge">27</span> →</a></div><h2 class="summary-heading">Test scenarios</h2><div class="summary-legend"><div class="speed-legend"><span class="status status-fast">Fast · &lt;0.5s</span><span class="status status-ok">Ok · 0.5–0.9s</span><span class="status status-ok-warn">Near ok · 0.9–1.0s</span><span class="status status-slow">Slow · &gt;1.0s</span></div><p class="summary-legend-note">The <strong>vs 2.38.0</strong> column compares the latest load time with the 2.38.0 release. A difference within ±15% is shown as parity. <strong>vs nightly · Sep 17, 2026</strong> compares the same load time with that nightly run — the latest nightly at the time this PR was measured.</p></div><details class="summary-profile"><summary><span class="scenario-summary-content"><span>New user profile</span><span class="scenario-chart-count">41 scenarios</span></span></summary><div class="summary-profile-body"><p class="subtitle">Newly created profiles with no pre-seeded data. Wallet scenarios use one fresh user; messenger send timing uses 1-on-1 and 3-person group chats; community send timing uses one joined community on #general. <a href="wallet-fresh.html">Open profile →</a></p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th class="reference-column nightly-column" title="Difference from nightly Sep 17, 2026 · commit ad63eabb5">vs nightly<span class="column-date">Sep 17, 2026</span></th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_swap_first_open_time_fresh">Time to open the Swap modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.112s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 1.112s vs reference 1.559s (-0.447s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-improvement" title="Faster than 2.38.0">-0.447s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">43.3%</td><td data-label="RAM">865.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_send_first_open_time_fresh">Time to open the Send modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.001s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 1.001s vs reference 0.888s (+0.113s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">43.2%</td><td data-label="RAM">829.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_repeat_open_time_fresh">Time to reopen Wallet in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.752s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.752s vs reference 0.379s (+0.373s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.373s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.235s</span></td><td data-label="CPU">65.2%</td><td data-label="RAM">886.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_first_open_time_fresh">Time to open Wallet for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.594s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.594s vs reference 0.372s (+0.222s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.222s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-improvement" title="Faster than nightly Sep 17, 2026">-0.146s</span></td><td data-label="CPU">75.8%</td><td data-label="RAM">887.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_send_time_fresh">Time to reopen the Send modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.576s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.576s vs reference 0.498s (+0.078s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.078s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">23.9%</td><td data-label="RAM">869.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_swap_time_fresh">Time to reopen the Swap modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.565s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.565s vs reference 0.569s (-0.003s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.154s</span></td><td data-label="CPU">22.0%</td><td data-label="RAM">967.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_add_account_time_fresh">Time to reopen the Add account modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.555s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.555s vs reference 0.414s (+0.141s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.141s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.170s</span></td><td data-label="CPU">16.8%</td><td data-label="RAM">806.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_add_account_first_open_time_fresh">Time to open the Add account modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.413s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.413s vs reference 0.611s (-0.198s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-improvement" title="Faster than 2.38.0">-0.198s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">21.1%</td><td data-label="RAM">736.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_receive_first_open_time_fresh">Time to open the Receive modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.401s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.401s vs reference 0.471s (-0.070s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">42.5%</td><td data-label="RAM">776.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_receive_time_fresh">Time to reopen the Receive modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.303s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.303s vs reference 0.302s (+0.001s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">22.7%</td><td data-label="RAM">804.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_collectibles_tab_first_open_time_fresh">Time to open the Collectibles tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.263s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">28.3%</td><td data-label="RAM">843.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_activity_tab_first_open_time_fresh">Time to open the History tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.254s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">20.4%</td><td data-label="RAM">789.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_assets_tab_time_fresh">Time to reopen the Assets tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.186s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">40.6%</td><td data-label="RAM">811.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_assets_tab_first_open_time_fresh">Time to open the Assets tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.152s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">4.2%</td><td data-label="RAM">754.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_account_first_open_time_fresh">Time to open a Wallet account for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.140s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.140s vs reference 0.157s (-0.017s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.035s</span></td><td data-label="CPU">21.3%</td><td data-label="RAM">816.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_collectibles_tab_time_fresh">Time to reopen the Collectibles tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.119s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">58.1%</td><td data-label="RAM">827.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-fresh.html#test_wallet_activity_tab_time_fresh">Time to reopen the History tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.115s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">48.9%</td><td data-label="RAM">782.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_album_delivered_time">Time to Delivered after sending a 5-image album in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">5.175s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">3.7%</td><td data-label="RAM">862.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_album_delivered_time">Time to Delivered after sending a 5-image album in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.909s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">65.3%</td><td data-label="RAM">799.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_burst_delivered_time">Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.253s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">3.7%</td><td data-label="RAM">903.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_album_sent_time">Time to Sent after sending a 5-image album in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.144s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">43.6%</td><td data-label="RAM">798.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_album_sent_time">Time to Sent after sending a 5-image album in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.999s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">7.6%</td><td data-label="RAM">812.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_burst_delivered_time">Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.552s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">14.9%</td><td data-label="RAM">874.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_gif_delivered_time">Time to Delivered after sending a GIF in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.428s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">3.0%</td><td data-label="RAM">904.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_gif_delivered_time">Time to Delivered after sending a GIF in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.166s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">64.3%</td><td data-label="RAM">880.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_plain_text_delivered_time">Time to Delivered after sending 1000-character text in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.429s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">2.6%</td><td data-label="RAM">808.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_plain_text_delivered_time">Time to Delivered after sending 1000-character text in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.192s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">10.8%</td><td data-label="RAM">793.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_gif_sent_time">Time to Sent after sending a GIF in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.997s</span><span class="status status-ok-warn" title="Speed: ok-warn; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Near ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">4.2%</td><td data-label="RAM">904.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_plain_text_sent_time">Time to Sent after sending 1000-character text in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.898s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">26.8%</td><td data-label="RAM">792.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_burst_sent_time">Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.800s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">36.4%</td><td data-label="RAM">874.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_gif_sent_time">Time to Sent after sending a GIF in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.798s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">50.2%</td><td data-label="RAM">800.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_group_chat_burst_sent_time">Time to Sent after sending 10 texts with 0.5s delay in a 3-person group</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.729s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">16.2%</td><td data-label="RAM">905.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Messenger</td><td data-label="Scenario"><a href="wallet-fresh.html#test_direct_chat_plain_text_sent_time">Time to Sent after sending 1000-character text in a 1-on-1 chat</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.641s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">86.7%</td><td data-label="RAM">808.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_album_delivered_time">Time to Delivered after sending a 5-image album in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">9.763s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">3.2%</td><td data-label="RAM">981.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_album_sent_time">Time to Sent after sending a 5-image album in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">5.155s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">8.4%</td><td data-label="RAM">854.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_burst_delivered_time">Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">4.653s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">4.7%</td><td data-label="RAM">950.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_gif_delivered_time">Time to Delivered after sending a GIF in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.189s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">8.9%</td><td data-label="RAM">982.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_plain_text_delivered_time">Time to Delivered after sending 1000-character text in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.125s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">1.4%</td><td data-label="RAM">828.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_burst_sent_time">Time to Sent after sending 10 texts with 0.5s delay in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.158s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">6.4%</td><td data-label="RAM">954.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_gif_sent_time">Time to Sent after sending a GIF in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.607s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">5.9%</td><td data-label="RAM">982.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="wallet-fresh.html#test_community_general_plain_text_sent_time">Time to Sent after sending 1000-character text in a community #general channel</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.459s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-neutral" title="No reference comparison available">—</span></td><td data-label="CPU">1.0%</td><td data-label="RAM">828.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr></tbody></table></div></details><details class="summary-profile"><summary><span class="scenario-summary-content"><span>Returning user (semi-heavy wallet account)</span><span class="scenario-chart-count">17 scenarios</span></span></summary><div class="summary-profile-body"><p class="subtitle">Returning user with semi-heavy wallet account (~34 MB user data). <a href="wallet-wallet-load.html">Open profile →</a></p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th class="reference-column nightly-column" title="Difference from nightly Sep 17, 2026 · commit ad63eabb5">vs nightly<span class="column-date">Sep 17, 2026</span></th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_assets_tab_first_open_time_wallet_load">Time to open the Assets tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.350s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+2.693s</span></td><td data-label="CPU">68.6%</td><td data-label="RAM">799.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_collectibles_tab_first_open_time_wallet_load">Time to open the Collectibles tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.155s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">51.1%</td><td data-label="RAM">857.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_send_first_open_time_wallet_load">Time to open the Send modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.875s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 1.875s vs reference 1.790s (+0.085s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">42.4%</td><td data-label="RAM">866.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_first_open_time_wallet_load">Time to open Wallet for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.151s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 1.151s vs reference 0.484s (+0.667s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.667s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.879s</span></td><td data-label="CPU">38.2%</td><td data-label="RAM">877.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_activity_tab_first_open_time_wallet_load">Time to open the History tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.133s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.435s</span></td><td data-label="CPU">56.7%</td><td data-label="RAM">899.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_receive_first_open_time_wallet_load">Time to open the Receive modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.980s</span><span class="status status-ok-warn" title="Speed: ok-warn; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.980s vs reference 0.922s (+0.058s); parity is within ±15%.">Near ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.481s</span></td><td data-label="CPU">46.7%</td><td data-label="RAM">803.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_add_account_first_open_time_wallet_load">Time to open the Add account modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.868s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.868s vs reference 0.749s (+0.119s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.119s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.294s</span></td><td data-label="CPU">63.1%</td><td data-label="RAM">815.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_repeat_open_time_wallet_load">Time to reopen Wallet in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.821s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.821s vs reference 0.580s (+0.241s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.241s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.279s</span></td><td data-label="CPU">71.2%</td><td data-label="RAM">824.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_send_time_wallet_load">Time to reopen the Send modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.742s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.742s vs reference 0.681s (+0.061s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">38.5%</td><td data-label="RAM">891.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_account_first_open_time_wallet_load">Time to open a Wallet account for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.700s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.700s vs reference 0.402s (+0.298s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.298s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">46.2%</td><td data-label="RAM">861.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_swap_first_open_time_wallet_load">Time to open the Swap modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.655s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.655s vs reference 1.367s (-0.712s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-improvement" title="Faster than 2.38.0">-0.712s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">41.4%</td><td data-label="RAM">859.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_swap_time_wallet_load">Time to reopen the Swap modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.560s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.560s vs reference 0.532s (+0.028s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-improvement" title="Faster than nightly Sep 17, 2026">-0.116s</span></td><td data-label="CPU">49.2%</td><td data-label="RAM">944.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_collectibles_tab_time_wallet_load">Time to reopen the Collectibles tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.557s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">41.2%</td><td data-label="RAM">847.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_add_account_time_wallet_load">Time to reopen the Add account modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.466s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.466s vs reference 0.465s (+0.001s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">28.3%</td><td data-label="RAM">805.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_assets_tab_time_wallet_load">Time to reopen the Assets tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.440s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-improvement" title="Faster than nightly Sep 17, 2026">-0.303s</span></td><td data-label="CPU">45.7%</td><td data-label="RAM">800.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_receive_time_wallet_load">Time to reopen the Receive modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.334s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.334s vs reference 0.363s (-0.029s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">42.3%</td><td data-label="RAM">785.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load.html#test_wallet_activity_tab_time_wallet_load">Time to reopen the History tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.309s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.095s</span></td><td data-label="CPU">67.0%</td><td data-label="RAM">834.2 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr></tbody></table></div></details><details class="summary-profile"><summary><span class="scenario-summary-content"><span>Returning user (heavy account from Alex)</span><span class="scenario-chart-count">17 scenarios</span></span></summary><div class="summary-profile-body"><p class="subtitle">Returning user with heavy account from Alex (~35 MB user data). <a href="wallet-wallet-load-alex.html">Open profile →</a></p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th class="reference-column nightly-column" title="Difference from nightly Sep 17, 2026 · commit ad63eabb5">vs nightly<span class="column-date">Sep 17, 2026</span></th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_send_first_open_time_wallet_load_alex">Time to open the Send modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.728s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 1.728s vs reference 1.770s (-0.042s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.426s</span></td><td data-label="CPU">46.2%</td><td data-label="RAM">897.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_assets_tab_first_open_time_wallet_load_alex">Time to open the Assets tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">1.069s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.501s</span></td><td data-label="CPU">47.7%</td><td data-label="RAM">847.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_first_open_time_wallet_load_alex">Time to open Wallet for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.977s</span><span class="status status-ok-warn" title="Speed: ok-warn; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.977s vs reference 0.225s (+0.752s); parity is within ±15%.">Near ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.752s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.486s</span></td><td data-label="CPU">46.7%</td><td data-label="RAM">819.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_swap_first_open_time_wallet_load_alex">Time to open the Swap modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.964s</span><span class="status status-ok-warn" title="Speed: ok-warn; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.964s vs reference 1.298s (-0.334s); parity is within ±15%.">Near ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-improvement" title="Faster than 2.38.0">-0.334s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.210s</span></td><td data-label="CPU">62.5%</td><td data-label="RAM">935.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_repeat_open_time_wallet_load_alex">Time to reopen Wallet in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.905s</span><span class="status status-ok-warn" title="Speed: ok-warn; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.905s vs reference 0.583s (+0.322s); parity is within ±15%.">Near ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.322s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.302s</span></td><td data-label="CPU">76.9%</td><td data-label="RAM">920.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_swap_time_wallet_load_alex">Time to reopen the Swap modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.810s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.810s vs reference 0.514s (+0.296s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.296s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">57.7%</td><td data-label="RAM">993.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_activity_tab_first_open_time_wallet_load_alex">Time to open the History tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.787s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.145s</span></td><td data-label="CPU">67.2%</td><td data-label="RAM">828.1 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_send_time_wallet_load_alex">Time to reopen the Send modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.783s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.783s vs reference 0.663s (+0.120s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.120s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">54.4%</td><td data-label="RAM">944.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_add_account_first_open_time_wallet_load_alex">Time to open the Add account modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.595s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.595s vs reference 0.809s (-0.214s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-improvement" title="Faster than 2.38.0">-0.214s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">47.3%</td><td data-label="RAM">836.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_receive_first_open_time_wallet_load_alex">Time to open the Receive modal for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.514s</span><span class="status status-ok" title="Speed: ok; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.514s vs reference 0.950s (-0.436s); parity is within ±15%.">Ok</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-improvement" title="Faster than 2.38.0">-0.436s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">50.9%</td><td data-label="RAM">892.6 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_add_account_time_wallet_load_alex">Time to reopen the Add account modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.485s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.485s vs reference 0.435s (+0.050s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">55.5%</td><td data-label="RAM">867.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_assets_tab_time_wallet_load_alex">Time to reopen the Assets tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.417s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">62.3%</td><td data-label="RAM">822.7 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_account_first_open_time_wallet_load_alex">Time to open a Wallet account for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.415s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.415s vs reference 0.347s (+0.068s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-regression" title="Slower than 2.38.0">+0.068s</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">43.9%</td><td data-label="RAM">865.8 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_receive_time_wallet_load_alex">Time to reopen the Receive modal in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.355s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 0.355s vs reference 0.328s (+0.027s); parity is within ±15%.">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">67.5%</td><td data-label="RAM">857.4 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_first_open_time_wallet_load_alex">Time to open the Collectibles tab for the first time in the session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.342s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">56.8%</td><td data-label="RAM">924.0 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_activity_tab_time_wallet_load_alex">Time to reopen the History tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.286s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">68.9%</td><td data-label="RAM">861.3 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Wallet</td><td data-label="Scenario"><a href="wallet-wallet-load-alex.html#test_wallet_collectibles_tab_time_wallet_load_alex">Time to reopen the Collectibles tab in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">0.282s</span><span class="status status-fast" title="Speed: fast; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. 2.38.0 baseline not comparable for this scenario (test methodology changed Jul 2026).">Fast</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-neutral" title="No reference comparison available">no baseline</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-regression" title="Slower than nightly Sep 17, 2026">+0.127s</span></td><td data-label="CPU">65.1%</td><td data-label="RAM">856.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr></tbody></table></div></details><details class="summary-profile"><summary><span class="scenario-summary-content"><span>Returning user (Status community member)</span><span class="scenario-chart-count">2 scenarios</span></span></summary><div class="summary-profile-body"><p class="subtitle">Returning user with Status community already joined. <a href="community-populated.html">Open profile →</a></p><table class="summary-table"><thead><tr><th>Area</th><th>Scenario</th><th class="load-time-column" title="Latest measured loading time and mobile-style speed category">Load time / Speed</th><th class="reference-column" title="Difference from the 2.38.0 reference build">vs 2.38.0</th><th class="reference-column nightly-column" title="Difference from nightly Sep 17, 2026 · commit ad63eabb5">vs nightly<span class="column-date">Sep 17, 2026</span></th><th title="Average CPU usage during the scenario">CPU</th><th title="Average RAM usage during the scenario">RAM</th><th class="measured-column" title="Build and date of the latest scenario result">Measured</th></tr></thead><tbody><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="community-populated.html#test_status_community_first_open_loading_time_member">Time to open Status community for the first time after login</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">3.259s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 3.259s vs reference 3.775s (-0.516s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">48.8%</td><td data-label="RAM">780.9 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr><tr><td data-label="Area">Communities</td><td data-label="Scenario"><a href="community-populated.html#test_status_community_second_open_loading_time_member">Time to reopen Status community in the same session</a></td><td data-label="Load time / Speed"><div class="load-time-cell"><span class="metric-value">2.181s</span><span class="status status-slow" title="Speed: slow; fast &lt;0.5s, ok 0.5–0.9s, ok near slow 0.9–1.0s, slow &gt;1.0s. Latest 2.181s vs reference 2.102s (+0.079s); parity is within ±15%.">Slow</span></div></td><td class="reference-column" data-label="vs 2.38.0"><span class="reference-value reference-parity" title="Within ±15% of 2.38.0">parity</span></td><td class="reference-column" data-label="vs nightly · Sep 17, 2026"><span class="reference-value reference-parity" title="Within ±15% of nightly Sep 17, 2026">parity</span></td><td data-label="CPU">26.4%</td><td data-label="RAM">851.5 MB</td><td class="measured-column" data-label="Measured"><div class="measured-cell"><span class="measured-build">ee8c63</span><span class="measured-date">2026-09-17</span></div></td></tr></tbody></table></div></details><p class="note">Raw CSV history lives in the repository <code>data/</code> folder. Chart index on GitHub: <a href="https://github.com/status-im/status-app-benchmarks/blob/master/docs/desktop/pr/22463/README.md">docs/desktop/pr/22463/README.md</a>.</p></main>
+</body>
+</html>
