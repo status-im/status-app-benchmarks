@@ -1662,21 +1662,25 @@ def _summary_profile_section(
     *,
     nightly: NightlyBaseline = NightlyBaseline(),
 ) -> str:
-    keyed_rows: list[tuple[float, str]] = []
+    row_html = []
     scenario_count = 0
     for area, area_label in PRODUCT_AREAS:
-        groups = _scenario_groups(page, charts_by_id, area) or [None]
-        if groups[0] is not None:
-            scenario_count += len(groups)
-        for group in groups:
-            keyed_rows.append((
+        groups = _scenario_groups(page, charts_by_id, area)
+        if not groups:
+            continue
+        scenario_count += len(groups)
+        area_rows = [
+            (
                 _summary_sort_key(group, summaries),
                 _summary_row(
                     area_label, group, summaries, page.slug, nightly=nightly,
                 ),
-            ))
-    keyed_rows.sort(key=lambda item: item[0], reverse=True)
-    rows = ''.join(html for _key, html in keyed_rows)
+            )
+            for group in groups
+        ]
+        area_rows.sort(key=lambda item: item[0], reverse=True)
+        row_html.extend(html for _key, html in area_rows)
+    rows = ''.join(row_html)
     count_label = _count_label(scenario_count, 'scenario')
     nightly_header = (
         _nightly_header_html(nightly.label, nightly.title) if nightly.label else ''
@@ -1946,16 +1950,15 @@ def _profile_areas_html(
     for area, area_label in PRODUCT_AREAS:
         groups = _scenario_groups(page, charts_by_id, area)
         if not groups:
-            content = '<div class="area-empty">Not tested for this user profile.</div>'
-        else:
-            content = (
-                '<div class="scenario-list">'
-                + ''.join(
-                    _scenario_charts_section(group, charts_by_test_id)
-                    for group in groups
-                )
-                + '</div>'
+            continue
+        content = (
+            '<div class="scenario-list">'
+            + ''.join(
+                _scenario_charts_section(group, charts_by_test_id)
+                for group in groups
             )
+            + '</div>'
+        )
         sections.append(
             f'<section class="area-group"><h2>{escape(area_label)}</h2>{content}</section>'
         )
@@ -2414,7 +2417,6 @@ def _github_summary_markdown(
     )
     nightly_header = f' {nightly_column} |' if nightly_column else ''
     nightly_divider = '----------------------|' if nightly_column else ''
-    empty_row_tail = '| — | — | — | — |' + (' — |' if nightly_column else '')
     lines = [
         '## Scenario summary',
         '',
@@ -2436,10 +2438,6 @@ def _github_summary_markdown(
         for area, area_label in PRODUCT_AREAS:
             groups = _scenario_groups(page, charts_by_id, area)
             if not groups:
-                lines.append(
-                    f'| {page.title} | {area_label} | Not tested | Not tested '
-                    f'{empty_row_tail}'
-                )
                 continue
             for group in groups:
                 snapshot = _scenario_snapshot(group, summaries)
@@ -2538,10 +2536,9 @@ def write_github_readme(
                 test_id for test_id in page.test_ids
                 if test_id in charts_by_id and charts_by_id[test_id].area == area
             ]
-            lines.extend([f'### {area_label}', ''])
             if not test_ids:
-                lines.extend(['_Not tested for this user profile._', ''])
                 continue
+            lines.extend([f'### {area_label}', ''])
             for test_id in test_ids:
                 chart = charts_by_test_id.get(test_id)
                 if chart is None:

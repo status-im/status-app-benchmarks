@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, Sequence
 
 import tomli as tomllib
 
@@ -375,6 +375,187 @@ def _expand_wallet_scenarios(
     return charts, page_test_ids
 
 
+def _merge_page_test_ids(*maps: dict[str, list[str]]) -> dict[str, list[str]]:
+    merged: dict[str, list[str]] = {}
+    for mapping in maps:
+        for slug, ids in mapping.items():
+            merged.setdefault(slug, []).extend(ids)
+    return merged
+
+
+_SENT_AND_DELIVERED_STAGES = (
+    ('sent', 'Sent', True),
+    ('delivered', 'Delivered', False),
+)
+
+_SEND_TIMING_EXPANDERS = (
+    {
+        'config_key': 'group_chat_scenarios',
+        'area': 'messenger',
+        'context_phrase': 'in a 3-person group',
+        'default_source_pattern': 'test_group_chat_send_message_timing',
+        'context_label': 'group chat',
+    },
+    {
+        'config_key': 'direct_chat_scenarios',
+        'area': 'messenger',
+        'context_phrase': 'in a 1-on-1 chat',
+        'default_source_pattern': 'test_direct_chat_send_message_timing',
+        'context_label': 'direct chat',
+    },
+    {
+        'config_key': 'community_send_scenarios',
+        'area': 'communities',
+        'context_phrase': 'in a community #general channel',
+        'default_source_pattern': 'test_community_general_send_message_timing',
+        'context_label': 'community send',
+    },
+)
+
+
+def _expand_send_timing_scenarios(
+    raw: dict,
+    defaults: ChartDefaults,
+    *,
+    config_key: str,
+    area: ProductArea,
+    context_phrase: str,
+    default_source_pattern: str,
+    context_label: str,
+    stages: Optional[Sequence[tuple[str, str, bool]]] = None,
+) -> tuple[list[ChartTest], dict[str, list[str]]]:
+    """One pytest case emits many series; split Sent/Delivered × time/CPU/RAM."""
+    scenarios = raw.get(config_key, [])
+    if not scenarios:
+        return [], {}
+
+    performance_entries = []
+    cpu_entries = []
+    ram_entries = []
+    page_test_ids: dict[str, list[str]] = {}
+    if stages is None:
+        stages = _SENT_AND_DELIVERED_STAGES
+
+    for scenario in scenarios:
+        _require_fields(
+            scenario,
+            'scenario_id', 'display_name', 'attachment_subject',
+            'graph_stem', 'footnote', 'page_slug',
+            context=f'{context_label} scenario',
+        )
+        scenario_area = scenario.get('area', area)
+        scenario_context = scenario.get('context_phrase', context_phrase)
+        source_pattern = scenario.get('source_pattern', default_source_pattern)
+        page_ids = page_test_ids.setdefault(scenario['page_slug'], [])
+        for stage_id, stage_label, show_speed_zones in stages:
+            scenario_id = f"{scenario['scenario_id']}_{stage_id}"
+            subject = f"{scenario['attachment_subject']} {stage_label}"
+            pattern = f'test_{scenario_id}'
+            base_entry = {
+                'area': scenario_area,
+                'pattern': pattern,
+                'source_pattern': source_pattern,
+                'footnote': scenario['footnote'],
+                'reference_build': False,
+            }
+            metric_entries = (
+                (
+                    performance_entries,
+                    {
+                        **base_entry,
+                        'test_id': f'test_{scenario_id}_time',
+                        'display_name': (
+                            f"Time to {stage_label} after sending "
+                            f"{scenario['display_name']} {scenario_context}"
+                        ),
+                        'description': 'Lower is better.',
+                        'graph_filename': f"{scenario['graph_stem']}_{stage_id}_time.png",
+                        'attachment_keyword': f'{subject} load time',
+                        'show_speed_zones': show_speed_zones,
+                    },
+                ),
+                (
+                    cpu_entries,
+                    {
+                        **base_entry,
+                        'test_id': f'test_{scenario_id}_cpu',
+                        'display_name': (
+                            f"CPU usage while waiting for {stage_label} after "
+                            f"sending {scenario['display_name']}"
+                        ),
+                        'graph_filename': f"{scenario['graph_stem']}_{stage_id}_cpu.png",
+                        'attachment_keyword': f'{subject} CPU usage',
+                    },
+                ),
+                (
+                    ram_entries,
+                    {
+                        **base_entry,
+                        'test_id': f'test_{scenario_id}_ram',
+                        'display_name': (
+                            f"RAM usage while waiting for {stage_label} after "
+                            f"sending {scenario['display_name']}"
+                        ),
+                        'graph_filename': f"{scenario['graph_stem']}_{stage_id}_ram.png",
+                        'attachment_keyword': f'{subject} RAM usage',
+                    },
+                ),
+            )
+            for entries, entry in metric_entries:
+                entries.append(entry)
+                page_ids.append(entry['test_id'])
+
+    charts = [
+        *_load_chart_tests(
+            performance_entries,
+            metrics_kind='performance',
+            value_column='avg_time',
+            default_ylabel='seconds',
+            default_attachment_keyword='load time',
+            defaults=defaults,
+            default_show_speed_zones=True,
+            default_show_rolling_average=True,
+            inherit_baselines=False,
+        ),
+        *_load_chart_tests(
+            cpu_entries,
+            metrics_kind='cpu',
+            value_column='avg_cpu',
+            default_ylabel='CPU Usage (%)',
+            default_attachment_keyword='cpu usage',
+            defaults=defaults,
+            default_show_rolling_average=True,
+            inherit_baselines=False,
+        ),
+        *_load_chart_tests(
+            ram_entries,
+            metrics_kind='ram',
+            value_column='avg_ram_mb',
+            default_ylabel='RAM Usage (MB)',
+            default_attachment_keyword='ram usage',
+            defaults=defaults,
+            default_show_rolling_average=True,
+            inherit_baselines=False,
+        ),
+    ]
+    return charts, page_test_ids
+
+
+def _expand_all_send_timing_scenarios(
+    raw: dict,
+    defaults: ChartDefaults,
+) -> tuple[list[ChartTest], dict[str, list[str]]]:
+    charts: list[ChartTest] = []
+    page_test_ids: dict[str, list[str]] = {}
+    for spec in _SEND_TIMING_EXPANDERS:
+        spec_charts, spec_page_ids = _expand_send_timing_scenarios(
+            raw, defaults, **spec,
+        )
+        charts.extend(spec_charts)
+        page_test_ids = _merge_page_test_ids(page_test_ids, spec_page_ids)
+    return charts, page_test_ids
+
+
 def _load_pages(
     entries: list[dict],
     generated_test_ids: Optional[dict[str, list[str]]] = None,
@@ -468,7 +649,13 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
         raw = tomllib.load(handle)
 
     defaults = _load_defaults(raw)
-    wallet_charts, generated_page_test_ids = _expand_wallet_scenarios(raw, defaults)
+    wallet_charts, wallet_page_test_ids = _expand_wallet_scenarios(raw, defaults)
+    send_timing_charts, send_timing_page_test_ids = _expand_all_send_timing_scenarios(
+        raw, defaults,
+    )
+    generated_page_test_ids = _merge_page_test_ids(
+        wallet_page_test_ids, send_timing_page_test_ids,
+    )
     flag_tickets = _load_flag_tickets(raw.get('flag_tickets', []))
 
     load_time_tests = _load_chart_tests(
@@ -483,12 +670,14 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
         default_show_rolling_average=True,
     )
     if not load_time_tests and not any(
-        chart.metrics_kind == 'performance' for chart in wallet_charts
+        chart.metrics_kind == 'performance'
+        for chart in (*wallet_charts, *send_timing_charts)
     ):
         raise ValueError(f'No [[tests]] sections found in {config_file}')
 
     charts = [
         *wallet_charts,
+        *send_timing_charts,
         *load_time_tests,
         *_load_chart_tests(
             raw.get('cpu_tests', []),
@@ -517,7 +706,7 @@ def load_benchmark_config(config_file: Path) -> BenchmarkConfig:
     )
     if unknown_generated_pages:
         raise ValueError(
-            'Wallet profile variants reference unknown pages: '
+            'Generated charts reference unknown pages: '
             + ', '.join(unknown_generated_pages)
         )
     _validate_config(pages, charts)
