@@ -1622,3 +1622,14 @@ ac7ee7-n260916,2026-09-16T05:45:15,moto_g55_5G,test_android_resource_pss[status-
 1c20f4-n260917,2026-09-17T05:45:15,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,2.42,2.42,2.42,2.42,1,1,2.42
 1c20f4-n260917,2026-09-17T05:45:15,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,48.19,48.19,48.19,48.19,1,1,48.19
 1c20f4-n260917,2026-09-17T05:45:15,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,13.2,13.2,13.2,13.2,1,1,13.2
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.644,0.732,0.684,0.68,4,4,"0.696,0.732,0.644,0.665"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.097,0.106,0.101,0.1,4,4,"0.102,0.098,0.106,0.097"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,0.674,0.776,0.711,0.698,4,4,"0.674,0.705,0.776,0.69"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.091,0.108,0.098,0.096,4,4,"0.091,0.091,0.108,0.101"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.107,0.129,0.122,0.127,4,4,"0.107,0.129,0.126,0.127"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,0.6,0.637,0.627,0.636,4,4,"0.636,0.636,0.6,0.637"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.61,0.626,0.62,0.623,4,4,"0.622,0.624,0.626,0.61"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.603,0.662,0.636,0.639,4,4,"0.662,0.603,0.647,0.63"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.092,0.117,0.1,0.095,4,4,"0.092,0.093,0.117,0.097"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.09,0.12,0.105,0.104,4,4,"0.101,0.107,0.12,0.09"
+26d9ba,2026-09-18T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,0.617,0.661,0.634,0.63,4,4,"0.617,0.661,0.622,0.638"
