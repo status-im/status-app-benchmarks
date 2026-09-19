@@ -1658,3 +1658,14 @@ f89efa-n260919,2026-09-19T05:45:15,moto_g55_5G,test_android_resource_pss[status-
 f89efa-n260919,2026-09-19T05:45:15,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,2.39,2.39,2.39,2.39,1,1,2.39
 f89efa-n260919,2026-09-19T05:45:15,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,47.4,47.4,47.4,47.4,1,1,47.4
 f89efa-n260919,2026-09-19T05:45:15,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,13.1,13.1,13.1,13.1,1,1,13.1
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_settings_response_time,passed,response_time,s,0.565,0.601,0.586,0.593,6,6,"0.565,0.601,0.565,0.598,0.594,0.592"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_response_time,passed,response_time,s,0.943,0.992,0.966,0.962,6,6,"0.964,0.943,0.974,0.959,0.961,0.992"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_messages_response_time,passed,response_time,s,0.09,0.108,0.101,0.103,6,6,"0.108,0.09,0.101,0.104,0.105,0.101"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_market_response_time,passed,response_time,s,0.965,1.024,1.006,1.01,6,6,"1.009,1.016,1.011,0.965,1.024,1.009"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_communities_response_time,passed,response_time,s,0.542,0.554,0.547,0.547,6,6,"0.553,0.554,0.542,0.548,0.546,0.542"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_send_response_time,passed,response_time,s,0.608,0.645,0.629,0.629,6,6,"0.637,0.645,0.608,0.621,0.642,0.62"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_swap_response_time,passed,response_time,s,0.594,0.631,0.608,0.604,6,6,"0.631,0.608,0.619,0.594,0.598,0.6"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_buy_response_time,passed,response_time,s,0.604,0.632,0.613,0.607,6,6,"0.605,0.608,0.62,0.632,0.606,0.604"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_assets_response_time,passed,response_time,s,0.102,0.117,0.108,0.108,6,6,"0.11,0.106,0.102,0.11,0.104,0.117"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_collectibles_response_time,passed,response_time,s,0.098,0.117,0.108,0.109,6,6,"0.117,0.098,0.109,0.109,0.104,0.109"
+f89efa,2026-09-19T12:00:00,25028RN03Y,test_android_wallet_history_response_time,passed,response_time,s,0.094,0.113,0.106,0.108,6,6,"0.108,0.103,0.113,0.094,0.111,0.108"
