@@ -11,7 +11,7 @@ Full CSV history: [`data/`](../../data/).
 
 > **Baseline note:** A full 2.38.0 (`5f66de`) re-baseline is not available — benchmark user profiles are incompatible with the 2.38.0 binary, and wallet tab tests now wait for tab content. Nightly trend continues; non-tab scenarios still compare to 2.38.0 where valid. When **2.39.0** ships, **2.38.2** becomes the new baseline — see [`BASELINE_2.39.md`](./BASELINE_2.39.md).
 
-**Last run** · Sep 21, 2026 · [`69be06f34`](https://github.com/status-im/status-app/commit/69be06f34d117c2e3f7d2803b2083ac5952720a4)
+**Last run** · Sep 21, 2026 · [`cb9dab193`](https://github.com/status-im/status-app/commit/cb9dab193cb26d11698a3bd3c804db8f9bcffbf4)
 
 ## Scenario summary
 
@@ -23,83 +23,83 @@ Reference parity (where shown) means the latest value is within ±15% of 2.38.0.
 
 | User profile | Area | Scenario | Load time / Speed | vs 2.38.0 | CPU | RAM | Measured |
 |--------------|------|----------|-------------------|-----------|-----|-----|----------|
-| New user profile | Wallet | Time to open Wallet for the first time after login | 0.471s · Fast | +0.099s slower | 57.6% | 759.2 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen Wallet in the same session | 0.437s · Fast | +0.058s slower | 63.9% | 781.7 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.102s · Fast | -0.055s faster | 3.1% | 690.3 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the Add account modal for the first time in the session | 0.501s · Ok | -0.110s faster | 24.2% | 685.3 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the Add account modal in the same session | 0.406s · Fast | parity | 11.3% | 744.4 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the Receive modal for the first time in the session | 0.434s · Fast | parity | 27.6% | 739.1 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the Receive modal in the same session | 0.298s · Fast | parity | 22.2% | 773.6 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the Send modal for the first time in the session | 1.041s · Slow | +0.153s slower | 26.6% | 826.7 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the Send modal in the same session | 0.608s · Ok | +0.110s slower | 24.8% | 854.4 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the Swap modal for the first time in the session | 1.026s · Slow | -0.533s faster | 35.4% | 720.4 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.457s · Fast | -0.112s faster | 22.5% | 899.1 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the Assets tab for the first time in the session | 0.170s · Fast | no baseline | 9.9% | 738.9 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the Assets tab in the same session | 0.173s · Fast | no baseline | 37.5% | 781.0 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | 0.234s · Fast | no baseline | 46.9% | 679.7 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | 0.120s · Fast | no baseline | 55.7% | 699.1 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to open the History tab for the first time in the session | 0.145s · Fast | no baseline | 65.6% | 780.8 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Wallet | Time to reopen the History tab in the same session | 0.107s · Fast | no baseline | 44.9% | 767.9 MB | 69be06f34<br>2026-09-21 |
-| New user profile | Messenger | Time to Sent after sending 1000-character text in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending a 5-image album in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending a GIF in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending a GIF in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending 1000-character text in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending a 5-image album in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending a GIF in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending a GIF in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Sent after sending 1000-character text in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Delivered after sending 1000-character text in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Sent after sending a 5-image album in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Delivered after sending a 5-image album in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Sent after sending a GIF in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Delivered after sending a GIF in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Sent after sending 10 texts with 0.5s delay in a community #general channel | — · No data | — | — | — | — |
-| New user profile | Communities | Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel | — · No data | — | — | — | — |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 0.676s · Ok | +0.192s slower | 23.2% | 813.2 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.528s · Ok | parity | 73.2% | 810.4 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.364s · Fast | parity | 39.9% | 777.8 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | 0.554s · Ok | -0.195s faster | 38.5% | 787.0 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | 0.430s · Fast | parity | 43.3% | 768.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | 0.562s · Ok | -0.360s faster | 48.8% | 787.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | 0.336s · Fast | parity | 39.8% | 763.5 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | 1.778s · Slow | parity | 51.5% | 859.2 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | 0.627s · Ok | parity | 44.7% | 853.6 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | 0.665s · Ok | -0.702s faster | 48.9% | 754.5 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.709s · Ok | +0.177s slower | 38.6% | 879.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Assets tab for the first time in the session | 6.063s · Slow | no baseline | 68.9% | 799.7 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | 0.466s · Fast | no baseline | 47.0% | 773.5 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | 1.869s · Slow | no baseline | 64.4% | 805.6 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | 0.503s · Ok | no baseline | 50.4% | 798.5 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | 0.704s · Ok | no baseline | 60.3% | 839.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the History tab in the same session | 0.204s · Fast | no baseline | 63.4% | 801.9 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open Wallet for the first time after login | 0.228s · Fast | parity | 33.9% | 879.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.552s · Ok | parity | 73.9% | 881.0 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.364s · Fast | parity | 25.3% | 779.9 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | 0.605s · Ok | -0.204s faster | 48.0% | 834.4 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Add account modal in the same session | 0.463s · Fast | parity | 67.6% | 851.6 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | 0.527s · Ok | -0.423s faster | 44.0% | 811.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Receive modal in the same session | 0.369s · Fast | parity | 56.7% | 859.9 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Send modal for the first time in the session | 1.827s · Slow | parity | 51.4% | 920.9 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Send modal in the same session | 0.792s · Ok | +0.129s slower | 58.2% | 990.4 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | 0.672s · Ok | -0.626s faster | 36.4% | 837.8 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.720s · Ok | +0.206s slower | 64.9% | 948.9 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Assets tab for the first time in the session | 0.946s · Near ok | no baseline | 58.3% | 867.4 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Assets tab in the same session | 0.460s · Fast | no baseline | 66.3% | 809.7 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.825s · Ok | no baseline | 60.9% | 822.5 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | 0.486s · Fast | no baseline | 67.6% | 824.9 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the History tab for the first time in the session | 0.539s · Ok | no baseline | 58.4% | 841.8 MB | 69be06f34<br>2026-09-21 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the History tab in the same session | 0.227s · Fast | no baseline | 69.7% | 826.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 2.500s · Slow | -1.275s faster | 44.1% | 746.1 MB | 69be06f34<br>2026-09-21 |
-| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 2.149s · Slow | parity | 10.4% | 847.8 MB | 69be06f34<br>2026-09-21 |
+| New user profile | Wallet | Time to open Wallet for the first time after login | 0.470s · Fast | +0.098s slower | 51.3% | 676.6 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen Wallet in the same session | 0.454s · Fast | +0.075s slower | 64.1% | 811.0 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.153s · Fast | parity | 57.0% | 682.3 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the Add account modal for the first time in the session | 0.381s · Fast | -0.230s faster | 17.7% | 693.1 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the Add account modal in the same session | 0.369s · Fast | parity | 19.3% | 743.7 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the Receive modal for the first time in the session | 0.389s · Fast | -0.082s faster | 16.4% | 694.2 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the Receive modal in the same session | 0.350s · Fast | +0.048s slower | 24.9% | 753.0 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the Send modal for the first time in the session | 1.036s · Slow | +0.148s slower | 40.1% | 788.3 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the Send modal in the same session | 0.673s · Ok | +0.175s slower | 28.1% | 844.7 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the Swap modal for the first time in the session | 0.969s · Near ok | -0.590s faster | 49.2% | 806.1 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.502s · Ok | parity | 23.3% | 917.0 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the Assets tab for the first time in the session | 0.136s · Fast | no baseline | 59.5% | 724.9 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the Assets tab in the same session | 0.177s · Fast | no baseline | 41.3% | 728.2 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | 0.229s · Fast | no baseline | 34.2% | 736.6 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | 0.120s · Fast | no baseline | 28.4% | 738.3 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to open the History tab for the first time in the session | 0.145s · Fast | no baseline | 62.1% | 703.4 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Wallet | Time to reopen the History tab in the same session | 0.121s · Fast | no baseline | 72.6% | 685.8 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending 1000-character text in a 3-person group | 0.563s · Ok | no baseline | 55.5% | 767.2 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 3-person group | 3.153s · Slow | no baseline | 2.1% | 767.5 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending a 5-image album in a 3-person group | 2.992s · Slow | no baseline | 6.8% | 784.1 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 3-person group | 4.220s · Slow | no baseline | 3.3% | 797.8 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending a GIF in a 3-person group | 0.595s · Ok | no baseline | 30.5% | 878.5 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending a GIF in a 3-person group | 1.560s · Slow | no baseline | 3.7% | 878.5 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 3-person group | 0.793s · Ok | no baseline | 11.1% | 870.3 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group | 3.306s · Slow | no baseline | 3.6% | 870.1 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending 1000-character text in a 1-on-1 chat | 0.971s · Near ok | no baseline | 16.9% | 808.5 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 1-on-1 chat | 1.274s · Slow | no baseline | 4.7% | 808.6 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending a 5-image album in a 1-on-1 chat | 2.942s · Slow | no baseline | 25.3% | 800.5 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 1-on-1 chat | 3.443s · Slow | no baseline | 1.7% | 806.2 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending a GIF in a 1-on-1 chat | 0.520s · Ok | no baseline | 11.1% | 789.4 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending a GIF in a 1-on-1 chat | 1.649s · Slow | no baseline | 7.0% | 821.2 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat | 0.887s · Ok | no baseline | 37.1% | 874.1 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat | 2.659s · Slow | no baseline | 13.1% | 872.4 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Sent after sending 1000-character text in a community #general channel | 0.468s · Fast | no baseline | 17.9% | 830.4 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Delivered after sending 1000-character text in a community #general channel | 2.200s · Slow | no baseline | 4.3% | 830.4 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Sent after sending a 5-image album in a community #general channel | 6.572s · Slow | no baseline | 6.5% | 864.9 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Delivered after sending a 5-image album in a community #general channel | 8.441s · Slow | no baseline | 2.6% | 980.8 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Sent after sending a GIF in a community #general channel | 0.606s · Ok | no baseline | 3.3% | 981.9 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Delivered after sending a GIF in a community #general channel | 3.097s · Slow | no baseline | 8.7% | 981.7 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Sent after sending 10 texts with 0.5s delay in a community #general channel | 1.082s · Slow | no baseline | 8.2% | 964.8 MB | cb9dab193<br>2026-09-21 |
+| New user profile | Communities | Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel | 4.489s · Slow | no baseline | 5.0% | 961.9 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 0.546s · Ok | parity | 48.2% | 757.5 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.540s · Ok | parity | 71.1% | 803.6 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.280s · Fast | -0.122s faster | 12.1% | 800.4 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | 0.488s · Fast | -0.261s faster | 52.0% | 755.5 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | 0.416s · Fast | parity | 44.7% | 749.0 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | 0.512s · Ok | -0.410s faster | 28.5% | 745.3 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | 0.326s · Fast | parity | 49.0% | 732.3 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | 1.209s · Slow | -0.581s faster | 50.5% | 851.1 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | 0.754s · Ok | parity | 62.8% | 846.0 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | 0.768s · Ok | -0.599s faster | 32.0% | 852.7 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.696s · Ok | +0.164s slower | 38.7% | 929.2 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Assets tab for the first time in the session | 0.152s · Fast | no baseline | 54.7% | 822.0 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | 1.204s · Slow | no baseline | 49.0% | 830.8 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.297s · Fast | no baseline | 74.3% | 808.4 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | 0.718s · Ok | no baseline | 50.7% | 792.9 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | 0.622s · Ok | no baseline | 57.3% | 818.5 MB | cb9dab193<br>2026-09-21 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the History tab in the same session | 0.200s · Fast | no baseline | 73.9% | 800.7 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open Wallet for the first time after login | 0.332s · Fast | +0.107s slower | 57.8% | 957.0 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.579s · Ok | parity | 72.2% | 867.8 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.487s · Fast | +0.140s slower | 40.4% | 889.4 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | 0.736s · Ok | parity | 57.6% | 939.8 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Add account modal in the same session | 0.479s · Fast | parity | 75.3% | 887.7 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | 0.703s · Ok | -0.247s faster | 32.9% | 797.7 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Receive modal in the same session | 0.359s · Fast | parity | 64.6% | 831.6 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Send modal for the first time in the session | 2.081s · Slow | +0.311s slower | 62.7% | 854.4 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Send modal in the same session | 0.769s · Ok | +0.106s slower | 50.0% | 893.2 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | 0.684s · Ok | -0.614s faster | 44.4% | 806.7 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.868s · Ok | +0.354s slower | 54.7% | 942.4 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Assets tab for the first time in the session | 0.506s · Ok | no baseline | 50.3% | 821.6 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Assets tab in the same session | 0.419s · Fast | no baseline | 61.8% | 777.6 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.353s · Fast | no baseline | 39.0% | 830.8 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | 0.171s · Fast | no baseline | 61.7% | 839.1 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the History tab for the first time in the session | 0.610s · Ok | no baseline | 62.0% | 836.5 MB | cb9dab193<br>2026-09-21 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the History tab in the same session | 0.208s · Fast | no baseline | 66.4% | 790.2 MB | cb9dab193<br>2026-09-21 |
+| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 2.533s · Slow | -1.242s faster | 39.1% | 712.6 MB | cb9dab193<br>2026-09-21 |
+| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 2.170s · Slow | parity | 29.2% | 844.3 MB | cb9dab193<br>2026-09-21 |
 
 ## New user profile
 
@@ -220,297 +220,153 @@ Newly created profiles with no pre-seeded data. Wallet scenarios use one fresh u
 
 **Sent** is the time from pressing Send until the outgoing message shows one tick (published to the network). **Delivered** is the time from pressing Send until two ticks (a recipient acknowledged it); this includes time to Sent.
 
-**Time to Sent after sending 1000-character text in a 3-person group**
+- [Time to Sent after sending 1000-character text in a 3-person group](charts/group_chat_plain_text_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending 1000-character text](charts/group_chat_plain_text_sent_cpu.html)
 
-**CPU usage while waiting for Sent after sending 1000-character text**
+- [RAM usage while waiting for Sent after sending 1000-character text](charts/group_chat_plain_text_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending 1000-character text in a 3-person group](charts/group_chat_plain_text_delivered_time.html)
 
-**RAM usage while waiting for Sent after sending 1000-character text**
+- [CPU usage while waiting for Delivered after sending 1000-character text](charts/group_chat_plain_text_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending 1000-character text](charts/group_chat_plain_text_delivered_ram.html)
 
-**Time to Delivered after sending 1000-character text in a 3-person group**
+- [Time to Sent after sending a 5-image album in a 3-person group](charts/group_chat_album_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending a 5-image album](charts/group_chat_album_sent_cpu.html)
 
-**CPU usage while waiting for Delivered after sending 1000-character text**
+- [RAM usage while waiting for Sent after sending a 5-image album](charts/group_chat_album_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending a 5-image album in a 3-person group](charts/group_chat_album_delivered_time.html)
 
-**RAM usage while waiting for Delivered after sending 1000-character text**
+- [CPU usage while waiting for Delivered after sending a 5-image album](charts/group_chat_album_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending a 5-image album](charts/group_chat_album_delivered_ram.html)
 
-**Time to Sent after sending a 5-image album in a 3-person group**
+- [Time to Sent after sending a GIF in a 3-person group](charts/group_chat_gif_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending a GIF](charts/group_chat_gif_sent_cpu.html)
 
-**CPU usage while waiting for Sent after sending a 5-image album**
+- [RAM usage while waiting for Sent after sending a GIF](charts/group_chat_gif_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending a GIF in a 3-person group](charts/group_chat_gif_delivered_time.html)
 
-**RAM usage while waiting for Sent after sending a 5-image album**
+- [CPU usage while waiting for Delivered after sending a GIF](charts/group_chat_gif_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending a GIF](charts/group_chat_gif_delivered_ram.html)
 
-**Time to Delivered after sending a 5-image album in a 3-person group**
+- [Time to Sent after sending 10 texts with 0.5s delay in a 3-person group](charts/group_chat_burst_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending 10 texts with 0.5s delay](charts/group_chat_burst_sent_cpu.html)
 
-**CPU usage while waiting for Delivered after sending a 5-image album**
+- [RAM usage while waiting for Sent after sending 10 texts with 0.5s delay](charts/group_chat_burst_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group](charts/group_chat_burst_delivered_time.html)
 
-**RAM usage while waiting for Delivered after sending a 5-image album**
+- [CPU usage while waiting for Delivered after sending 10 texts with 0.5s delay](charts/group_chat_burst_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending 10 texts with 0.5s delay](charts/group_chat_burst_delivered_ram.html)
 
-**Time to Sent after sending a GIF in a 3-person group**
+- [Time to Sent after sending 1000-character text in a 1-on-1 chat](charts/direct_chat_plain_text_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending 1000-character text](charts/direct_chat_plain_text_sent_cpu.html)
 
-**CPU usage while waiting for Sent after sending a GIF**
+- [RAM usage while waiting for Sent after sending 1000-character text](charts/direct_chat_plain_text_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending 1000-character text in a 1-on-1 chat](charts/direct_chat_plain_text_delivered_time.html)
 
-**RAM usage while waiting for Sent after sending a GIF**
+- [CPU usage while waiting for Delivered after sending 1000-character text](charts/direct_chat_plain_text_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending 1000-character text](charts/direct_chat_plain_text_delivered_ram.html)
 
-**Time to Delivered after sending a GIF in a 3-person group**
+- [Time to Sent after sending a 5-image album in a 1-on-1 chat](charts/direct_chat_album_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending a 5-image album](charts/direct_chat_album_sent_cpu.html)
 
-**CPU usage while waiting for Delivered after sending a GIF**
+- [RAM usage while waiting for Sent after sending a 5-image album](charts/direct_chat_album_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending a 5-image album in a 1-on-1 chat](charts/direct_chat_album_delivered_time.html)
 
-**RAM usage while waiting for Delivered after sending a GIF**
+- [CPU usage while waiting for Delivered after sending a 5-image album](charts/direct_chat_album_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending a 5-image album](charts/direct_chat_album_delivered_ram.html)
 
-**Time to Sent after sending 10 texts with 0.5s delay in a 3-person group**
+- [Time to Sent after sending a GIF in a 1-on-1 chat](charts/direct_chat_gif_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending a GIF](charts/direct_chat_gif_sent_cpu.html)
 
-**CPU usage while waiting for Sent after sending 10 texts with 0.5s delay**
+- [RAM usage while waiting for Sent after sending a GIF](charts/direct_chat_gif_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending a GIF in a 1-on-1 chat](charts/direct_chat_gif_delivered_time.html)
 
-**RAM usage while waiting for Sent after sending 10 texts with 0.5s delay**
+- [CPU usage while waiting for Delivered after sending a GIF](charts/direct_chat_gif_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending a GIF](charts/direct_chat_gif_delivered_ram.html)
 
-**Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group**
+- [Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat](charts/direct_chat_burst_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending 10 texts with 0.5s delay](charts/direct_chat_burst_sent_cpu.html)
 
-**CPU usage while waiting for Delivered after sending 10 texts with 0.5s delay**
+- [RAM usage while waiting for Sent after sending 10 texts with 0.5s delay](charts/direct_chat_burst_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat](charts/direct_chat_burst_delivered_time.html)
 
-**RAM usage while waiting for Delivered after sending 10 texts with 0.5s delay**
+- [CPU usage while waiting for Delivered after sending 10 texts with 0.5s delay](charts/direct_chat_burst_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Sent after sending 1000-character text in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Sent after sending 1000-character text**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Sent after sending 1000-character text**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Delivered after sending 1000-character text in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Delivered after sending 1000-character text**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Delivered after sending 1000-character text**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Sent after sending a 5-image album in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Sent after sending a 5-image album**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Sent after sending a 5-image album**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Delivered after sending a 5-image album in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Delivered after sending a 5-image album**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Delivered after sending a 5-image album**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Sent after sending a GIF in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Sent after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Sent after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Delivered after sending a GIF in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Delivered after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Delivered after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Sent after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Sent after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Delivered after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Delivered after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending 10 texts with 0.5s delay](charts/direct_chat_burst_delivered_ram.html)
 
 ### Communities
 
 **Sent** is the time from pressing Send until the outgoing message shows one tick (published to the network). **Delivered** is the time from pressing Send until two ticks (a recipient acknowledged it); this includes time to Sent.
 
-**Time to Sent after sending 1000-character text in a community #general channel**
+- [Time to Sent after sending 1000-character text in a community #general channel](charts/community_general_plain_text_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending 1000-character text](charts/community_general_plain_text_sent_cpu.html)
 
-**CPU usage while waiting for Sent after sending 1000-character text**
+- [RAM usage while waiting for Sent after sending 1000-character text](charts/community_general_plain_text_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending 1000-character text in a community #general channel](charts/community_general_plain_text_delivered_time.html)
 
-**RAM usage while waiting for Sent after sending 1000-character text**
+- [CPU usage while waiting for Delivered after sending 1000-character text](charts/community_general_plain_text_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending 1000-character text](charts/community_general_plain_text_delivered_ram.html)
 
-**Time to Delivered after sending 1000-character text in a community #general channel**
+- [Time to Sent after sending a 5-image album in a community #general channel](charts/community_general_album_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending a 5-image album](charts/community_general_album_sent_cpu.html)
 
-**CPU usage while waiting for Delivered after sending 1000-character text**
+- [RAM usage while waiting for Sent after sending a 5-image album](charts/community_general_album_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending a 5-image album in a community #general channel](charts/community_general_album_delivered_time.html)
 
-**RAM usage while waiting for Delivered after sending 1000-character text**
+- [CPU usage while waiting for Delivered after sending a 5-image album](charts/community_general_album_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending a 5-image album](charts/community_general_album_delivered_ram.html)
 
-**Time to Sent after sending a 5-image album in a community #general channel**
+- [Time to Sent after sending a GIF in a community #general channel](charts/community_general_gif_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending a GIF](charts/community_general_gif_sent_cpu.html)
 
-**CPU usage while waiting for Sent after sending a 5-image album**
+- [RAM usage while waiting for Sent after sending a GIF](charts/community_general_gif_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending a GIF in a community #general channel](charts/community_general_gif_delivered_time.html)
 
-**RAM usage while waiting for Sent after sending a 5-image album**
+- [CPU usage while waiting for Delivered after sending a GIF](charts/community_general_gif_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending a GIF](charts/community_general_gif_delivered_ram.html)
 
-**Time to Delivered after sending a 5-image album in a community #general channel**
+- [Time to Sent after sending 10 texts with 0.5s delay in a community #general channel](charts/community_general_burst_sent_time.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [CPU usage while waiting for Sent after sending 10 texts with 0.5s delay](charts/community_general_burst_sent_cpu.html)
 
-**CPU usage while waiting for Delivered after sending a 5-image album**
+- [RAM usage while waiting for Sent after sending 10 texts with 0.5s delay](charts/community_general_burst_sent_ram.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
+- [Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel](charts/community_general_burst_delivered_time.html)
 
-**RAM usage while waiting for Delivered after sending a 5-image album**
+- [CPU usage while waiting for Delivered after sending 10 texts with 0.5s delay](charts/community_general_burst_delivered_cpu.html)
 
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Sent after sending a GIF in a community #general channel**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Sent after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Sent after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Delivered after sending a GIF in a community #general channel**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Delivered after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Delivered after sending a GIF**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Sent after sending 10 texts with 0.5s delay in a community #general channel**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Sent after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Sent after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**CPU usage while waiting for Delivered after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
-
-**RAM usage while waiting for Delivered after sending 10 texts with 0.5s delay**
-
-_No data yet — chart will appear after the next nightly benchmark run._
+- [RAM usage while waiting for Delivered after sending 10 texts with 0.5s delay](charts/community_general_burst_delivered_ram.html)
 
 ## Returning user (semi-heavy wallet account)
 
