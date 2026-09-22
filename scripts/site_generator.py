@@ -41,6 +41,13 @@ PRODUCT_AREAS = (
     ('communities', 'Communities'),
     ('browser', 'Browser'),
 )
+FRESH_PROFILE_SLUG = 'fresh-profile'
+SEND_TIMING_SENT_PREFIX = 'Time to Sent after sending '
+SEND_TIMING_GROUPS = (
+    ('test_group_chat_send_message_timing', 'Group chat'),
+    ('test_direct_chat_send_message_timing', '1-on-1 chat'),
+    ('test_community_general_send_message_timing', 'Community #general'),
+)
 STATUS_LABELS = {
     'fast': 'Fast',
     'ok': 'Ok',
@@ -510,6 +517,14 @@ def _page_styles() -> str:
       border-bottom: 1px solid var(--border);
       text-align: left;
       vertical-align: top;
+    }
+    .send-timing-group { margin-top: 1.75rem; }
+    .send-timing-group:first-of-type { margin-top: 0; }
+    .send-timing-table th.numeric,
+    .send-timing-table td.numeric {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
     .summary-table th { color: var(--muted); font-size: 0.78rem; }
     .summary-table .load-time-column {
@@ -1894,6 +1909,169 @@ def _regression_page(
     )
 
 
+def _send_timing_label(chart: ChartTest) -> str:
+    name = chart.display_name
+    if name.startswith(SEND_TIMING_SENT_PREFIX):
+        return name[len(SEND_TIMING_SENT_PREFIX):]
+    return name
+
+
+def _send_timing_pairs(
+    chart_tests: tuple[ChartTest, ...],
+) -> list[tuple[ChartTest, ChartTest | None]]:
+    performance = [
+        chart for chart in chart_tests
+        if chart.metrics_kind == 'performance'
+        and 'send_message_timing' in (chart.source_pattern or '')
+    ]
+    by_filename = {chart.graph_filename: chart for chart in performance}
+    pairs: list[tuple[ChartTest, ChartTest | None]] = []
+    for chart in performance:
+        if not chart.graph_filename.endswith('_sent_time.png'):
+            continue
+        delivered_name = chart.graph_filename.replace('_sent_time.png', '_delivered_time.png', 1)
+        pairs.append((chart, by_filename.get(delivered_name)))
+    return pairs
+
+
+def _send_timing_group_label(chart: ChartTest) -> str:
+    source = chart.source_pattern or ''
+    for pattern, label in SEND_TIMING_GROUPS:
+        if pattern in source:
+            return label
+    return 'Other'
+
+
+def _send_timing_measured(
+    sent: ScenarioSummary | None,
+    delivered: ScenarioSummary | None,
+) -> ScenarioSummary | None:
+    if sent is not None and sent.commit_hash:
+        return sent
+    if delivered is not None and delivered.commit_hash:
+        return delivered
+    return sent or delivered
+
+
+def _send_timing_row_html(
+    sent: ChartTest,
+    delivered: ChartTest | None,
+    summaries: dict[str, ScenarioSummary],
+    page_slug: str,
+) -> str:
+    sent_summary = summaries.get(sent.test_id)
+    delivered_summary = summaries.get(delivered.test_id) if delivered is not None else None
+    measured = _send_timing_measured(sent_summary, delivered_summary)
+    commit = measured.commit_hash if measured is not None else ''
+    date = measured.date if measured is not None else ''
+    href = _chart_href(page_slug, sent.test_id)
+    sent_value = escape(_metric_value(sent, sent_summary))
+    delivered_value = (
+        escape(_metric_value(delivered, delivered_summary))
+        if delivered is not None else '—'
+    )
+    commit_html = _commit_link_html(commit) if commit else '—'
+    date_html = escape(date) if date else '—'
+    return (
+        '<tr>'
+        f'<td><a href="{href}">{escape(_send_timing_label(sent))}</a></td>'
+        f'<td class="numeric">{sent_value}</td>'
+        f'<td class="numeric">{delivered_value}</td>'
+        f'<td>{commit_html}</td>'
+        f'<td>{date_html}</td>'
+        '</tr>'
+    )
+
+
+def _send_timing_table_html(
+    chart_tests: tuple[ChartTest, ...],
+    summaries: dict[str, ScenarioSummary],
+    page_slugs_by_test_id: dict[str, str],
+) -> str:
+    pairs = _send_timing_pairs(chart_tests)
+    if not pairs:
+        return (
+            '<p class="subtitle">No send-timing results in the current chart window.</p>'
+        )
+    sections: dict[str, list[str]] = {}
+    order: list[str] = []
+    for sent, delivered in pairs:
+        group = _send_timing_group_label(sent)
+        if group not in sections:
+            sections[group] = []
+            order.append(group)
+        page_slug = page_slugs_by_test_id.get(sent.test_id, FRESH_PROFILE_SLUG)
+        sections[group].append(
+            _send_timing_row_html(sent, delivered, summaries, page_slug)
+        )
+    blocks = []
+    for group in order:
+        rows = ''.join(sections[group])
+        blocks.append(
+            f'<section class="send-timing-group"><h2>{escape(group)}</h2>'
+            '<table class="summary-table send-timing-table">'
+            '<thead><tr>'
+            '<th>Scenario</th><th class="numeric">Sent</th>'
+            '<th class="numeric">Delivered</th><th>Commit</th><th>Date</th>'
+            '</tr></thead>'
+            f'<tbody>{rows}</tbody></table></section>'
+        )
+    return ''.join(blocks)
+
+
+def _send_timing_page(
+    chart_tests: tuple[ChartTest, ...],
+    summaries: dict[str, ScenarioSummary],
+    page_slugs_by_test_id: dict[str, str],
+    *,
+    channel: str = 'nightly',
+    heading: str = 'Send timing',
+    heading_html: str = '',
+) -> str:
+    return (
+        f'{_back_nav("index.html", "Dashboard")}'
+        f'{_heading_with_badge(heading, channel, heading_html=heading_html)}'
+        '<p class="subtitle">Latest Sent vs Delivered times from this channel\'s '
+        'most recent samples. Both clocks start at Send; Delivered includes time to Sent.</p>'
+        f'{_send_timing_legend_html()}'
+        f'{_send_timing_table_html(chart_tests, summaries, page_slugs_by_test_id)}'
+    )
+
+
+def _github_send_timing_markdown(
+    chart_tests: tuple[ChartTest, ...],
+    summaries: dict[str, ScenarioSummary],
+) -> list[str]:
+    pairs = _send_timing_pairs(chart_tests)
+    if not pairs:
+        return []
+    lines = [
+        '## Send timing',
+        '',
+        'Latest time to **Sent** (one tick) and **Delivered** (two ticks). '
+        'Interactive table: [send-timing.html](send-timing.html).',
+        '',
+        '| Scenario | Sent | Delivered | Commit | Date |',
+        '|----------|------|-----------|--------|------|',
+    ]
+    for sent, delivered in pairs:
+        sent_summary = summaries.get(sent.test_id)
+        delivered_summary = summaries.get(delivered.test_id) if delivered is not None else None
+        measured = _send_timing_measured(sent_summary, delivered_summary)
+        commit = (measured.commit_hash[:9] if measured is not None and measured.commit_hash else '—')
+        date = (measured.date if measured is not None and measured.date else '—')
+        delivered_value = (
+            _metric_value(delivered, delivered_summary)
+            if delivered is not None else '—'
+        )
+        lines.append(
+            f'| {_send_timing_label(sent)} | {_metric_value(sent, sent_summary)} | '
+            f'{delivered_value} | {commit} | {date} |'
+        )
+    lines.append('')
+    return lines
+
+
 def _summary_links_html(violations: list[Violation]) -> str:
     badge = ''
     if violations:
@@ -1901,6 +2079,7 @@ def _summary_links_html(violations: list[Violation]) -> str:
     return (
         '<div class="summary-links">'
         '<a class="summary-link" href="profiles.html">User profiles →</a>'
+        '<a class="summary-link" href="send-timing.html">Send timing →</a>'
         f'<a class="summary-link" href="regression_report.html">View flags{badge} →</a>'
         '</div>'
     )
@@ -2076,9 +2255,29 @@ def write_site(
         ),
     )
 
+    send_title, send_html = _channel_page_title(
+        channel, heading, heading_html, 'Send timing',
+    )
+    _write_page(
+        output_dir, 'send-timing.html', send_title,
+        _send_timing_page(
+            chart_tests,
+            scenario_summaries,
+            page_slugs_by_test_id,
+            channel=channel,
+            heading=send_title,
+            heading_html=send_html,
+        ),
+    )
+
     expected_pages = {
         f'{page.slug}.html' for page in pages
-    } | {'summary.html', 'profiles.html', 'regression_report.html'}
+    } | {
+        'summary.html',
+        'profiles.html',
+        'regression_report.html',
+        'send-timing.html',
+    }
     for page in pages:
         page_title, page_html = _channel_page_title(
             channel, heading, heading_html, page.title,
@@ -2538,6 +2737,7 @@ def write_github_readme(
     lines.extend(_last_run_markdown(stamp_frame))
     charts_by_id = {chart.test_id: chart for chart in chart_tests}
     scenario_summaries = summaries or {}
+    lines.extend(_github_send_timing_markdown(chart_tests, scenario_summaries))
     lines.extend(
         _github_summary_markdown(
             pages, charts_by_id, scenario_summaries,

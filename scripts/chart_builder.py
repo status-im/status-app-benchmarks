@@ -712,10 +712,11 @@ def _add_rolling_average_trace(
     window: int,
     ylabel: str,
     value_format: str = '.2f',
-):
+) -> bool:
+    """Trailing window mean. Drawn from the second build; early points use a shorter window."""
     values = points[value_col].tolist()
-    if len(values) < 4:
-        return
+    if len(values) < 2:
+        return False
     rolling = _rolling_mean(values, window)
     x_col = 'x_index' if 'x_index' in points.columns else 'date'
     fig.add_trace(go.Scatter(
@@ -728,6 +729,7 @@ def _add_rolling_average_trace(
         customdata=_trace_customdata(points),
         hovertemplate=_hover_template(f'{window}-build average', ylabel, value_format=value_format),
     ))
+    return True
 
 
 def _add_rolling_average_trace_trend_only(
@@ -739,9 +741,9 @@ def _add_rolling_average_trace_trend_only(
     window: int,
     ylabel: str,
     value_format: str = '.2f',
-):
+) -> bool:
     trend = points[points['x_index'] >= n_baselines] if n_baselines > 0 else points
-    _add_rolling_average_trace(
+    return _add_rolling_average_trace(
         fig, trend, value_col,
         window=window, ylabel=ylabel, value_format=value_format,
     )
@@ -809,7 +811,7 @@ def build_chart_figure(
         PRIMARY_LOAD_TIME_COLOR if chart.metrics_kind == 'performance'
         else PERFORMANCE_COLORS[0]
     )
-    show_legend = bool(chart.show_rolling_average)
+    show_legend = False
 
     ref_builds = _reference_builds_for_chart(chart)
     ref_levels = [
@@ -824,14 +826,11 @@ def build_chart_figure(
         metrics_kind=chart.metrics_kind, n_baselines=n_baselines, ref_levels=ref_levels,
     )
     if chart.show_rolling_average:
-        _add_rolling_average_trace_trend_only(
+        show_legend = _add_rolling_average_trace_trend_only(
             fig, series, chart.value_column,
             n_baselines=n_baselines,
             window=defaults.rolling_window, ylabel=chart.ylabel, value_format=value_format,
         )
-        trend_len = len(series) - n_baselines if n_baselines > 0 else len(series)
-        if trend_len >= 4:
-            show_legend = True
 
     ymax = series[chart.value_column].max() * 1.35
     show_zones = chart.show_speed_zones and chart.metrics_kind == 'performance'
