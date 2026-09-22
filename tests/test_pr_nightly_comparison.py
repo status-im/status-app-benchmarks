@@ -102,7 +102,7 @@ class NightlyComparisonTests(unittest.TestCase):
                 profiles,
             )
             self.assertNotIn('<h1>User profiles</h1>', profiles)
-            profile_page = (output / 'wallet-fresh.html').read_text(encoding='utf-8')
+            profile_page = (output / 'fresh-profile.html').read_text(encoding='utf-8')
             self.assertIn('class="pr-title"', profile_page)
             self.assertIn('Enable loading skeletons', profile_page)
             self.assertIn(

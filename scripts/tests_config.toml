@@ -15,7 +15,7 @@ reference_build = "5f66de"
 # --- Pages ---
 
 [[pages]]
-slug = "wallet-fresh"
+slug = "fresh-profile"
 title = "New user profile"
 description = "Newly created profiles with no pre-seeded data. Wallet scenarios use one fresh user; messenger send timing uses 1-on-1 and 3-person group chats; community send timing uses one joined community on #general."
 user_data_size = "No pre-seeded data"
@@ -63,7 +63,7 @@ test_ids = [
 [[wallet_profile_variants]]
 suffix = "fresh"
 param_id = "fresh_user"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote_prefix = "New user profile"
 
 [[wallet_profile_variants]]
@@ -255,7 +255,7 @@ scenario_id = "group_chat_plain_text"
 display_name = "1000-character text"
 attachment_subject = "Group chat 1000-char text"
 graph_stem = "group_chat_plain_text"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 3-person group · each point = one sample on that build"
 
 [[group_chat_scenarios]]
@@ -263,7 +263,7 @@ scenario_id = "group_chat_album"
 display_name = "a 5-image album"
 attachment_subject = "Group chat image album"
 graph_stem = "group_chat_album"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 3-person group · each point = one sample on that build"
 
 [[group_chat_scenarios]]
@@ -271,7 +271,7 @@ scenario_id = "group_chat_gif"
 display_name = "a GIF"
 attachment_subject = "Group chat GIF"
 graph_stem = "group_chat_gif"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 3-person group · each point = one sample on that build"
 
 [[group_chat_scenarios]]
@@ -279,7 +279,7 @@ scenario_id = "group_chat_burst"
 display_name = "10 texts with 0.5s delay"
 attachment_subject = "Group chat 10-message burst"
 graph_stem = "group_chat_burst"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 3-person group · each point = average of 10 sends on that build"
 
 # --- Direct chat send timing (one pytest case, many series) ---
@@ -290,7 +290,7 @@ scenario_id = "direct_chat_plain_text"
 display_name = "1000-character text"
 attachment_subject = "1-on-1 chat 1000-char text"
 graph_stem = "direct_chat_plain_text"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 1-on-1 chat · each point = one sample on that build"
 
 [[direct_chat_scenarios]]
@@ -298,7 +298,7 @@ scenario_id = "direct_chat_album"
 display_name = "a 5-image album"
 attachment_subject = "1-on-1 chat image album"
 graph_stem = "direct_chat_album"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 1-on-1 chat · each point = one sample on that build"
 
 [[direct_chat_scenarios]]
@@ -306,7 +306,7 @@ scenario_id = "direct_chat_gif"
 display_name = "a GIF"
 attachment_subject = "1-on-1 chat GIF"
 graph_stem = "direct_chat_gif"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 1-on-1 chat · each point = one sample on that build"
 
 [[direct_chat_scenarios]]
@@ -314,7 +314,7 @@ scenario_id = "direct_chat_burst"
 display_name = "10 texts with 0.5s delay"
 attachment_subject = "1-on-1 chat 10-message burst"
 graph_stem = "direct_chat_burst"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh 1-on-1 chat · each point = average of 10 sends on that build"
 
 # --- Community #general send timing (one pytest case, many series) ---
@@ -325,7 +325,7 @@ scenario_id = "community_general_plain_text"
 display_name = "1000-character text"
 attachment_subject = "Community general 1000-char text"
 graph_stem = "community_general_plain_text"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh community #general · each point = one sample on that build"
 
 [[community_send_scenarios]]
@@ -333,7 +333,7 @@ scenario_id = "community_general_album"
 display_name = "a 5-image album"
 attachment_subject = "Community general image album"
 graph_stem = "community_general_album"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh community #general · each point = one sample on that build"
 
 [[community_send_scenarios]]
@@ -341,7 +341,7 @@ scenario_id = "community_general_gif"
 display_name = "a GIF"
 attachment_subject = "Community general GIF"
 graph_stem = "community_general_gif"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh community #general · each point = one sample on that build"
 
 [[community_send_scenarios]]
@@ -349,7 +349,7 @@ scenario_id = "community_general_burst"
 display_name = "10 texts with 0.5s delay"
 attachment_subject = "Community general 10-message burst"
 graph_stem = "community_general_burst"
-page_slug = "wallet-fresh"
+page_slug = "fresh-profile"
 footnote = "fresh community #general · each point = average of 10 sends on that build"
 
 # --- Community first open (member only) ---

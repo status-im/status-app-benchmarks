@@ -8,7 +8,7 @@ if str(SCRIPTS) not in sys.path:
 from benchmark_config import BenchmarkPage  # noqa: E402
 
 PAGE = BenchmarkPage(
-    slug='wallet-fresh',
+    slug='fresh-profile',
     title='New user profile',
     description='Newly created user profile',
     test_ids=(),

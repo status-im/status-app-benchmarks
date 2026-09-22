@@ -13,6 +13,25 @@ Full CSV history: [`data/`](../../data/).
 
 **Last run** · Sep 22, 2026 · [`2969f8bf1`](https://github.com/status-im/status-app/commit/2969f8bf1d6da2fcf7e1a95ada7fd1dc0d347c93)
 
+## Send timing
+
+Latest time to **Sent** (one tick) and **Delivered** (two ticks). Interactive table: [send-timing.html](send-timing.html).
+
+| Scenario | Sent | Delivered | Commit | Date |
+|----------|------|-----------|--------|------|
+| 1000-character text in a 3-person group | — | — | — | — |
+| a 5-image album in a 3-person group | — | — | — | — |
+| a GIF in a 3-person group | — | — | — | — |
+| 10 texts with 0.5s delay in a 3-person group | — | — | — | — |
+| 1000-character text in a 1-on-1 chat | — | — | — | — |
+| a 5-image album in a 1-on-1 chat | — | — | — | — |
+| a GIF in a 1-on-1 chat | — | — | — | — |
+| 10 texts with 0.5s delay in a 1-on-1 chat | — | — | — | — |
+| 1000-character text in a community #general channel | — | — | — | — |
+| a 5-image album in a community #general channel | — | — | — | — |
+| a GIF in a community #general channel | — | — | — | — |
+| 10 texts with 0.5s delay in a community #general channel | — | — | — | — |
+
 ## Scenario summary
 
 Latest result for every tested scenario. Speed categories:
