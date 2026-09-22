@@ -41,3 +41,4 @@ nightly-39901f54d7-407,nightly,39901f54d7,2026-09-21T05:33:10,2026-09-21T05:33:1
 nightly-69be06f34d-408,nightly,69be06f34d,2026-09-21T08:31:55,2026-09-21T08:31:55|69be06f34d,master,status-app/systems/windows/x86_64/package,,,
 nightly-cb9dab193c-409,nightly,cb9dab193c,2026-09-21T15:29:42,2026-09-21T15:29:42|cb9dab193c,master,status-app/systems/windows/x86_64/package,,,
 nightly-2969f8bf1d-410,nightly,2969f8bf1d,2026-09-22T05:39:06,2026-09-22T05:39:06|2969f8bf1d,master,status-app/systems/windows/x86_64/package,,,
+nightly-2969f8-414,nightly,2969f8,2026-09-22T12:43:58,2026-09-22T12:43:58|2969f8,master,https://status-app-builds.hel1.your-objectstorage.com/StatusIm-Desktop-260922-033800-2969f8-x86_64.7z,,,
