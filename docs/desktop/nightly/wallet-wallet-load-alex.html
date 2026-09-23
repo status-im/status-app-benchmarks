@@ -419,11 +419,36 @@
     }
     .send-timing-group { margin-top: 1.75rem; }
     .send-timing-group:first-of-type { margin-top: 0; }
+    .send-timing-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+    .send-timing-table th:nth-child(1),
+    .send-timing-table td:nth-child(1) { width: 40%; }
+    .send-timing-table th:nth-child(2),
+    .send-timing-table td:nth-child(2),
+    .send-timing-table th:nth-child(3),
+    .send-timing-table td:nth-child(3),
+    .send-timing-table th:nth-child(4),
+    .send-timing-table td:nth-child(4),
+    .send-timing-table th:nth-child(5),
+    .send-timing-table td:nth-child(5) { width: 15%; }
+    .send-timing-table th {
+      text-align: center;
+    }
     .send-timing-table th.numeric,
     .send-timing-table td.numeric {
-      text-align: right;
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
+    }
+    .send-timing-table td.numeric {
+      text-align: right;
+    }
+    .send-timing-table a.last-run-commit {
+      font-weight: 400;
+    }
+    .send-timing-table td.numeric .load-time-cell {
+      justify-content: flex-end;
     }
     .summary-table th { color: var(--muted); font-size: 0.78rem; }
     .summary-table .load-time-column {
