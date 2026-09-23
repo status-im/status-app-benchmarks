@@ -384,11 +384,13 @@ def _merge_page_test_ids(*maps: dict[str, list[str]]) -> dict[str, list[str]]:
 
 
 _SEND_STATUS_FOOTNOTE = (
+    '<b>Visible</b> = the outgoing message appears in the chat view, before ticks. '
     '<b>Sent</b> = one tick (published to the network). '
     '<b>Delivered</b> = two ticks (a recipient confirmed receipt). '
-    'Both clocks start at Send; Delivered includes time to Sent.'
+    'All clocks start at Send; Sent includes time to Visible, and Delivered includes time to Sent.'
 )
 _SENT_AND_DELIVERED_STAGES = (
+    ('visible', 'Visible', True),
     ('sent', 'Sent', True),
     ('delivered', 'Delivered', True),
 )
@@ -429,7 +431,7 @@ def _expand_send_timing_scenarios(
     context_label: str,
     stages: Optional[Sequence[tuple[str, str, bool]]] = None,
 ) -> tuple[list[ChartTest], dict[str, list[str]]]:
-    """One pytest case emits many series; split Sent/Delivered × time/CPU/RAM."""
+    """One pytest case emits many series; split Visible/Sent/Delivered × time/CPU/RAM."""
     scenarios = raw.get(config_key, [])
     if not scenarios:
         return [], {}
