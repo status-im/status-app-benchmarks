@@ -520,11 +520,36 @@ def _page_styles() -> str:
     }
     .send-timing-group { margin-top: 1.75rem; }
     .send-timing-group:first-of-type { margin-top: 0; }
+    .send-timing-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+    .send-timing-table th:nth-child(1),
+    .send-timing-table td:nth-child(1) { width: 40%; }
+    .send-timing-table th:nth-child(2),
+    .send-timing-table td:nth-child(2),
+    .send-timing-table th:nth-child(3),
+    .send-timing-table td:nth-child(3),
+    .send-timing-table th:nth-child(4),
+    .send-timing-table td:nth-child(4),
+    .send-timing-table th:nth-child(5),
+    .send-timing-table td:nth-child(5) { width: 15%; }
+    .send-timing-table th {
+      text-align: center;
+    }
     .send-timing-table th.numeric,
     .send-timing-table td.numeric {
-      text-align: right;
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
+    }
+    .send-timing-table td.numeric {
+      text-align: right;
+    }
+    .send-timing-table a.last-run-commit {
+      font-weight: 400;
+    }
+    .send-timing-table td.numeric .load-time-cell {
+      justify-content: flex-end;
     }
     .summary-table th { color: var(--muted); font-size: 0.78rem; }
     .summary-table .load-time-column {
@@ -1953,6 +1978,19 @@ def _send_timing_measured(
     return sent or delivered
 
 
+def _send_timing_metric_html(
+    chart: ChartTest | None,
+    summary: ScenarioSummary | None,
+) -> str:
+    if chart is None:
+        return '—'
+    return (
+        '<div class="load-time-cell">'
+        f'<span class="metric-value">{escape(_metric_value(chart, summary))}</span>'
+        f'{_status_badges(summary)}</div>'
+    )
+
+
 def _send_timing_row_html(
     sent: ChartTest,
     delivered: ChartTest | None,
@@ -1965,18 +2003,13 @@ def _send_timing_row_html(
     commit = measured.commit_hash if measured is not None else ''
     date = measured.date if measured is not None else ''
     href = _chart_href(page_slug, sent.test_id)
-    sent_value = escape(_metric_value(sent, sent_summary))
-    delivered_value = (
-        escape(_metric_value(delivered, delivered_summary))
-        if delivered is not None else '—'
-    )
     commit_html = _commit_link_html(commit) if commit else '—'
     date_html = escape(date) if date else '—'
     return (
         '<tr>'
         f'<td><a href="{href}">{escape(_send_timing_label(sent))}</a></td>'
-        f'<td class="numeric">{sent_value}</td>'
-        f'<td class="numeric">{delivered_value}</td>'
+        f'<td class="numeric">{_send_timing_metric_html(sent, sent_summary)}</td>'
+        f'<td class="numeric">{_send_timing_metric_html(delivered, delivered_summary)}</td>'
         f'<td>{commit_html}</td>'
         f'<td>{date_html}</td>'
         '</tr>'
@@ -2079,7 +2112,6 @@ def _summary_links_html(violations: list[Violation]) -> str:
     return (
         '<div class="summary-links">'
         '<a class="summary-link" href="profiles.html">User profiles →</a>'
-        '<a class="summary-link" href="send-timing.html">Send timing →</a>'
         f'<a class="summary-link" href="regression_report.html">View flags{badge} →</a>'
         '</div>'
     )
@@ -2576,6 +2608,8 @@ def write_desktop_landing(desktop_dir: Path) -> None:
         '<p>RC-to-final trend charts, with a separate page for every release.</p></a>'
         '<a class="card" href="pr/"><h2>Pull requests</h2>'
         '<p>On-demand PR benchmark runs and comparisons with release baselines.</p></a>'
+        '<a class="card" href="nightly/send-timing.html"><h2>Send timing</h2>'
+        '<p>Latest Sent vs Delivered times from nightly messenger runs.</p></a>'
         '</div>'
     )
     (desktop_dir / 'index.html').write_text(
