@@ -525,15 +525,9 @@ def _page_styles() -> str:
       width: 100%;
     }
     .send-timing-table th:nth-child(1),
-    .send-timing-table td:nth-child(1) { width: 40%; }
-    .send-timing-table th:nth-child(2),
-    .send-timing-table td:nth-child(2),
-    .send-timing-table th:nth-child(3),
-    .send-timing-table td:nth-child(3),
-    .send-timing-table th:nth-child(4),
-    .send-timing-table td:nth-child(4),
-    .send-timing-table th:nth-child(5),
-    .send-timing-table td:nth-child(5) { width: 15%; }
+    .send-timing-table td:nth-child(1) { width: 34%; }
+    .send-timing-table th:nth-child(n+2),
+    .send-timing-table td:nth-child(n+2) { width: 13.2%; }
     .send-timing-table th {
       text-align: center;
     }
@@ -1941,22 +1935,27 @@ def _send_timing_label(chart: ChartTest) -> str:
     return name
 
 
-def _send_timing_pairs(
+def _send_timing_rows(
     chart_tests: tuple[ChartTest, ...],
-) -> list[tuple[ChartTest, ChartTest | None]]:
+) -> list[tuple[ChartTest | None, ChartTest, ChartTest | None]]:
     performance = [
         chart for chart in chart_tests
         if chart.metrics_kind == 'performance'
         and 'send_message_timing' in (chart.source_pattern or '')
     ]
     by_filename = {chart.graph_filename: chart for chart in performance}
-    pairs: list[tuple[ChartTest, ChartTest | None]] = []
+    rows: list[tuple[ChartTest | None, ChartTest, ChartTest | None]] = []
     for chart in performance:
         if not chart.graph_filename.endswith('_sent_time.png'):
             continue
+        visible_name = chart.graph_filename.replace('_sent_time.png', '_visible_time.png', 1)
         delivered_name = chart.graph_filename.replace('_sent_time.png', '_delivered_time.png', 1)
-        pairs.append((chart, by_filename.get(delivered_name)))
-    return pairs
+        rows.append((
+            by_filename.get(visible_name),
+            chart,
+            by_filename.get(delivered_name),
+        ))
+    return rows
 
 
 def _send_timing_group_label(chart: ChartTest) -> str:
@@ -1968,14 +1967,14 @@ def _send_timing_group_label(chart: ChartTest) -> str:
 
 
 def _send_timing_measured(
+    visible: ScenarioSummary | None,
     sent: ScenarioSummary | None,
     delivered: ScenarioSummary | None,
 ) -> ScenarioSummary | None:
-    if sent is not None and sent.commit_hash:
-        return sent
-    if delivered is not None and delivered.commit_hash:
-        return delivered
-    return sent or delivered
+    for summary in (sent, visible, delivered):
+        if summary is not None and summary.commit_hash:
+            return summary
+    return sent or visible or delivered
 
 
 def _send_timing_metric_html(
@@ -1992,14 +1991,16 @@ def _send_timing_metric_html(
 
 
 def _send_timing_row_html(
+    visible: ChartTest | None,
     sent: ChartTest,
     delivered: ChartTest | None,
     summaries: dict[str, ScenarioSummary],
     page_slug: str,
 ) -> str:
+    visible_summary = summaries.get(visible.test_id) if visible is not None else None
     sent_summary = summaries.get(sent.test_id)
     delivered_summary = summaries.get(delivered.test_id) if delivered is not None else None
-    measured = _send_timing_measured(sent_summary, delivered_summary)
+    measured = _send_timing_measured(visible_summary, sent_summary, delivered_summary)
     commit = measured.commit_hash if measured is not None else ''
     date = measured.date if measured is not None else ''
     href = _chart_href(page_slug, sent.test_id)
@@ -2008,6 +2009,7 @@ def _send_timing_row_html(
     return (
         '<tr>'
         f'<td><a href="{href}">{escape(_send_timing_label(sent))}</a></td>'
+        f'<td class="numeric">{_send_timing_metric_html(visible, visible_summary)}</td>'
         f'<td class="numeric">{_send_timing_metric_html(sent, sent_summary)}</td>'
         f'<td class="numeric">{_send_timing_metric_html(delivered, delivered_summary)}</td>'
         f'<td>{commit_html}</td>'
@@ -2021,33 +2023,34 @@ def _send_timing_table_html(
     summaries: dict[str, ScenarioSummary],
     page_slugs_by_test_id: dict[str, str],
 ) -> str:
-    pairs = _send_timing_pairs(chart_tests)
-    if not pairs:
+    rows = _send_timing_rows(chart_tests)
+    if not rows:
         return (
             '<p class="subtitle">No send-timing results in the current chart window.</p>'
         )
     sections: dict[str, list[str]] = {}
     order: list[str] = []
-    for sent, delivered in pairs:
+    for visible, sent, delivered in rows:
         group = _send_timing_group_label(sent)
         if group not in sections:
             sections[group] = []
             order.append(group)
         page_slug = page_slugs_by_test_id.get(sent.test_id, FRESH_PROFILE_SLUG)
         sections[group].append(
-            _send_timing_row_html(sent, delivered, summaries, page_slug)
+            _send_timing_row_html(visible, sent, delivered, summaries, page_slug)
         )
     blocks = []
     for group in order:
-        rows = ''.join(sections[group])
+        body = ''.join(sections[group])
         blocks.append(
             f'<section class="send-timing-group"><h2>{escape(group)}</h2>'
             '<table class="summary-table send-timing-table">'
             '<thead><tr>'
-            '<th>Scenario</th><th class="numeric">Sent</th>'
+            '<th>Scenario</th><th class="numeric">Visible</th>'
+            '<th class="numeric">Sent</th>'
             '<th class="numeric">Delivered</th><th>Commit</th><th>Date</th>'
             '</tr></thead>'
-            f'<tbody>{rows}</tbody></table></section>'
+            f'<tbody>{body}</tbody></table></section>'
         )
     return ''.join(blocks)
 
@@ -2064,8 +2067,8 @@ def _send_timing_page(
     return (
         f'{_back_nav("index.html", "Dashboard")}'
         f'{_heading_with_badge(heading, channel, heading_html=heading_html)}'
-        '<p class="subtitle">Latest Sent vs Delivered times from this channel\'s '
-        'most recent samples. Both clocks start at Send; Delivered includes time to Sent.</p>'
+        '<p class="subtitle">Latest Visible, Sent, and Delivered times from this channel\'s '
+        'most recent samples. All clocks start at Send; later stages include the earlier ones.</p>'
         f'{_send_timing_legend_html()}'
         f'{_send_timing_table_html(chart_tests, summaries, page_slugs_by_test_id)}'
     )
@@ -2075,30 +2078,37 @@ def _github_send_timing_markdown(
     chart_tests: tuple[ChartTest, ...],
     summaries: dict[str, ScenarioSummary],
 ) -> list[str]:
-    pairs = _send_timing_pairs(chart_tests)
-    if not pairs:
+    rows = _send_timing_rows(chart_tests)
+    if not rows:
         return []
     lines = [
         '## Send timing',
         '',
-        'Latest time to **Sent** (one tick) and **Delivered** (two ticks). '
+        'Latest time until the message is **Visible** in the chat, **Sent** (one tick), '
+        'and **Delivered** (two ticks). '
         'Interactive table: [send-timing.html](send-timing.html).',
         '',
-        '| Scenario | Sent | Delivered | Commit | Date |',
-        '|----------|------|-----------|--------|------|',
+        '| Scenario | Visible | Sent | Delivered | Commit | Date |',
+        '|----------|---------|------|-----------|--------|------|',
     ]
-    for sent, delivered in pairs:
+    for visible, sent, delivered in rows:
+        visible_summary = summaries.get(visible.test_id) if visible is not None else None
         sent_summary = summaries.get(sent.test_id)
         delivered_summary = summaries.get(delivered.test_id) if delivered is not None else None
-        measured = _send_timing_measured(sent_summary, delivered_summary)
+        measured = _send_timing_measured(visible_summary, sent_summary, delivered_summary)
         commit = (measured.commit_hash[:9] if measured is not None and measured.commit_hash else '—')
         date = (measured.date if measured is not None and measured.date else '—')
+        visible_value = (
+            _metric_value(visible, visible_summary)
+            if visible is not None else '—'
+        )
         delivered_value = (
             _metric_value(delivered, delivered_summary)
             if delivered is not None else '—'
         )
         lines.append(
-            f'| {_send_timing_label(sent)} | {_metric_value(sent, sent_summary)} | '
+            f'| {_send_timing_label(sent)} | {visible_value} | '
+            f'{_metric_value(sent, sent_summary)} | '
             f'{delivered_value} | {commit} | {date} |'
         )
     lines.append('')
@@ -2112,6 +2122,7 @@ def _summary_links_html(violations: list[Violation]) -> str:
     return (
         '<div class="summary-links">'
         '<a class="summary-link" href="profiles.html">User profiles →</a>'
+        '<a class="summary-link" href="send-timing.html">Send timing →</a>'
         f'<a class="summary-link" href="regression_report.html">View flags{badge} →</a>'
         '</div>'
     )
@@ -2159,6 +2170,8 @@ def _has_send_timing_charts(groups: list[dict[str, ChartTest]]) -> bool:
 def _send_timing_legend_html() -> str:
     return (
         '<div class="send-timing-legend">'
+        '<p><strong>Visible</strong> is the time from pressing Send until the outgoing '
+        'message appears in the chat view. This does not include the sent or delivered ticks.</p>'
         '<p><strong>Sent</strong> is the time from pressing Send until the outgoing '
         'message shows one tick — the message was published to the network.</p>'
         '<p><strong>Delivered</strong> is the time from pressing Send until the outgoing '
@@ -2609,7 +2622,7 @@ def write_desktop_landing(desktop_dir: Path) -> None:
         '<a class="card" href="pr/"><h2>Pull requests</h2>'
         '<p>On-demand PR benchmark runs and comparisons with release baselines.</p></a>'
         '<a class="card" href="nightly/send-timing.html"><h2>Send timing</h2>'
-        '<p>Latest Sent vs Delivered times from nightly messenger runs.</p></a>'
+        '<p>Latest Visible, Sent, and Delivered times from nightly messenger runs.</p></a>'
         '</div>'
     )
     (desktop_dir / 'index.html').write_text(
@@ -2795,6 +2808,7 @@ def write_github_readme(
                 for test_id in test_ids
             ):
                 lines.extend([
+                    '**Visible** is the time from pressing Send until the outgoing message appears in the chat view, before ticks. '
                     '**Sent** is the time from pressing Send until the outgoing message shows one tick (published to the network). '
                     '**Delivered** is the time from pressing Send until two ticks (a recipient acknowledged it); this includes time to Sent.',
                     '',

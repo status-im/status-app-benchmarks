@@ -248,7 +248,7 @@ footnote = "each point = average of 5 runs on that build · 2.38.0 baseline not 
 
 # --- Group chat send timing (one pytest case, many series) ---
 # source: test_group_chat_send_message_timing
-# Fast/Ok/Slow zones apply to both Sent and Delivered. Delivered is usually slower.
+# Fast/Ok/Slow zones apply to Visible, Sent, and Delivered. Delivered is usually slower.
 
 [[group_chat_scenarios]]
 scenario_id = "group_chat_plain_text"
