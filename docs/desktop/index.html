@@ -424,15 +424,9 @@
       width: 100%;
     }
     .send-timing-table th:nth-child(1),
-    .send-timing-table td:nth-child(1) { width: 40%; }
-    .send-timing-table th:nth-child(2),
-    .send-timing-table td:nth-child(2),
-    .send-timing-table th:nth-child(3),
-    .send-timing-table td:nth-child(3),
-    .send-timing-table th:nth-child(4),
-    .send-timing-table td:nth-child(4),
-    .send-timing-table th:nth-child(5),
-    .send-timing-table td:nth-child(5) { width: 15%; }
+    .send-timing-table td:nth-child(1) { width: 34%; }
+    .send-timing-table th:nth-child(n+2),
+    .send-timing-table td:nth-child(n+2) { width: 13.2%; }
     .send-timing-table th {
       text-align: center;
     }
@@ -702,6 +696,6 @@
 </head>
 <body>
   <header><a href="index.html">Status App Benchmarks</a></header>
-  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Nightly, pull request, and release results are stored and charted independently.</p><section class="machine-info"><h2>System info</h2><p class="subtitle">Windows e2e benchmark runner</p><dl><div><dt>Host</dt><dd>WINDOWS-NODE-01</dd></div><div><dt>Windows</dt><dd>Windows Server 2022 Standard 21H2</dd></div><div><dt>OS build</dt><dd>20348.1487</dd></div><div><dt>CPU</dt><dd>AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics</dd></div><div><dt>RAM</dt><dd>63 GB</dd></div></dl></section><div class="grid"><a class="card" href="nightly/"><h2>Nightly</h2><p>Rolling master performance trend and promoted release baselines.</p></a><a class="card" href="releases/"><h2>Releases</h2><p>RC-to-final trend charts, with a separate page for every release.</p></a><a class="card" href="pr/"><h2>Pull requests</h2><p>On-demand PR benchmark runs and comparisons with release baselines.</p></a><a class="card" href="nightly/send-timing.html"><h2>Send timing</h2><p>Latest Sent vs Delivered times from nightly messenger runs.</p></a></div></main>
+  <main><h1>Windows Benchmark Dashboard</h1><p class="subtitle">Nightly, pull request, and release results are stored and charted independently.</p><section class="machine-info"><h2>System info</h2><p class="subtitle">Windows e2e benchmark runner</p><dl><div><dt>Host</dt><dd>WINDOWS-NODE-01</dd></div><div><dt>Windows</dt><dd>Windows Server 2022 Standard 21H2</dd></div><div><dt>OS build</dt><dd>20348.1487</dd></div><div><dt>CPU</dt><dd>AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics</dd></div><div><dt>RAM</dt><dd>63 GB</dd></div></dl></section><div class="grid"><a class="card" href="nightly/"><h2>Nightly</h2><p>Rolling master performance trend and promoted release baselines.</p></a><a class="card" href="releases/"><h2>Releases</h2><p>RC-to-final trend charts, with a separate page for every release.</p></a><a class="card" href="pr/"><h2>Pull requests</h2><p>On-demand PR benchmark runs and comparisons with release baselines.</p></a><a class="card" href="nightly/send-timing.html"><h2>Send timing</h2><p>Latest Visible, Sent, and Delivered times from nightly messenger runs.</p></a></div></main>
 </body>
 </html>

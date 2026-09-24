@@ -1,8 +1,8 @@
 # Desktop benchmark flags
 
-Generated: 2026-09-24 07:45
+Generated: 2026-09-24 09:33
 
-**Total flags:** 25
+**Total flags:** 31
 
 ## Regression
 
@@ -12,33 +12,39 @@ _No violations._
 
 | Test | Variant | Value | Commit | Date | Detail | Ticket |
 |------|---------|-------|--------|------|--------|--------|
-| test_wallet_assets_tab_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.174s | `02b09eb8fe` | 2026-09-24 05:44 | Latest value 1.174s exceeds 1.0s slow threshold | — |
-| test_direct_chat_gif_sent_time | default | 1.009s | `02b09eb8fe` | 2026-09-24 05:44 | Latest value 1.009s exceeds 1.0s slow threshold | — |
+| test_community_general_album_visible_time | default | 5.143s | `02b09e` | 2026-09-24 07:32 | Latest value 5.143s exceeds 1.0s slow threshold | — |
+| test_direct_chat_album_visible_time | default | 2.978s | `02b09e` | 2026-09-24 07:32 | Latest value 2.978s exceeds 1.0s slow threshold | — |
+| test_group_chat_album_visible_time | default | 2.916s | `02b09e` | 2026-09-24 07:32 | Latest value 2.916s exceeds 1.0s slow threshold | — |
+| test_community_general_gif_sent_time | default | 1.262s | `02b09e` | 2026-09-24 07:32 | Latest value 1.262s exceeds 1.0s slow threshold | — |
+| test_wallet_swap_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.251s | `02b09e` | 2026-09-24 07:32 | Latest value 1.251s exceeds 1.0s slow threshold | — |
+| test_direct_chat_burst_sent_time | default | 1.193s | `02b09e` | 2026-09-24 07:32 | Latest value 1.193s exceeds 1.0s slow threshold | — |
+| test_community_general_burst_visible_time | default | 1.118s | `02b09e` | 2026-09-24 07:32 | Latest value 1.118s exceeds 1.0s slow threshold | — |
+| test_group_chat_burst_sent_time | default | 1.084s | `02b09e` | 2026-09-24 07:32 | Latest value 1.084s exceeds 1.0s slow threshold | — |
+| test_group_chat_gif_sent_time | default | 1.020s | `02b09e` | 2026-09-24 07:32 | Latest value 1.020s exceeds 1.0s slow threshold | — |
 
 ## Backlog candidates
 
 | Test | Variant | Value | Commit | Date | Detail | Ticket |
 |------|---------|-------|--------|------|--------|--------|
-| test_community_general_album_delivered_time | default | 9.047s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_group_chat_album_delivered_time | default | 5.116s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_community_general_album_sent_time | default | 5.089s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_community_general_burst_delivered_time | default | 4.698s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_community_general_gif_delivered_time | default | 3.616s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_direct_chat_album_delivered_time | default | 3.520s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_direct_chat_burst_delivered_time | default | 3.076s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_direct_chat_album_sent_time | default | 3.027s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_group_chat_album_sent_time | default | 2.991s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_group_chat_gif_delivered_time | default | 2.707s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_status_community_first_open_loading_time_member | user_data0-user_account0 | 2.632s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_status_community_second_open_loading_time_member | user_data0-user_account0 | 2.163s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_community_general_plain_text_delivered_time | default | 2.147s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_group_chat_burst_delivered_time | default | 2.053s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_collectibles_tab_first_open_time_wallet_load | wallet_load_user | 2.002s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_send_first_open_time_wallet_load | wallet_load_user | 1.719s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_direct_chat_gif_delivered_time | default | 1.474s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_send_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.240s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_group_chat_plain_text_delivered_time | default | 1.218s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_community_general_burst_sent_time | default | 1.168s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_assets_tab_first_open_time_wallet_load | wallet_load_user | 1.131s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
-| test_wallet_send_first_open_time_fresh | fresh_user | 1.046s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 4 of last 5 builds -- consider a backlog ticket | — |
-| test_direct_chat_plain_text_delivered_time | default | 0.878s | `02b09eb8fe` | 2026-09-24 05:44 | Slow (>1.0s) in 4 of last 5 builds -- consider a backlog ticket | — |
+| test_community_general_album_delivered_time | default | 8.642s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_community_general_album_sent_time | default | 5.776s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_community_general_burst_delivered_time | default | 5.420s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_status_community_first_open_loading_time_member | user_data0-user_account0 | 4.100s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_group_chat_album_delivered_time | default | 4.030s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_direct_chat_album_delivered_time | default | 3.961s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_assets_tab_first_open_time_wallet_load | wallet_load_user | 3.947s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_group_chat_album_sent_time | default | 3.496s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_direct_chat_album_sent_time | default | 3.471s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_group_chat_plain_text_delivered_time | default | 3.389s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_group_chat_gif_delivered_time | default | 3.226s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_community_general_plain_text_delivered_time | default | 3.147s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_community_general_gif_delivered_time | default | 3.059s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_group_chat_burst_delivered_time | default | 2.742s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_status_community_second_open_loading_time_member | user_data0-user_account0 | 2.193s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_community_general_burst_sent_time | default | 2.132s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_direct_chat_burst_delivered_time | default | 2.100s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_send_first_open_time_wallet_load | wallet_load_user | 1.750s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_direct_chat_gif_delivered_time | default | 1.296s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_send_first_open_time_wallet_load_alex | wallet_load_alex_user | 1.274s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 5 of last 5 builds -- consider a backlog ticket | — |
+| test_direct_chat_plain_text_delivered_time | default | 1.176s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 4 of last 5 builds -- consider a backlog ticket | — |
+| test_wallet_send_first_open_time_fresh | fresh_user | 0.999s | `02b09e` | 2026-09-24 07:32 | Slow (>1.0s) in 3 of last 5 builds -- consider a backlog ticket | — |
