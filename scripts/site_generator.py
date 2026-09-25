@@ -2003,7 +2003,8 @@ def _send_timing_row_html(
     measured = _send_timing_measured(visible_summary, sent_summary, delivered_summary)
     commit = measured.commit_hash if measured is not None else ''
     date = measured.date if measured is not None else ''
-    href = _chart_href(page_slug, sent.test_id)
+    chart = visible if visible is not None else sent
+    href = _chart_href(page_slug, chart.test_id)
     commit_html = _commit_link_html(commit) if commit else '—'
     date_html = escape(date) if date else '—'
     return (
