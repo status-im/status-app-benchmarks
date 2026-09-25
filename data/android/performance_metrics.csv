@@ -1789,3 +1789,14 @@ c06abe-n260923,2026-09-23T05:45:15,moto_g55_5G,test_android_resource_pss[status-
 c06abe-n260923,2026-09-23T05:45:15,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,2.27,2.27,2.27,2.27,1,1,2.27
 c06abe-n260923,2026-09-23T05:45:15,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,43.42,43.42,43.42,43.42,1,1,43.42
 c06abe-n260923,2026-09-23T05:45:15,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,13.0,13.0,13.0,13.0,1,1,13.0
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.09,0.112,0.1,0.099,4,4,"0.112,0.09,0.092,0.105"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.093,0.105,0.1,0.102,4,4,"0.101,0.093,0.102,0.105"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,0.661,0.73,0.706,0.716,4,4,"0.717,0.715,0.73,0.661"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,0.616,0.653,0.633,0.631,4,4,"0.638,0.616,0.624,0.653"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.095,0.108,0.101,0.101,4,4,"0.099,0.095,0.103,0.108"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.091,0.113,0.099,0.097,4,4,"0.095,0.091,0.098,0.113"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,0.606,0.638,0.622,0.623,4,4,"0.638,0.612,0.634,0.606"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.601,0.643,0.62,0.617,4,4,"0.602,0.643,0.632,0.601"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.106,0.126,0.121,0.126,4,4,"0.126,0.125,0.106,0.126"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.581,0.649,0.624,0.633,4,4,"0.649,0.636,0.581,0.629"
+3751c1,2026-09-25T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.689,0.701,0.694,0.694,4,4,"0.701,0.696,0.689,0.691"
