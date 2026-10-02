@@ -125,7 +125,7 @@ unit = "s"
 x_axis = "build"
 metric = "min"
 description = "Time from tapping “Receive” in the account view until the sheet is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet arrives within a single screenshot, the ~0.06–0.1 s floor — read as ‘within one frame’, not a precise latency)"
+footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet is there at the first screenshot, below the timer's ~0.5 s steps — not a precise time)"
 
 [[tests]]
 test_id = "test_android_wallet_send_response_time"
@@ -161,7 +161,7 @@ unit = "s"
 x_axis = "build"
 metric = "min"
 description = "Time from tapping “Buy” in the account view until the sheet is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet arrives within a single screenshot, the ~0.06–0.1 s floor — read as ‘within one frame’, not a precise latency)"
+footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (the sheet is there at the first screenshot, below the timer's ~0.5 s steps — not a precise time)"
 
 [[tests]]
 test_id = "test_android_wallet_account_open_response_time"
@@ -461,7 +461,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping the Collectibles tab in the account view until the tab is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · empty on a fresh account — typically within one frame (~0.1 s floor)"
+footnote = "Fresh account · Samsung A36 · empty on a fresh account — usually there at the first screenshot, below the timer's ~0.5 s steps"
 
 [[tests]]
 test_id = "test_android_wallet_history_response_time"
@@ -473,7 +473,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping the History tab in the account view until the tab is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · empty on a fresh account — typically within one frame (~0.1 s floor)"
+footnote = "Fresh account · Samsung A36 · empty on a fresh account — usually there at the first screenshot, below the timer's ~0.5 s steps"
 
 [[tests]]
 test_id = "test_android_activity_center_response_time"
@@ -496,7 +496,7 @@ ylabel = "seconds"
 unit = "s"
 x_axis = "build"
 description = "Time from tapping Home until the home screen is drawn  ·  lower is better"
-footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (opens within a single screenshot, the ~0.06–0.1 s floor — read as within one frame, not a precise latency)"
+footnote = "Fresh account · Samsung A36 · each point = fastest of 6 runs (there at the first screenshot, below the timer's ~0.5 s steps — not a precise time)"
 # --- #21248 resource lane (CPU/RAM at rest, fixture account, Moto G55) ---
 # These series come from resource-nightly.sh (Moto), NOT the A36 response-time run.
 # Regime: at rest on the post-login landing screen (foreground, screen on).

@@ -5,13 +5,15 @@ tap **Wallet** and time until the Wallet screen is drawn. Tracked across builds 
 can see whether performance improves or regresses.
 
 - **Lower is better.** Most points are the **median of 6 runs** on a **fresh account**
-  (Samsung A36); charts that work differently (single cold samples, screens faster
-  than the measurement floor) say so in their footnotes.
+  (Samsung A36); charts that work differently (single cold samples, screens that are
+  already there at the first screenshot) say so in their footnotes.
 - Measured with a screenshot/pixel timer that reads the screen directly — the Qt UI's
   accessibility tree is unreliable for timing, so we don't rely on it.
-- Resolution is bounded by the screenshot round-trip. On this device the smallest
-  values are about **0.06–0.1 s** (the tap plus the first screenshot), so anything
-  down at that level should be read as "within one frame", not as a precise latency.
+- The timer takes screenshots one after another, so a reading moves in steps of one
+  screenshot: the timer has about **0.55 s** resolution on the Samsung A36 (about
+  0.45 s on the Redmi A5). A change smaller than one step is not a real signal. A
+  screen that is already there at the first screenshot reads about 0.1 s whatever its
+  real time, so read those values as "too fast to time", not as a precise time.
 - Charts show the most recent builds; the x-axis is labelled by build
   (date · version/rc · short hash). Full history lives in
   [`data/android/`](../../data/android/).
@@ -24,7 +26,7 @@ can see whether performance improves or regresses.
 
 > **Messages and Settings navigation are not a reliable trend yet.** Their timing is
 > bimodal — most runs land near ~0.5 s, but some register the change on the very first
-> screenshot (~0.07 s), so a single build's summary can swing between the two (the
+> screenshot (about 0.1 s), so a single build's summary can swing between the two (the
 > Messages chart, plotted as the fastest of 6, jumps when a build happens to produce no
 > sub-frame sample). The measurement is being made deterministic; until then read these
 > two as indicative, not as a regression signal. The banded Wallet/Market charts are the
@@ -84,13 +86,14 @@ action is opened once unmeasured first, so the samples reflect steady-state use.
 ![Wallet Swap response time](./android_wallet_swap_response_time.png)
 ![Wallet Buy response time](./android_wallet_buy_response_time.png)
 
-> Receive and Buy open within a single screenshot (the ~0.06–0.1 s floor), so their
-> charts show the **fastest of 6** and should be read as "within one frame".
+> Receive and Buy are already there at the first screenshot, so their charts show the
+> **fastest of 6**. Read them as "too fast to time", not as a precise time.
 
 ## Wallet accounts
 
 Opening an account is measured as a **single cold sample** (repeat opens hit the
-cached view and drop below the floor); adding an account is a normal 6-run mean.
+cached view and are there at the first screenshot); adding an account is a normal
+6-run mean.
 
 ![Wallet account open response time](./android_wallet_account_open_response_time.png)
 ![Wallet Add account response time](./android_wallet_add_account_response_time.png)
@@ -129,6 +132,20 @@ unchanged — see the [repository README](../../README.md).
 
 ## Method changes
 
+- **2026-10-02 — the scorecard reads no finer than the timer.**
+  - Every row now comes from one build, named at the top of the card. A surface that
+    build did not measure says "not measured on this build". It never shows a value
+    from another build.
+  - A change against the last release is shown only when it is at least one timer
+    step (about 0.55 s on the A36). Smaller changes read "no measurable change". The
+    old parity margins (5–8 %) were much finer than the timer can measure.
+  - "Too fast to time" means the screen was ready at the first screenshot (under
+    0.2 s) on every build in the last 14 days, and in the last release too. The row
+    stays on the card.
+  - The baseline is chosen automatically: the newest shipped release on GitHub that the
+    A36 has measured on its current firmware (the phone's exact software build, because a
+    firmware update changes the numbers by itself). Before, it was set by hand.
+
 - **2026-08-10 — the measured screen region is now scaled to the phone.** The regions
   these timings are read from were defined in Samsung A36 pixels. On a smaller screen a
   region could run past the screen edge (the overflow was filled with black, diluting the
@@ -141,8 +158,8 @@ unchanged — see the [repository README](../../README.md).
   Collectibles, History) measurable there at all — they had failed every run.
 
 - **2026-06-17 — summary statistic switched from mean to median.** Each build is
-  now summarised by the median of its runs (floor-limited screens keep
-  "fastest of"). Median is robust to one-off slow runs, so the trend reflects the
+  now summarised by the median of its runs (screens that are there at the first
+  screenshot keep "fastest of"). Median is robust to one-off slow runs, so the trend reflects the
   app, not measurement noise. Recomputed from stored raw runs — not a
   re-measurement. A small downward step on a few earlier points is this change,
   not an app change.
