@@ -2165,3 +2165,14 @@ ef004c-n261019,2026-10-19T05:45:14,moto_g55_5G,test_android_resource_power[app],
 228aac-n261022,2026-10-22T05:45:14,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,1.47,1.47,1.47,1.47,1,1,1.47
 228aac-n261022,2026-10-22T05:45:14,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,4.27,4.27,4.27,4.27,1,1,4.27
 228aac-n261022,2026-10-22T05:45:14,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,13.0,13.0,13.0,13.0,1,1,13.0
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.066,0.099,0.082,0.081,4,4,"0.066,0.099,0.082,0.08"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.67,0.887,0.735,0.692,4,4,"0.887,0.683,0.67,0.701"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.094,0.106,0.101,0.102,4,4,"0.101,0.094,0.106,0.102"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.618,0.658,0.633,0.627,4,4,"0.618,0.658,0.625,0.629"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,0.619,0.638,0.626,0.62,3,4,"0.619,0.638,0.62"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.089,0.109,0.099,0.099,4,4,"0.089,0.105,0.092,0.109"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.106,0.255,0.146,0.111,4,4,"0.106,0.255,0.114,0.108"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,0.654,0.72,0.682,0.676,4,4,"0.654,0.66,0.693,0.72"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,0.597,0.616,0.606,0.605,4,4,"0.614,0.616,0.597,0.597"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.099,0.119,0.106,0.103,4,4,"0.099,0.101,0.119,0.105"
+6683ad,2026-10-23T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.625,0.66,0.64,0.634,3,4,"0.66,0.625,0.634"
