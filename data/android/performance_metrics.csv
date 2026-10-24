@@ -2183,3 +2183,11 @@ ef004c-n261019,2026-10-19T05:45:14,moto_g55_5G,test_android_resource_power[app],
 6683ad-n261023,2026-10-23T05:45:14,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,1.47,1.47,1.47,1.47,1,1,1.47
 6683ad-n261023,2026-10-23T05:45:14,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,4.3,4.3,4.3,4.3,1,1,4.3
 6683ad-n261023,2026-10-23T05:45:14,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,13.2,13.2,13.2,13.2,1,1,13.2
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,0.569,0.625,0.594,0.592,4,4,"0.594,0.625,0.569,0.59"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.085,0.092,0.088,0.088,4,4,"0.085,0.087,0.092,0.089"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.686,0.709,0.699,0.701,4,4,"0.709,0.686,0.704,0.698"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,0.646,0.698,0.674,0.676,4,4,"0.659,0.698,0.646,0.694"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.09,0.102,0.098,0.1,4,4,"0.1,0.102,0.099,0.09"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.09,0.115,0.104,0.105,4,4,"0.114,0.115,0.096,0.09"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.088,0.11,0.097,0.096,4,4,"0.11,0.088,0.096,0.095"
+e2ed06,2026-10-24T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.079,0.097,0.086,0.083,4,4,"0.081,0.079,0.097,0.085"
