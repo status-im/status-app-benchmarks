@@ -11,7 +11,7 @@ Full CSV history: [`data/`](../../data/).
 
 > **Baseline note:** A full 2.38.0 (`5f66de`) re-baseline is not available — benchmark user profiles are incompatible with the 2.38.0 binary, and wallet tab tests now wait for tab content. Nightly trend continues; non-tab scenarios still compare to 2.38.0 where valid. When **2.39.0** ships, **2.38.2** becomes the new baseline — see [`BASELINE_2.39.md`](./BASELINE_2.39.md).
 
-**Last run** · Nov 01, 2026 · [`af9f8f927`](https://github.com/status-im/status-app/commit/af9f8f927644f80a9e2cf87096bf22e36f57df99)
+**Last run** · Nov 02, 2026 · [`af9f8f927`](https://github.com/status-im/status-app/commit/af9f8f927644f80a9e2cf87096bf22e36f57df99)
 
 ## Send timing
 
@@ -19,18 +19,18 @@ Latest time until the message is **Visible** in the chat, **Sent** (one tick), a
 
 | Scenario | Visible | Sent | Delivered | Commit | Date |
 |----------|---------|------|-----------|--------|------|
-| 1000-character text in a 3-person group | 0.577s | 0.961s | 2.961s | af9f8f927 | 2026-11-01 |
-| a 5-image album in a 3-person group | 3.719s | 4.288s | 4.855s | af9f8f927 | 2026-11-01 |
-| a GIF in a 3-person group | 0.563s | 1.122s | 3.101s | af9f8f927 | 2026-11-01 |
-| 10 texts with 0.5s delay in a 3-person group | 0.724s | 1.297s | 3.373s | af9f8f927 | 2026-11-01 |
-| 1000-character text in a 1-on-1 chat | 0.707s | 1.076s | 1.499s | af9f8f927 | 2026-11-01 |
-| a 5-image album in a 1-on-1 chat | 3.817s | 4.365s | 4.935s | af9f8f927 | 2026-11-01 |
-| a GIF in a 1-on-1 chat | 0.622s | 1.136s | 1.583s | af9f8f927 | 2026-11-01 |
-| 10 texts with 0.5s delay in a 1-on-1 chat | 0.798s | 1.405s | 4.273s | af9f8f927 | 2026-11-01 |
-| 1000-character text in a community #general channel | 0.570s | 0.945s | 8.167s | af9f8f927 | 2026-11-01 |
-| a 5-image album in a community #general channel | 3.994s | 4.905s | 6.746s | af9f8f927 | 2026-11-01 |
-| a GIF in a community #general channel | 1.117s | 1.956s | 4.054s | af9f8f927 | 2026-11-01 |
-| 10 texts with 0.5s delay in a community #general channel | 1.368s | 2.579s | 5.951s | af9f8f927 | 2026-11-01 |
+| 1000-character text in a 3-person group | 0.579s | 0.963s | 3.032s | af9f8f927 | 2026-11-02 |
+| a 5-image album in a 3-person group | 2.780s | 3.380s | 3.973s | af9f8f927 | 2026-11-02 |
+| a GIF in a 3-person group | 0.524s | 1.031s | 2.057s | af9f8f927 | 2026-11-02 |
+| 10 texts with 0.5s delay in a 3-person group | 0.721s | 1.291s | 3.016s | af9f8f927 | 2026-11-02 |
+| 1000-character text in a 1-on-1 chat | 0.678s | 1.117s | 4.428s | af9f8f927 | 2026-11-02 |
+| a 5-image album in a 1-on-1 chat | 3.686s | 4.238s | 4.841s | af9f8f927 | 2026-11-02 |
+| a GIF in a 1-on-1 chat | 0.570s | 1.132s | 3.193s | af9f8f927 | 2026-11-02 |
+| 10 texts with 0.5s delay in a 1-on-1 chat | 0.765s | 1.366s | 4.160s | af9f8f927 | 2026-11-02 |
+| 1000-character text in a community #general channel | 0.571s | 0.933s | 2.705s | af9f8f927 | 2026-11-02 |
+| a 5-image album in a community #general channel | 5.215s | 5.938s | 8.713s | af9f8f927 | 2026-11-02 |
+| a GIF in a community #general channel | 0.617s | 1.311s | 6.877s | af9f8f927 | 2026-11-02 |
+| 10 texts with 0.5s delay in a community #general channel | 1.359s | 2.642s | 6.001s | af9f8f927 | 2026-11-02 |
 
 ## Scenario summary
 
@@ -42,95 +42,95 @@ Reference parity (where shown) means the latest value is within ±15% of 2.38.0.
 
 | User profile | Area | Scenario | Load time / Speed | vs 2.38.0 | CPU | RAM | Measured |
 |--------------|------|----------|-------------------|-----------|-----|-----|----------|
-| New user profile | Wallet | Time to open Wallet for the first time after login | 0.469s · Fast | +0.097s slower | 65.7% | 712.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen Wallet in the same session | 0.334s · Fast | parity | 49.1% | 716.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.138s · Fast | parity | 70.6% | 732.6 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the Add account modal for the first time in the session | 0.464s · Fast | -0.147s faster | 54.2% | 692.6 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the Add account modal in the same session | 0.398s · Fast | parity | 27.0% | 711.8 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the Receive modal for the first time in the session | 0.455s · Fast | parity | 50.9% | 720.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the Receive modal in the same session | 0.323s · Fast | parity | 34.4% | 677.0 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the Send modal for the first time in the session | 1.151s · Slow | +0.263s slower | 45.6% | 742.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the Send modal in the same session | 0.357s · Fast | -0.141s faster | 31.6% | 752.2 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the Swap modal for the first time in the session | 1.055s · Slow | -0.504s faster | 49.7% | 704.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.340s · Fast | -0.228s faster | 29.1% | 863.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the Assets tab for the first time in the session | 2.138s · Slow | no baseline | 59.4% | 710.7 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the Assets tab in the same session | 0.191s · Fast | no baseline | 40.0% | 684.7 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | 0.284s · Fast | no baseline | 49.5% | 756.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | 0.144s · Fast | no baseline | 55.4% | 774.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to open the History tab for the first time in the session | 0.165s · Fast | no baseline | 45.7% | 761.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Wallet | Time to reopen the History tab in the same session | 0.135s · Fast | no baseline | 57.8% | 766.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending 1000-character text in a 3-person group | 0.577s · Ok | no baseline | 40.6% | 739.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending 1000-character text in a 3-person group | 0.961s · Near ok | no baseline | 10.7% | 739.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 3-person group | 2.961s · Slow | no baseline | 5.8% | 731.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending a 5-image album in a 3-person group | 3.719s · Slow | no baseline | 10.6% | 741.7 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending a 5-image album in a 3-person group | 4.288s · Slow | no baseline | 5.1% | 749.0 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 3-person group | 4.855s · Slow | no baseline | 1.8% | 749.0 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending a GIF in a 3-person group | 0.563s · Ok | no baseline | 14.3% | 754.6 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending a GIF in a 3-person group | 1.122s · Slow | no baseline | 12.1% | 742.7 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending a GIF in a 3-person group | 3.101s · Slow | no baseline | 6.8% | 738.0 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending 10 texts with 0.5s delay in a 3-person group | 0.724s · Ok | no baseline | 9.0% | 770.2 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 3-person group | 1.297s · Slow | no baseline | 6.8% | 768.8 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group | 3.373s · Slow | no baseline | 4.8% | 770.3 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending 1000-character text in a 1-on-1 chat | 0.707s · Ok | no baseline | 75.3% | 706.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending 1000-character text in a 1-on-1 chat | 1.076s · Slow | no baseline | 4.5% | 706.5 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 1-on-1 chat | 1.499s · Slow | no baseline | 13.4% | 706.5 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending a 5-image album in a 1-on-1 chat | 3.817s · Slow | no baseline | 35.0% | 715.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending a 5-image album in a 1-on-1 chat | 4.365s · Slow | no baseline | 1.6% | 719.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 1-on-1 chat | 4.935s · Slow | no baseline | 1.8% | 719.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending a GIF in a 1-on-1 chat | 0.622s · Ok | no baseline | 24.9% | 720.2 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending a GIF in a 1-on-1 chat | 1.136s · Slow | no baseline | 4.3% | 720.2 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending a GIF in a 1-on-1 chat | 1.583s · Slow | no baseline | 5.4% | 720.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Visible after sending 10 texts with 0.5s delay in a 1-on-1 chat | 0.798s · Ok | no baseline | 19.9% | 726.6 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat | 1.405s · Slow | no baseline | 7.6% | 725.0 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat | 4.273s · Slow | no baseline | 6.2% | 727.9 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Visible after sending 1000-character text in a community #general channel | 0.570s · Ok | no baseline | 18.2% | 793.4 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Sent after sending 1000-character text in a community #general channel | 0.945s · Near ok | no baseline | 3.6% | 794.8 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Delivered after sending 1000-character text in a community #general channel | 8.167s · Slow | no baseline | 4.7% | 756.7 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Visible after sending a 5-image album in a community #general channel | 3.994s · Slow | no baseline | 7.5% | 774.6 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Sent after sending a 5-image album in a community #general channel | 4.905s · Slow | no baseline | 10.5% | 785.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Delivered after sending a 5-image album in a community #general channel | 6.746s · Slow | no baseline | 2.3% | 787.7 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Visible after sending a GIF in a community #general channel | 1.117s · Slow | no baseline | 4.3% | 772.5 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Sent after sending a GIF in a community #general channel | 1.956s · Slow | no baseline | 2.7% | 772.5 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Delivered after sending a GIF in a community #general channel | 4.054s · Slow | no baseline | 3.3% | 772.5 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Visible after sending 10 texts with 0.5s delay in a community #general channel | 1.368s · Slow | no baseline | 5.2% | 746.1 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Sent after sending 10 texts with 0.5s delay in a community #general channel | 2.579s · Slow | no baseline | 4.6% | 745.0 MB | af9f8f927<br>2026-11-01 |
-| New user profile | Communities | Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel | 5.951s · Slow | no baseline | 4.2% | 741.4 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 1.002s · Slow | +0.518s slower | 33.8% | 714.2 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.497s · Fast | parity | 52.3% | 610.7 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.359s · Fast | parity | 55.9% | 675.4 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | 0.480s · Fast | -0.269s faster | 50.2% | 700.0 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | 0.447s · Fast | parity | 54.3% | 685.6 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | 0.516s · Ok | -0.406s faster | 36.5% | 718.1 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | 0.393s · Fast | parity | 60.0% | 635.1 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | 0.896s · Ok | -0.894s faster | 36.3% | 591.7 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | 0.468s · Fast | -0.213s faster | 59.9% | 596.1 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | 0.741s · Ok | -0.626s faster | 41.5% | 712.7 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.885s · Ok | +0.353s slower | 59.5% | 794.7 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Assets tab for the first time in the session | 0.919s · Near ok | no baseline | 52.8% | 683.3 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | 0.786s · Ok | no baseline | 57.4% | 678.4 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | 1.955s · Slow | no baseline | 46.7% | 637.7 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | 1.340s · Slow | no baseline | 63.0% | 647.8 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | 0.539s · Ok | no baseline | 54.5% | 691.8 MB | af9f8f927<br>2026-11-01 |
-| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the History tab in the same session | 0.172s · Fast | no baseline | 57.9% | 644.6 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open Wallet for the first time after login | 0.986s · Near ok | +0.761s slower | 39.5% | 785.0 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.498s · Fast | parity | 50.3% | 660.8 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.459s · Fast | +0.112s slower | 51.4% | 726.0 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | 0.533s · Ok | -0.276s faster | 43.7% | 682.5 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Add account modal in the same session | 0.472s · Fast | parity | 67.9% | 651.8 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | 0.402s · Fast | -0.548s faster | 42.9% | 645.4 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Receive modal in the same session | 0.418s · Fast | +0.090s slower | 53.0% | 637.6 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Send modal for the first time in the session | 1.482s · Slow | -0.288s faster | 55.2% | 688.8 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Send modal in the same session | 0.522s · Ok | -0.141s faster | 62.1% | 664.2 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | 0.860s · Ok | -0.438s faster | 37.9% | 689.3 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.831s · Ok | +0.317s slower | 66.8% | 799.9 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Assets tab for the first time in the session | 0.612s · Ok | no baseline | 63.5% | 694.5 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Assets tab in the same session | 0.760s · Ok | no baseline | 60.9% | 689.0 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | 0.635s · Ok | no baseline | 56.0% | 737.7 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | 1.495s · Slow | no baseline | 60.7% | 698.8 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to open the History tab for the first time in the session | 0.445s · Fast | no baseline | 53.3% | 672.1 MB | af9f8f927<br>2026-11-01 |
-| Returning user (heavy account from Alex) | Wallet | Time to reopen the History tab in the same session | 0.220s · Fast | no baseline | 62.9% | 645.3 MB | af9f8f927<br>2026-11-01 |
-| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 3.630s · Slow | parity | 43.2% | 731.5 MB | af9f8f927<br>2026-11-01 |
-| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 3.752s · Slow | +1.650s slower | 35.0% | 748.3 MB | af9f8f927<br>2026-11-01 |
+| New user profile | Wallet | Time to open Wallet for the first time after login | 0.461s · Fast | +0.089s slower | 57.0% | 699.6 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen Wallet in the same session | 0.330s · Fast | parity | 52.7% | 721.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open a Wallet account for the first time in the session | 0.150s · Fast | parity | 63.9% | 723.6 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the Add account modal for the first time in the session | 0.440s · Fast | -0.171s faster | 45.3% | 728.8 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the Add account modal in the same session | 0.395s · Fast | parity | 29.3% | 733.9 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the Receive modal for the first time in the session | 0.446s · Fast | parity | 40.8% | 712.5 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the Receive modal in the same session | 0.310s · Fast | parity | 27.2% | 714.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the Send modal for the first time in the session | 1.174s · Slow | +0.286s slower | 50.5% | 759.3 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the Send modal in the same session | 0.368s · Fast | -0.130s faster | 21.6% | 738.3 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the Swap modal for the first time in the session | 1.019s · Slow | -0.540s faster | 48.3% | 724.9 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the Swap modal in the same session | 0.606s · Ok | parity | 27.0% | 826.7 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the Assets tab for the first time in the session | 1.353s · Slow | no baseline | 53.8% | 733.7 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the Assets tab in the same session | 0.177s · Fast | no baseline | 49.2% | 730.0 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the Collectibles tab for the first time in the session | 0.275s · Fast | no baseline | 35.8% | 721.9 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the Collectibles tab in the same session | 0.142s · Fast | no baseline | 74.0% | 698.9 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to open the History tab for the first time in the session | 0.158s · Fast | no baseline | 64.8% | 699.6 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Wallet | Time to reopen the History tab in the same session | 0.135s · Fast | no baseline | 63.4% | 681.7 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending 1000-character text in a 3-person group | 0.579s · Ok | no baseline | 13.9% | 762.7 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending 1000-character text in a 3-person group | 0.963s · Near ok | no baseline | 9.8% | 764.3 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 3-person group | 3.032s · Slow | no baseline | 9.2% | 769.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending a 5-image album in a 3-person group | 2.780s · Slow | no baseline | 10.4% | 770.3 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending a 5-image album in a 3-person group | 3.380s · Slow | no baseline | 3.8% | 771.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 3-person group | 3.973s · Slow | no baseline | 1.6% | 771.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending a GIF in a 3-person group | 0.524s · Ok | no baseline | 4.5% | 772.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending a GIF in a 3-person group | 1.031s · Slow | no baseline | 4.9% | 772.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending a GIF in a 3-person group | 2.057s · Slow | no baseline | 3.6% | 772.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending 10 texts with 0.5s delay in a 3-person group | 0.721s · Ok | no baseline | 9.9% | 749.2 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 3-person group | 1.291s · Slow | no baseline | 5.3% | 748.2 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 3-person group | 3.016s · Slow | no baseline | 4.3% | 748.4 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending 1000-character text in a 1-on-1 chat | 0.678s · Ok | no baseline | 9.0% | 708.2 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending 1000-character text in a 1-on-1 chat | 1.117s · Slow | no baseline | 5.3% | 708.2 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending 1000-character text in a 1-on-1 chat | 4.428s · Slow | no baseline | 4.6% | 708.3 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending a 5-image album in a 1-on-1 chat | 3.686s · Slow | no baseline | 14.8% | 714.7 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending a 5-image album in a 1-on-1 chat | 4.238s · Slow | no baseline | 1.9% | 717.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending a 5-image album in a 1-on-1 chat | 4.841s · Slow | no baseline | 1.5% | 717.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending a GIF in a 1-on-1 chat | 0.570s · Ok | no baseline | 13.0% | 717.8 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending a GIF in a 1-on-1 chat | 1.132s · Slow | no baseline | 9.9% | 718.6 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending a GIF in a 1-on-1 chat | 3.193s · Slow | no baseline | 7.5% | 722.6 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Visible after sending 10 texts with 0.5s delay in a 1-on-1 chat | 0.765s · Ok | no baseline | 10.9% | 744.3 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Sent after sending 10 texts with 0.5s delay in a 1-on-1 chat | 1.366s · Slow | no baseline | 6.0% | 744.7 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Messenger | Time to Delivered after sending 10 texts with 0.5s delay in a 1-on-1 chat | 4.160s · Slow | no baseline | 5.1% | 747.1 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Visible after sending 1000-character text in a community #general channel | 0.571s · Ok | no baseline | 9.9% | 728.5 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Sent after sending 1000-character text in a community #general channel | 0.933s · Near ok | no baseline | 3.6% | 736.4 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Delivered after sending 1000-character text in a community #general channel | 2.705s · Slow | no baseline | 7.7% | 741.0 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Visible after sending a 5-image album in a community #general channel | 5.215s · Slow | no baseline | 29.3% | 758.9 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Sent after sending a 5-image album in a community #general channel | 5.938s · Slow | no baseline | 9.1% | 767.5 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Delivered after sending a 5-image album in a community #general channel | 8.713s · Slow | no baseline | 11.2% | 762.5 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Visible after sending a GIF in a community #general channel | 0.617s · Ok | no baseline | 4.5% | 758.0 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Sent after sending a GIF in a community #general channel | 1.311s · Slow | no baseline | 6.5% | 759.5 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Delivered after sending a GIF in a community #general channel | 6.877s · Slow | no baseline | 9.3% | 772.0 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Visible after sending 10 texts with 0.5s delay in a community #general channel | 1.359s · Slow | no baseline | 7.0% | 758.5 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Sent after sending 10 texts with 0.5s delay in a community #general channel | 2.642s · Slow | no baseline | 7.7% | 756.2 MB | af9f8f927<br>2026-11-02 |
+| New user profile | Communities | Time to Delivered after sending 10 texts with 0.5s delay in a community #general channel | 6.001s · Slow | no baseline | 4.8% | 752.9 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open Wallet for the first time after login | 1.121s · Slow | +0.637s slower | 38.8% | 796.7 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen Wallet in the same session | 0.494s · Fast | parity | 53.1% | 647.2 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open a Wallet account for the first time in the session | 0.368s · Fast | parity | 44.5% | 722.8 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Add account modal for the first time in the session | 0.515s · Ok | -0.234s faster | 70.9% | 655.9 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Add account modal in the same session | 0.457s · Fast | parity | 60.8% | 652.6 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Receive modal for the first time in the session | 0.417s · Fast | -0.505s faster | 48.0% | 703.7 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Receive modal in the same session | 0.385s · Fast | parity | 62.2% | 627.3 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Send modal for the first time in the session | 0.835s · Ok | -0.955s faster | 39.0% | 663.8 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Send modal in the same session | 0.457s · Fast | -0.224s faster | 62.9% | 634.0 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Swap modal for the first time in the session | 0.698s · Ok | -0.669s faster | 39.0% | 617.2 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Swap modal in the same session | 0.900s · Ok | +0.368s slower | 52.3% | 751.2 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Assets tab for the first time in the session | 0.525s · Ok | no baseline | 53.3% | 680.1 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Assets tab in the same session | 0.783s · Ok | no baseline | 55.9% | 670.4 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the Collectibles tab for the first time in the session | 2.274s · Slow | no baseline | 46.3% | 696.4 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the Collectibles tab in the same session | 1.397s · Slow | no baseline | 59.6% | 661.1 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to open the History tab for the first time in the session | 0.545s · Ok | no baseline | 48.8% | 723.2 MB | af9f8f927<br>2026-11-02 |
+| Returning user (semi-heavy wallet account) | Wallet | Time to reopen the History tab in the same session | 0.191s · Fast | no baseline | 69.6% | 662.5 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open Wallet for the first time after login | 1.159s · Slow | +0.934s slower | 50.2% | 813.1 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen Wallet in the same session | 0.504s · Ok | parity | 53.8% | 675.6 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open a Wallet account for the first time in the session | 0.410s · Fast | +0.063s slower | 57.9% | 623.9 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Add account modal for the first time in the session | 0.537s · Ok | -0.272s faster | 55.0% | 687.4 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Add account modal in the same session | 0.474s · Fast | parity | 61.8% | 649.0 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Receive modal for the first time in the session | 0.311s · Fast | -0.639s faster | 47.3% | 637.4 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Receive modal in the same session | 0.387s · Fast | +0.059s slower | 56.4% | 612.7 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Send modal for the first time in the session | 0.940s · Near ok | -0.830s faster | 36.5% | 695.0 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Send modal in the same session | 0.488s · Fast | -0.175s faster | 60.3% | 667.0 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Swap modal for the first time in the session | 0.730s · Ok | -0.568s faster | 39.7% | 701.8 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Swap modal in the same session | 0.897s · Ok | +0.383s slower | 63.7% | 809.1 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Assets tab for the first time in the session | 0.671s · Ok | no baseline | 57.7% | 710.1 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Assets tab in the same session | 0.725s · Ok | no baseline | 57.7% | 702.6 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the Collectibles tab for the first time in the session | 1.848s · Slow | no baseline | 56.1% | 746.0 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the Collectibles tab in the same session | 1.573s · Slow | no baseline | 60.2% | 714.7 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to open the History tab for the first time in the session | 0.471s · Fast | no baseline | 64.2% | 699.0 MB | af9f8f927<br>2026-11-02 |
+| Returning user (heavy account from Alex) | Wallet | Time to reopen the History tab in the same session | 0.196s · Fast | no baseline | 58.7% | 654.5 MB | af9f8f927<br>2026-11-02 |
+| Returning user (Status community member) | Communities | Time to open Status community for the first time after login | 4.104s · Slow | parity | 25.5% | 706.6 MB | af9f8f927<br>2026-11-02 |
+| Returning user (Status community member) | Communities | Time to reopen Status community in the same session | 3.709s · Slow | +1.607s slower | 26.2% | 737.8 MB | af9f8f927<br>2026-11-02 |
 
 ## New user profile
 
