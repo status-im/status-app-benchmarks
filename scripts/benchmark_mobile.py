@@ -39,7 +39,7 @@ LOWEND_NAME = "Redmi A5"
 
 # OS regime each phone's published series is pinned to, so an OS update cannot silently
 # re-baseline a chart. Unlisted phone = unpinned (all its points chart).
-CHART_REGIME = {GATE_DEVICE: "16", "moto_g55_5G": "16", LOWEND_DEVICE: "15"}
+CHART_REGIME = {GATE_DEVICE: "17", "moto_g55_5G": "16", LOWEND_DEVICE: "15"}
 
 
 @dataclass
@@ -132,8 +132,8 @@ def _run_environments(device=GATE_DEVICE):
 
 def _regime_builds(device):
     """Build hashes measured on `device` in the OS regime its published series is pinned to
-    (CHART_REGIME). Volo asked the gate charts to 'stick with Android 16 One UI 8', so points
-    from an older OS are dropped rather than plotted as an app change. An unpinned phone
+    (CHART_REGIME). Volo asked the gate charts to stick with one OS version, so points
+    from another OS are dropped rather than plotted as an app change. An unpinned phone
     returns the empty set, which callers read as 'chart everything it has'."""
     want = CHART_REGIME.get(device)
     if not want:
@@ -159,7 +159,7 @@ def _fmt(v, unit):
 
 
 def plot_performance_mobile(performance, test, output_dir):
-    """Mobile response chart: seconds axis, build-name x-axis. Android 16 / One UI 8 only.
+    """Mobile response chart: seconds axis, build-name x-axis. One OS regime per phone (CHART_REGIME).
     The release baselines (2.37.1, 2.38.0, 2.38.2) are pinned as fixed LEFT columns so every chart
     'starts' with them, and a faint dashed line marks the last-release level. For a nav-tab
     surface the FIRST-open series is overlaid as a second (dashed) line, each first-open point
