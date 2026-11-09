@@ -2433,3 +2433,14 @@ e37a05-n261107,2026-11-07T08:00:17,25028RN03Y,test_android_resource_power[app],p
 518d92-n261109,2026-11-09T14:40:02,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,0.798,0.798,0.798,0.798,1,1,0.798
 518d92-n261109,2026-11-09T14:40:02,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,0.29,0.29,0.29,0.29,1,1,0.29
 518d92-n261109,2026-11-09T14:40:02,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,12.8,12.8,12.8,12.8,1,1,12.8
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_response_time,passed,response_time,s,0.453,0.513,0.472,0.462,4,4,"0.466,0.457,0.513,0.453"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.048,0.087,0.069,0.071,4,4,"0.087,0.07,0.048,0.071"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,0.458,0.483,0.469,0.468,4,4,"0.483,0.474,0.461,0.458"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.46,0.469,0.463,0.462,4,4,"0.469,0.462,0.46,0.461"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.06,0.075,0.067,0.067,4,4,"0.075,0.068,0.06,0.065"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.077,0.084,0.08,0.08,4,4,"0.077,0.084,0.078,0.081"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,0.528,0.543,0.536,0.536,4,4,"0.528,0.531,0.543,0.542"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.086,0.103,0.094,0.094,4,4,"0.096,0.086,0.103,0.092"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.531,1.138,0.688,0.541,4,4,"0.531,1.138,0.535,0.547"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.056,0.065,0.061,0.062,4,4,"0.06,0.064,0.065,0.056"
+518d92,2026-11-09T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.496,0.506,0.5,0.5,4,4,"0.503,0.497,0.506,0.496"
