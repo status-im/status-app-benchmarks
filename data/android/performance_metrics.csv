@@ -2623,3 +2623,13 @@ c33ca2-n261120,2026-11-20T14:26:33,moto_g55_5G,test_android_resource_power[app],
 770651-n261123,2026-11-23T06:45:07,moto_g55_5G,test_android_resource_net[rx],passed,net_mb,MB,0.821,0.821,0.821,0.821,1,1,0.821
 770651-n261123,2026-11-23T06:45:07,moto_g55_5G,test_android_resource_net[tx],passed,net_mb,MB,0.267,0.267,0.267,0.267,1,1,0.267
 770651-n261123,2026-11-23T06:45:07,moto_g55_5G,test_android_resource_power[app],passed,power_mah,mAh,12.7,12.7,12.7,12.7,1,1,12.7
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_communities_response_time,passed,response_time,s,0.5,0.509,0.504,0.503,4,4,"0.501,0.509,0.505,0.5"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_messages_response_time,passed,response_time,s,0.064,0.086,0.073,0.071,4,4,"0.071,0.064,0.086,0.07"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_market_response_time,passed,response_time,s,0.495,0.515,0.507,0.509,4,4,"0.506,0.515,0.512,0.495"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_settings_response_time,passed,response_time,s,0.531,0.576,0.554,0.554,4,4,"0.531,0.576,0.574,0.534"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_wallet_send_response_time,passed,response_time,s,0.552,0.568,0.559,0.558,4,4,"0.553,0.552,0.564,0.568"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_wallet_assets_response_time,passed,response_time,s,0.091,0.096,0.094,0.095,4,4,"0.095,0.096,0.091,0.094"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_wallet_collectibles_response_time,passed,response_time,s,0.053,0.096,0.078,0.081,4,4,"0.087,0.053,0.076,0.096"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_wallet_history_response_time,passed,response_time,s,0.058,0.087,0.071,0.069,4,4,"0.058,0.087,0.069,0.068"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_wallet_swap_response_time,passed,response_time,s,0.577,0.644,0.606,0.602,4,4,"0.577,0.599,0.644,0.605"
+8a96ae,2026-11-23T12:00:00,SM-A366B,test_android_wallet_buy_response_time,passed,response_time,s,0.072,0.096,0.081,0.078,4,4,"0.096,0.079,0.072,0.077"
